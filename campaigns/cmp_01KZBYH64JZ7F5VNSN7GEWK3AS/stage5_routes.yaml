@@ -1,0 +1,33 @@
+# STAGE 5 · CONCEPT ROUTES
+run_id: cmp_01KZBYH64JZ7F5VNSN7GEWK3AS
+routes:
+- route_id: RTE-A
+  strategic_expression: "Preservation — the season is ending, keep the part you want."
+  user_mechanism: "Build a collection of things that survive the turn."
+  shopya_mechanism: "save.created into a user collection"
+  tone: "Elegiac, adult, unhurried."
+  visual_logic: "Low side-light, bleached and dry-gold palette, worn surfaces. Not orange, not cosy."
+  surface_expression: {explore: "rails preview the kept things", collection_pages: "the archive itself", S5: "permission guides"}
+  advantages: ["Mechanism and message are the same action.", "Evergreen with a seasonal peak."]
+  risks: ["Elegiac tone goes mawkish easily.", "Restraint framing may suppress saving."]
+  name_candidates: ["The Keeping", "Hold The Summer", "What Survives The Turn"]
+- route_id: RTE-B
+  strategic_expression: "Permission — not yet, but this."
+  user_mechanism: "Answer a timing question, then save what the answer permits."
+  shopya_mechanism: "S5 editorial answers; save.created follows"
+  tone: "Plain, useful, slightly contrarian."
+  visual_logic: "Documentary, dated, calendar-led."
+  surface_expression: {explore: "wearable-now rails", collection_pages: "by timing not category", S5: "the permission answers themselves"}
+  advantages: ["Serves a demonstrated search intent (SIG-008).", "A no-inventory platform can say 'not yet' credibly."]
+  risks: ["Editorial seam is handoff-only, so the core of the route is not executable here.", "Dies after Labor Day."]
+  name_candidates: ["Not Yet", "The Permission Issue", "Too Early, Too Late"]
+- route_id: RTE-C
+  strategic_expression: "Taste as the display — curate publicly, buy privately."
+  user_mechanism: "Make a collection public."
+  shopya_mechanism: "public/featured collection flags — UNINSTRUMENTED"
+  tone: "Cool, editorial, low-affect."
+  visual_logic: "Grid-led, collection-first, product secondary."
+  surface_expression: {explore: "collection-entity rails", collection_pages: "the unit of display", S4: "marketing band"}
+  advantages: ["Rides a durable cultural position (SIG-021)."]
+  risks: ["Desired action is uninstrumented — unmeasurable in principle.", "SIG-023: the position is loud and tiny."]
+  name_candidates: ["Show The Shelf", "Quietly Kept", "The Curator Issue"]

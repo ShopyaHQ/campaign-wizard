@@ -1,0 +1,191 @@
+# STAGE 0 · CAMPAIGN FRAME — artifact schema
+# Establishes the decision environment BEFORE research. Structural validation only;
+# whether an objective is a GOOD objective is a human judgement, not a validator one.
+
+schema:
+  name: stage0_frame
+  version: 1.1.0
+  artifact_key: frame
+  path: "campaigns/<run_id>/frame.yaml"
+  produced_in_state: NEW
+  gates_entry_to: FRAME_READY
+  charter_min_version: 0.2.0
+  interpretation_rules: schemas/interpretation_rules.yaml
+  interpretation_rules_version: 1.0.0
+  changelog:
+    1.1.0: >
+      Split owner input from agent interpretation. Timing decomposed into distinct concepts.
+      Available seams separated from selected seams. Measurement proxy made explicitly opt-in.
+      Exclusions scoped to campaign expression rather than to research language. Driven by
+      eight real-run findings recorded in the run's learning.yaml.
+
+forbids:
+  - product_library_access      # charter scope_001 — the library is first readable at SEAM6_READY
+  - campaign_names
+  - taglines
+  - collections
+  - rails
+
+fields:
+
+  # ── owner input, verbatim, with every departure labelled ──────────
+  owner_inputs:
+    type: mapping
+    required: true
+    interpretation_rule_refs: [preserve_raw_owner_input, label_interpretation]
+    fields:
+      objective:          {required: true, subfields: [raw, normalized, interpretation_status]}
+      requested_launch:   {required: true, subfields: [raw, normalized_date, interpretation_status]}
+      planning_horizon:   {required: true, subfields: [raw, minimum_weeks, maximum_weeks, interpretation_status]}
+      starting_territory: {required: true, subfields: [raw, normalized, interpretation_status]}
+      exclusions:         {required: true, subfields: [raw, normalized_frames, interpretation_status]}
+
+  # ── timing: five distinct concepts, never derived from one another ─
+  timing:
+    type: mapping
+    required: true
+    interpretation_rule_refs: [timing_concepts_are_distinct]
+    fields:
+      requested_launch_date:           {required: true}
+      operational_interpretation:      {required: true}
+      earliest_actual_campaign_launch: {required: true}
+      desired_campaign_end:            {required: true}
+
+  objective:
+    type: mapping
+    required: true
+    interpretation_rule_refs: [objective_is_not_measurement_claim]
+    fields:
+      desired_behavior:     {required: true}
+      audience:             {required: true}
+      event_mapping:        {required: true}
+      interpretation_status: {required: true}
+
+  measurement:
+    type: mapping
+    required: true
+    interpretation_rule_refs: [measurement_limit_does_not_force_proxy]
+    fields:
+      intended_event:                   {required: true}
+      audience_segment:                 {required: true}
+      retrieval_status:                 {required: true}
+      baseline_available:               {required: true}
+      causal_incrementality_measurable: {required: true}
+      proxy:                            {required: true}
+
+  avoidance:
+    type: mapping
+    required: true
+    interpretation_rule_refs: [no_added_restrictions, exclusions_are_scoped]
+    fields:
+      prohibited_campaign_frames:                         {required: true}
+      evidence_may_describe_prohibited_frames:            {required: true}
+      prohibited_frames_may_not_be_adopted_as_recommendations: {required: true}
+      additional_restrictions:                            {required: true}
+
+  scope:
+    type: mapping
+    required: true
+    interpretation_rule_refs: [capability_is_not_selection]
+    fields:
+      live_surfaces:                    {required: true}
+      seams_available_for_consideration: {required: true}
+      selected_seams:                   {required: true}
+      executable_seams:                 {required: true}
+      handoff_seams:                    {required: true}
+
+  # ── compatibility fields ──────────────────────────────────────────
+  # Required by the FRAME_READY entry prerequisites of the PINNED workflow spec (1.2.0).
+  # They duplicate values held in the structured blocks above. They are kept so that this
+  # schema change does not alter any state meaning or transition. Resolve when the workflow
+  # spec next versions; recorded as LRN-009 in the run's learning log.
+  planning_horizon:
+    type: string
+    required: true
+    compatibility_alias_of: owner_inputs.planning_horizon.raw
+    note: "The owner's raw phrase. NOT a campaign duration and NOT an end date."
+  market:
+    type: string
+    required: true
+    note: "If not owner-supplied, the labelled record in scope.market governs."
+  eligible_seams:
+    type: list
+    required: true
+    item_enum: [S1, S2, S3, S4, S5, S6]
+    compatibility_alias_of: scope.seams_available_for_consideration
+    note: >
+      AVAILABLE FOR CONSIDERATION ONLY. This field has never meant 'selected'. Selection lives
+      in scope.selected_seams and nowhere else.
+    seam_reference:
+      S1: {name: "skin + package",  owner: code,          execution_mode: handoff}
+      S2: {name: "cover takeover",  owner: sanity,        execution_mode: handoff}
+      S3: {name: "in-fold banner",  owner: sanity,        execution_mode: handoff}
+      S4: {name: "marketing band",  owner: sanity,        execution_mode: handoff}
+      S5: {name: "editorial rail",  owner: sanity,        execution_mode: handoff}
+      S6: {name: "feed rails",      owner: campaign_tool, execution_mode: executable}
+  eligible_surfaces:
+    type: list
+    required: true
+    item_enum: [explore, home, discover, trending, for_you, collection_pages,
+                email_lifecycle, paid, social, creator_community, product_experience]
+    compatibility_alias_of: scope.live_surfaces
+    surface_reference:
+      explore:            {status: live, can_receive_authored_rails: true,  charter_ref: surface_001}
+      home:               {status: pre_migration, can_receive_authored_rails: false, charter_ref: surface_002}
+      discover:           {status: pre_migration, can_receive_authored_rails: false, charter_ref: surface_002}
+      trending:           {status: parked}
+      for_you:            {status: parked}
+      collection_pages:   {status: live, indexable: true, charter_ref: surface_004}
+      email_lifecycle:    {status: external, execution_mode: handoff}
+      paid:               {status: external, execution_mode: handoff}
+      social:             {status: external, execution_mode: handoff}
+      creator_community:  {status: external, execution_mode: handoff}
+      product_experience: {status: external, execution_mode: handoff}
+  hard_constraints:
+    type: list
+    required: true
+    allows_empty: true
+    compatibility_alias_of: avoidance.prohibited_campaign_frames
+    note: "The owner's exclusions as stated. No agent-added stems, terms or patterns."
+  known_unknowns:
+    type: list
+    required: true
+    allows_empty: true
+  campaign_id:
+    type: mapping
+    required: true
+    charter_ref: identity_004
+    fields:
+      value:  {type: string, nullable: true, default: null}
+      status: {type: enum, values: [null, proposed, confirmed, rejected, retired], default: null}
+    note: "Earliest state in which an id may be PROPOSED is OPPORTUNITY_SELECTED."
+
+semantic_requirements:
+  - id: launch_is_not_end
+    rule: "requested_launch_date must not populate desired_campaign_end."
+    interpretation_rule_ref: timing_concepts_are_distinct
+  - id: horizon_is_not_duration
+    rule: "planning horizon must not automatically become the campaign duration."
+    interpretation_rule_ref: timing_concepts_are_distinct
+  - id: no_unconfirmed_as_owner_input
+    rule: "No inferred or proposed value may appear as confirmed owner input."
+    interpretation_rule_ref: no_silent_promotion
+  - id: restrictions_are_owner_supplied
+    rule: "additional_restrictions must be empty unless explicitly confirmed."
+    interpretation_rule_ref: no_added_restrictions
+  - id: available_is_not_selected
+    rule: "seams_available_for_consideration and selected_seams are separate fields."
+    interpretation_rule_ref: capability_is_not_selection
+  - id: proxy_is_opt_in
+    rule: "A measurement proxy remains unset unless separately justified and approved."
+    interpretation_rule_ref: measurement_limit_does_not_force_proxy
+
+completion_requirements:
+  - "objective is concrete and non-empty"
+  - "planning_horizon is known"
+  - "scope is bounded — market, seams and surfaces all present"
+  - "unsupported execution paths are distinguishable from handoffs"
+  - "approved charter and spec versions are pinned on the run"
+  - "hard_constraints and known_unknowns are present, even if empty"
+  - "every owner-input field carries an interpretation_status"
+  - "every semantic_requirement holds"

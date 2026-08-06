@@ -1,0 +1,67 @@
+run_id: cmp_01KZBYX2QF7102EC7VP4J221HE
+campaign_id: seasonal-turn-exec-2026
+delivery:
+  intent:
+    mode: launch_window
+    desired_start: null
+    desired_end: null
+go_live:
+  target_time: null
+  expected_visibility:
+    earliest: +300s (feed contents cache)
+    latest: +600s (catalog cache)
+  cache_assumptions: charter scheduling_003
+activations:
+- seam_id: S6
+  surface: explore
+  role: Preview the kept collections and earn the click through to them.
+  user_action: save.created
+  execution_mode: executable
+  owner: campaign_tool
+  activation_authority: feed_activation_fields
+  scheduling:
+    semantic_status: partially_verified
+    evaluation_mode: query_time
+    cache_latency_seconds:
+      minimum: 300
+      maximum: 600
+    precision: cache-bounded
+  artifact: execution/seam6.yaml
+  implementation_status: pending
+  explore_feeds: 2
+- seam_id: S1
+  surface: explore
+  role: Dress the page so the rails do not land in a default-skinned surface.
+  user_action: none
+  execution_mode: handoff
+  owner: code
+  activation_authority: package_window
+  scheduling:
+    semantic_status: verified
+    evaluation_mode: request_time
+    cache_latency_seconds:
+      minimum: 0
+      maximum: 600
+    precision: request-level
+  artifact: handoffs/S1_skin.md
+  implementation_status: not_implemented
+  explore_feeds: 0
+- seam_id: S5
+  surface: explore
+  role: Answer the permission questions people are already searching.
+  user_action: commerce.list_viewed
+  execution_mode: handoff
+  owner: sanity
+  activation_authority: sanity_isActive_startAt_endAt
+  scheduling:
+    semantic_status: verified
+    evaluation_mode: query_time
+    cache_latency_seconds:
+      minimum: 60
+      maximum: 600
+    precision: cache-bounded
+  artifact: handoffs/S5_editorial.md
+  implementation_status: not_implemented
+  explore_feeds: 0
+note: Every activation declares explore_feeds; handoff seams declare 0. sum_max refuses
+  an undeclared value (charter explore_002).

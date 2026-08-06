@@ -1,0 +1,264 @@
+run:
+  run_id: cmp_01KZBV8MQ6NYNAKX94TGSJ9V21
+  spec_version: 1.2.0
+  charter_version: 0.2.0
+  created_at: '2026-08-06T15:32:26Z'
+  note: First real run. Integration test for the v1 process.
+identity:
+  campaign_id:
+    value: seasonal-turn-2026
+    status: confirmed
+    confirmed_by_owner: true
+    externally_referenced: false
+    first_external_reference: null
+  display_name: The Keeping
+workflow:
+  state: CAMPAIGN_APPROVED
+  entered_at: '2026-08-06T16:22:24Z'
+  history:
+  - from: null
+    to: NEW
+    at: '2026-08-06T15:32:26Z'
+    transition_type: forward
+    pinned_spec_version: 1.2.0
+    pinned_charter_version: 0.2.0
+    decision_ref: null
+  - from: NEW
+    to: FRAME_READY
+    at: '2026-08-06T15:32:49Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: FRAME_READY
+    to: RESEARCHING
+    at: '2026-08-06T15:50:54Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: RESEARCHING
+    to: SIGNALS_READY
+    at: '2026-08-06T16:17:54Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: SIGNALS_READY
+    to: OPPORTUNITIES_READY
+    at: '2026-08-06T16:18:50Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: OPPORTUNITIES_READY
+    to: OPPORTUNITY_SELECTED
+    at: '2026-08-06T16:19:18Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: OPPORTUNITY_SELECTED
+    to: INTERVIEW_COMPLETE
+    at: '2026-08-06T16:19:18Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: INTERVIEW_COMPLETE
+    to: BRIEF_DRAFT
+    at: '2026-08-06T16:19:43Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: BRIEF_DRAFT
+    to: BRIEF_APPROVED
+    at: '2026-08-06T16:19:43Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: BRIEF_APPROVED
+    to: ROUTES_READY
+    at: '2026-08-06T16:20:06Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: ROUTES_READY
+    to: ROUTE_SELECTED
+    at: '2026-08-06T16:20:35Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: seasonal-turn-2026
+  - from: ROUTE_SELECTED
+    to: ACTIVATION_READY
+    at: '2026-08-06T16:20:52Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: seasonal-turn-2026
+  - from: ACTIVATION_READY
+    to: SEAM6_READY
+    at: '2026-08-06T16:21:55Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: seasonal-turn-2026
+  - from: SEAM6_READY
+    to: VALIDATED
+    at: '2026-08-06T16:22:24Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: seasonal-turn-2026
+  - from: VALIDATED
+    to: CAMPAIGN_APPROVED
+    at: '2026-08-06T16:22:24Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: seasonal-turn-2026
+owner_decisions:
+  market_confirmed:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-06T15:50:53Z'
+    value:
+      market: United States
+    note: Owner confirmed the agent proposal verbatim.
+  frame_accepted:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-06T15:50:53Z'
+    note: Corrected Stage 0 frame approved as presented, 2026-08-06.
+  opportunity_selected:
+    decided: true
+    decided_by: agent_diagnostic_run
+    decided_at: '2026-08-06T16:19:18Z'
+    value:
+      opportunity_id: OPP-02
+    note: 'MI-01: recorded by the agent under the owner''s end-to-end diagnostic instruction.
+      NOT an owner judgement of merit.'
+  brief_approved:
+    decided: true
+    decided_by: agent_diagnostic_run
+    decided_at: '2026-08-06T16:19:43Z'
+    note: 'MI-03: agent-recorded under diagnostic instruction. No owner review occurred.'
+  route_selected:
+    decided: true
+    decided_by: agent_diagnostic_run
+    decided_at: '2026-08-06T16:20:07Z'
+    value:
+      route_id: RTE-A
+      campaign_id: seasonal-turn-2026
+      display_name: The Keeping
+    note: 'MI-04: agent-recorded under diagnostic instruction.'
+  campaign_approved:
+    decided: true
+    decided_by: agent_diagnostic_run
+    decided_at: '2026-08-06T16:22:24Z'
+    note: 'MI-09: agent-recorded under diagnostic instruction.'
+artifacts:
+  frame:
+    path: campaigns/cmp_01KZBV8MQ6NYNAKX94TGSJ9V21/frame.yaml
+    written_at: '2026-08-06T15:50:53Z'
+    sha256: edec78a82540ceef6336c486765a7f51889bd82d1458dbb66fb42d67aba2efe9
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  learning:
+    path: campaigns/cmp_01KZBV8MQ6NYNAKX94TGSJ9V21/learning.yaml
+    written_at: '2026-08-06T15:57:17Z'
+    sha256: 1b49830fb4d08c00a5a2c64b184c459d76401f14600c1d334655dda85d69ab72
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage1_signals:
+    path: campaigns/cmp_01KZBV8MQ6NYNAKX94TGSJ9V21/stage1_signals.yaml
+    written_at: '2026-08-06T16:17:53Z'
+    sha256: 5ca95d0842b28bcd2be144acd2e6e191fbc5d14416816a391fbe076d0b233245
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage1_landscape:
+    path: campaigns/cmp_01KZBV8MQ6NYNAKX94TGSJ9V21/stage1_landscape.md
+    written_at: '2026-08-06T15:56:11Z'
+    sha256: ab031e8478378b0bdcd5cdacbdd8286c663b05a903a43fb56cc22efb71c0f1e8
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage2_opportunities:
+    path: campaigns/cmp_01KZBV8MQ6NYNAKX94TGSJ9V21/stage2_opportunities.yaml
+    written_at: '2026-08-06T16:18:50Z'
+    sha256: fd135702a2a90d20aa3b3730aff8ceb26566eb5141678ba7d62ae3b657a837fe
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage2_comparison:
+    path: campaigns/cmp_01KZBV8MQ6NYNAKX94TGSJ9V21/stage2_comparison.md
+    written_at: '2026-08-06T16:18:50Z'
+    sha256: 9ef571725da639925f4e87006a70f59a1f75eee76278a0233ec94d3af9410eed
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage3_interview:
+    path: campaigns/cmp_01KZBV8MQ6NYNAKX94TGSJ9V21/stage3_interview.yaml
+    written_at: '2026-08-06T16:19:18Z'
+    sha256: 24529643a05ddda597be94fe0372fcae25763c5ee4bec573bd33f3eac631ce12
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage4_brief:
+    path: campaigns/cmp_01KZBV8MQ6NYNAKX94TGSJ9V21/stage4_brief.yaml
+    written_at: '2026-08-06T16:19:43Z'
+    sha256: b2c17afa13a214a318c1fe38c50f9f43963c188a3ad09dd5e3afb2538a308ecf
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage5_routes:
+    path: campaigns/cmp_01KZBV8MQ6NYNAKX94TGSJ9V21/stage5_routes.yaml
+    written_at: '2026-08-06T16:20:06Z'
+    sha256: 6694880dd7f5027baeb6028b00f06e34f7fc9971d9f2812e07db07596986ca6c
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage6_activation:
+    path: campaigns/cmp_01KZBV8MQ6NYNAKX94TGSJ9V21/stage6_activation.yaml
+    written_at: '2026-08-06T16:20:52Z'
+    sha256: 8f8fc27d1ab9632c4be49767baf92e4a864801bb19bc6f25b1b60db6f011f1be
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage7_seam6:
+    path: campaigns/cmp_01KZBV8MQ6NYNAKX94TGSJ9V21/stage7_seam6.yaml
+    written_at: '2026-08-06T16:21:55Z'
+    sha256: 52b1efd07eaf71e688b1f6f68603f4a1703abe86a2f960e4cc0b1df2ac9c059d
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  products_csv:
+    path: campaigns/cmp_01KZBV8MQ6NYNAKX94TGSJ9V21/execution/products.csv
+    written_at: '2026-08-06T16:22:23Z'
+    sha256: 6bf2d3972ca6f6d0c2eb94a6f9b14cfd8840cf146449cfdef6679a2f993dfa79
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+invalidated: []
+execution_tracking:
+  activation_architecture_status: approved
+  seam6_execution_status: validated
+  external_handoffs_status: authored
+  external_handoffs_implemented: unknown
+capability_claims: []
+validation_attempts:
+- attempted_at: '2026-08-06T16:25:00Z'
+  result: passed
+  failures: []
+  report_path: execution/products.csv
+  invalidated_at: null
+  invalidated_by_decision: null
+collection_freeze:
+  snapshot: []
+  exceptions: []
+abandonment: null

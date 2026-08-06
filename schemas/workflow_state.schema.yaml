@@ -1,0 +1,805 @@
+# WORKFLOW STATE SCHEMA
+# Defines the shape of a campaign run's state file, the legal state machine, and the
+# machine-checkable prerequisites for every transition.
+#
+# This file is a SCHEMA and a DECLARATIVE TRANSITION TABLE. It contains no executable code.
+# The validator (a later, separate change) reads this file; it does not re-implement it.
+#
+# GOVERNING PRINCIPLE
+# The model is never the authority on whether a stage is complete. A transition is legal only
+# when its prerequisites evaluate true against artifacts on disk and recorded owner decisions.
+# An expected closing sentence is not evidence. See refusals.closing_sentence_is_not_proof.
+
+schema:
+  name: workflow_state
+  version: 1.4.0
+  charter_min_version: 0.2.0
+  state_file_path: "campaigns/<run_id>/state.yaml"
+  notes: >
+    Claim ids in `charter_ref` fields point at SHOPYA_CAMPAIGN_CHARTER.yaml. A prerequisite
+    with a charter_ref is traceable to an approved decision; one without is a schema-local
+    structural check.
+
+# ═══════════════════════════════════════════════════════════════════
+# 1 · STATE FILE SHAPE
+# ═══════════════════════════════════════════════════════════════════
+
+state_file:
+
+  run:
+    run_id:
+      type: string
+      pattern: "^cmp_[0-9A-HJKMNP-TV-Z]{26}$"
+      minted_at_state: NEW
+      immutable: true
+      charter_ref: identity_002
+    spec_version:
+      type: string
+      pinned_at_state: NEW
+      immutable_until_state: REVIEWED
+      charter_ref: governance_001
+    charter_version:
+      type: string
+      pinned_at_state: NEW
+      immutable_until_state: REVIEWED
+      migration_required_to_change: true
+      charter_ref: governance_001
+    created_at: {type: timestamp}
+
+  identity:
+    charter_ref: identity_001
+    campaign_id:
+      value:
+        type: string
+        nullable: true
+        pattern: "^[a-z0-9]+(-[a-z0-9]+)*-[0-9]{4}$"
+        derivation: "durable occasion, territory or subject + year"
+        must_not_derive_from: [creative_route, display_name]
+        charter_ref: identity_003
+      status:
+        type: enum
+        values: [null, proposed, confirmed, rejected, retired]
+        charter_ref: identity_004
+      confirmed_by_owner: {type: boolean, default: false}
+      externally_referenced: {type: boolean, default: false}
+      first_external_reference:
+        nullable: true
+        fields: {system: string, artifact: string, timestamp: timestamp}
+        charter_ref: identity_005
+      earliest_proposable_state: OPPORTUNITY_SELECTED
+      immutable_from: "identity.campaign_id.externally_referenced == true"
+    display_name:
+      type: string
+      nullable: true
+      created_at_state: [ROUTES_READY, ROUTE_SELECTED]
+      mutable: true
+      is_join_key: false
+      charter_ref: identity_007
+
+  workflow:
+    state: {type: enum, values_from: states}
+    entered_at: {type: timestamp}
+    history:
+      type: list
+      item: {from: string, to: string, at: timestamp, decision_ref: string, prerequisites_evaluated: list}
+
+  owner_decisions:
+    type: map
+    description: >
+      Explicit, recorded decisions. The key is the decision id named by a transition's
+      owner_decision_recorded predicate. A transition requiring one CANNOT proceed on
+      conversational inference.
+    item:
+      decided: {type: boolean}
+      decided_by: {type: string}
+      decided_at: {type: timestamp}
+      value: {type: any, description: "the selection, e.g. an opportunity_id or route_id"}
+      note: {type: string, optional: true}
+
+  artifacts:
+    type: map
+    description: "artifact key -> record. Presence is checked on disk, never asserted."
+    item:
+      path: {type: string}
+      written_at: {type: timestamp}
+      sha256: {type: string}
+      status:
+        type: enum
+        values: [current, superseded]
+        default: current
+      superseded_by: {type: string, nullable: true}
+      superseded_at: {type: timestamp, nullable: true}
+      supersession_reason: {type: string, nullable: true}
+    rules:
+      - "Artifacts are NEVER deleted. A reopen marks them superseded and preserves them."
+      - "A prerequisite referencing an artifact resolves only against status: current.
+         A superseded artifact can never satisfy a gate."
+
+  validation_attempts:
+    description: >
+      Validation is an ATTEMPTED ACTION inside SEAM6_READY, not a state transition. A failed
+      build does not move the run. VALIDATED means validation passed.
+    type: list
+    item:
+      attempted_at: {type: timestamp}
+      result: {type: enum, values: [passed, failed]}
+      failures: {type: list, item: {predicate: string, path: string, detail: string}}
+      report_path: {type: string, optional: true}
+      invalidated_at: {type: timestamp, nullable: true}
+      invalidated_by_decision: {type: string, nullable: true}
+
+  abandonment:
+    charter_ref: identity_005
+    nullable: true
+    description: "Written on entry to ABANDONED. Classification is computed, never supplied."
+    run_id_status: {type: enum, values: [retained], const: retained}
+    campaign_id_status:
+      type: enum
+      values: [never_minted, released, retired]
+      derivation:
+        - "identity.campaign_id.value is null            -> never_minted"
+        - "value set AND externally_referenced == false  -> released  (returns to the pool)"
+        - "externally_referenced == true                 -> retired   (never reused)"
+    abandoned_at: {type: timestamp}
+    decision_ref: {type: string, const: abandon_run}
+
+  execution_tracking:
+    charter_ref: scope_002
+    description: "Authoring, execution and handoff are tracked SEPARATELY. The wizard must never
+                  imply a handoff artifact was implemented."
+    activation_architecture_status:
+      type: enum
+      values: [not_started, drafted, approved]
+    seam6_execution_status:
+      type: enum
+      values: [not_started, ready, validated, executed]
+    external_handoffs_status:
+      type: enum
+      values: [not_started, authored]
+    external_handoffs_implemented:
+      type: enum
+      values: [unknown, partial, complete]
+      default: unknown
+      note: "Never inferred. Only set from an explicit owner report."
+
+  collection_freeze:
+    charter_ref: constraint_repo_005
+    frozen_from_state: LIVE
+    snapshot:
+      type: list
+      item: {collection_id: string, frozen_at: timestamp, sha256: string}
+    exceptions:
+      type: list
+      item:
+        required_fields: [reason, approved_by, approved_at, affected_collection_id, change_summary]
+
+  capability_claims:
+    description: >
+      Capabilities a run asserts. Each must be permitted by a passed pending_validation in the
+      pinned charter, or the run is refused. Prevents a run from claiming verified behavior the
+      charter records as pending.
+    type: list
+    item: {capability: string, asserted_at_state: string}
+
+# ═══════════════════════════════════════════════════════════════════
+# 2 · PREDICATE VOCABULARY
+# The validator implements exactly these. No others may appear in prerequisites.
+# ═══════════════════════════════════════════════════════════════════
+
+predicates:
+  charter_approved:        {args: [], desc: "pinned charter has status: approved"}
+  versions_pinned:         {args: [], desc: "run.spec_version and run.charter_version are non-null"}
+  versions_unchanged:      {args: [], desc: "pinned versions match those recorded at NEW"}
+  version_not_withdrawn:   {args: [], desc: "neither pinned version appears in a withdrawn registry"}
+  artifact_exists:         {args: [key], desc: "artifacts[key].path exists on disk and hash matches"}
+  field_present:           {args: [dotted_path]}
+  field_non_empty:         {args: [dotted_path]}
+  field_equals:            {args: [dotted_path, value]}
+  field_in:                {args: [dotted_path, values]}
+  count_between:           {args: [dotted_path, min, max]}
+  count_max:               {args: [dotted_path, n],
+                            desc: "COUNTS resolved items. Does not look inside them."}
+  sum_max:                 {args: [dotted_path, n],
+                            desc: "SUMS the numeric values at the path. A missing or non-numeric
+                                   value is a FAILURE, never silently skipped — a cap that
+                                   quietly ignores undeclared values is not a cap."}
+  each_has_keys:           {args: [dotted_path, required_fields],
+                            desc: "every item CONTAINS all keys. A null value PASSES. Use where the
+                                   gate tests provenance structure rather than substantive content,
+                                   and the stage schema declares fields nullable."}
+  each_has_non_null:       {args: [dotted_path, required_fields],
+                            desc: "every item carries all fields AND none is null/empty."}
+  each_has:                {args: [dotted_path, required_fields],
+                            deprecated: true,
+                            desc: "DEPRECATED alias of each_has_non_null. Retained so an older
+                                   pinned spec still resolves. Do not use in new prerequisites."}
+  each_satisfies:          {args: [dotted_path, predicate], desc: "single level of nesting only"}
+  owner_decision_recorded: {args: [decision_id], desc: "owner_decisions[id].decided == true with decided_by and decided_at"}
+  pending_validation_passed: {args: [validation_id], desc: "charter pending_validations[id] recorded as passed"}
+  capability_permitted:    {args: [capability], desc: "no unpassed pending_validation blocks it"}
+  campaign_id_unique:      {args: [], desc: "no other active or externally-referenced run owns this occasion-year id"}
+  last_validation_passed:  {args: [], desc: "validation_attempts is non-empty, its last entry has
+                                             result: passed, and that entry is not invalidated"}
+  artifact_current:        {args: [key], desc: "artifacts[key].status == current"}
+  downstream_superseded:   {args: [state_name], desc: "every artifact produced at or after
+                                                       state_name is marked superseded"}
+
+# ═══════════════════════════════════════════════════════════════════
+# 3 · STATES
+# ═══════════════════════════════════════════════════════════════════
+
+states:
+
+  - name: NEW
+    stage: 0
+    entry_prerequisites:
+      - {p: versions_pinned}
+      - {p: charter_approved, charter_ref: governance_001}
+      - {p: version_not_withdrawn}
+      - {p: field_present, args: [run.run_id]}
+    produces: []
+
+  - name: FRAME_READY
+    stage: 0
+    entry_prerequisites:
+      - {p: artifact_exists, args: [frame]}
+      - {p: field_non_empty, args: [frame.objective]}
+      - {p: field_non_empty, args: [frame.planning_horizon]}
+      - {p: field_non_empty, args: [frame.market]}
+      - {p: field_non_empty, args: [frame.eligible_seams]}
+      - {p: field_present, args: [frame.hard_constraints]}
+      - {p: field_present, args: [frame.known_unknowns]}
+    produces: ["campaigns/<run_id>/frame.yaml"]
+    forbids: [product_library_access]
+
+  - name: RESEARCHING
+    stage: 1
+    entry_prerequisites:
+      - {p: owner_decision_recorded, args: [frame_accepted]}
+    produces: []
+
+  - name: SIGNALS_READY
+    stage: 1
+    entry_prerequisites:
+      - {p: artifact_exists, args: [stage1_signals]}
+      - {p: artifact_exists, args: [stage1_landscape]}
+      - {p: each_has_keys, args: [signals, [signal_id, claim, evidence_type, source, source_date,
+                                            observed_date, direct_observation, interpretation,
+                                            confidence, limitations]],
+         rationale: "This gate tests PROVENANCE STRUCTURE, not substantive content. The Stage 1
+                     schema declares source_date nullable (undated sources) and interpretation
+                     nullable (a source that was not retrieved may not carry a reading). Null
+                     passes; an absent key does not."}
+      - {p: field_present, args: [stage1.evidence_families_covered]}
+      - {p: field_present, args: [stage1.stop_condition_met]}
+      - {p: field_present, args: [stage1.deviations]}
+    produces: ["campaigns/<run_id>/stage1_signals.yaml", "campaigns/<run_id>/stage1_landscape.md"]
+    forbids: [campaign_names, taglines, rails, collections, product_library_access]
+
+  - name: OPPORTUNITIES_READY
+    stage: 2
+    entry_prerequisites:
+      - {p: artifact_exists, args: [stage2_opportunities]}
+      - {p: artifact_exists, args: [stage2_comparison]}
+      - {p: count_between, args: [opportunities, 4, 6]}
+      - {p: each_has_non_null, args: [opportunities, [opportunity_id, territory, observation,
+                                             cultural_tension, audience_behavior, why_now,
+                                             shopya_role, desired_user_action,
+                                             instrumentation_mapping, supporting_signal_ids,
+                                             relevant_seams, surface_potential, ownability,
+                                             expiration, confidence, assumptions,
+                                             operational_risks]]}
+      - {p: each_has_non_null, args: [opportunities.ownability, [level, rationale]], charter_ref: ownability_001}
+      - {p: capability_permitted, args: [claiming_L3_by_evidence], charter_ref: ownability_003}
+    produces: ["campaigns/<run_id>/stage2_opportunities.yaml", "campaigns/<run_id>/stage2_comparison.md"]
+    forbids: [campaign_names, taglines, rails, collections, asset_copy]
+
+  - name: OPPORTUNITY_SELECTED
+    stage: 2
+    entry_prerequisites:
+      - {p: owner_decision_recorded, args: [opportunity_selected]}
+      - {p: field_present, args: [identity.campaign_id.status]}
+    permits: [campaign_id_proposal]
+    charter_ref: identity_004
+
+  - name: INTERVIEW_COMPLETE
+    stage: 3
+    entry_prerequisites:
+      - {p: artifact_exists, args: [stage3_interview]}
+      - {p: field_non_empty, args: [interview.desired_behavior]}
+      - {p: field_non_empty, args: [interview.delivery_intent]}
+      - {p: field_equals, args: [interview.avoid_terms_confirmed, true], charter_ref: behavior_rule_002}
+      - {p: field_present, args: [interview.avoid_terms]}
+      - {p: field_present, args: [interview.success_condition]}
+      - {p: field_present, args: [interview.execution_constraints]}
+      - {p: field_present, args: [interview.raw_user_responses]}
+      - {p: field_present, args: [interview.normalized]}
+    produces: ["campaigns/<run_id>/stage3_interview.yaml"]
+    notes: "avoid_terms MAY be []; avoid_terms_confirmed MUST be true. An empty confirmed list
+            is valid — do not force an invented prohibition."
+
+  - name: BRIEF_DRAFT
+    stage: 4
+    entry_prerequisites:
+      - {p: artifact_exists, args: [stage4_brief]}
+    self_loop: true
+    self_loop_note: "Revision rounds are unbounded and require no decision to re-enter."
+
+  - name: BRIEF_APPROVED
+    stage: 4
+    entry_prerequisites:
+      - {p: owner_decision_recorded, args: [brief_approved]}
+      - {p: each_has_non_null, args: [brief.tests, [truth, behavior, mechanism, surface, ownability,
+                                           theme, feasibility, competitor]]}
+      - {p: field_non_empty, args: [brief.desired_behavior]}
+      - {p: field_non_empty, args: [brief.participation_mechanism]}
+      - {p: field_non_empty, args: [brief.measurement]}
+      - {p: each_has_non_null, args: [brief.ownability, [level, rationale]]}
+    produces: ["campaigns/<run_id>/stage4_brief.yaml"]
+
+  - name: ROUTES_READY
+    stage: 5
+    entry_prerequisites:
+      - {p: artifact_exists, args: [stage5_routes]}
+      - {p: count_between, args: [routes, 2, 3]}
+      - {p: each_has_non_null, args: [routes, [route_id, strategic_expression, user_mechanism,
+                                      shopya_mechanism, tone, visual_logic, surface_expression,
+                                      advantages, risks, name_candidates]]}
+    produces: ["campaigns/<run_id>/stage5_routes.yaml"]
+
+  - name: ROUTE_SELECTED
+    stage: 5
+    entry_prerequisites:
+      - {p: owner_decision_recorded, args: [route_selected]}
+      - {p: field_equals, args: [identity.campaign_id.confirmed_by_owner, true], charter_ref: identity_004}
+      - {p: field_equals, args: [identity.campaign_id.status, confirmed]}
+      - {p: campaign_id_unique, charter_ref: identity_006}
+      - {p: field_non_empty, args: [identity.display_name]}
+
+  - name: ACTIVATION_READY
+    stage: 6
+    entry_prerequisites:
+      - {p: artifact_exists, args: [stage6_activation]}
+      - {p: each_has_non_null, args: [activations, [seam_id, surface, role, user_action, execution_mode,
+                                           owner, activation_authority, scheduling, artifact,
+                                           implementation_status]], charter_ref: scope_002}
+      - {p: each_has_non_null, args: [activations.scheduling, [semantic_status, evaluation_mode,
+                                                      cache_latency_seconds, precision]],
+         charter_ref: scheduling_003}
+      - {p: field_present, args: [delivery.intent.mode], charter_ref: scheduling_006}
+      - {p: sum_max, args: [activations.explore_feeds, 4], charter_ref: explore_002,
+         rationale: "count_max counted ACTIVATIONS, not feeds — three activations declaring 100
+                     feeds each passed a cap of 4. Every activation must declare explore_feeds,
+                     including 0 for handoff seams; an undeclared value fails."}
+      - {p: capability_permitted, args: [claiming_s6_window_scheduling_verified], charter_ref: scheduling_005}
+      - {p: capability_permitted, args: [claiming_rail_links_to_collection_page], charter_ref: view_all_001}
+      - {p: field_equals, args: [execution_tracking.activation_architecture_status, approved]}
+    produces: ["campaigns/<run_id>/stage6_activation.yaml", "campaigns/<run_id>/handoffs/"]
+    notes: "go_live.expected_visibility {earliest, latest} and cache_assumptions are required
+            when delivery.intent.mode != evergreen."
+
+  - name: SEAM6_READY
+    stage: 7
+    entry_prerequisites:
+      - {p: artifact_exists, args: [stage7_seam6]}
+      - {p: each_has_non_null, args: [rails, [rail_id, collection_id, rail_position]], charter_ref: rail_001}
+      - {p: each_satisfies, args: [rails, exactly_one_collection], charter_ref: rail_001}
+      - {p: each_satisfies, args: [entities, meets_technical_minimum], charter_ref: render_001}
+      - {p: each_satisfies, args: [entities, meets_quality_minimum_or_has_exception], charter_ref: render_002}
+      - {p: field_in, args: [collections.sub_group, [fashion, home_interior, tech, beauty,
+                                                     travel, wellness_health]], charter_ref: surface_006}
+      - {p: capability_permitted, args: [claiming_persisted_collection_item_order], charter_ref: rail_004}
+      - {p: field_equals, args: [execution_tracking.seam6_execution_status, ready]}
+    produces: ["campaigns/<run_id>/stage7_seam6.yaml", "campaigns/<run_id>/execution/"]
+    permits: [product_library_access, run_validation]
+    notes: >
+      First state in which the product library may be read. Validation is ATTEMPTED here and
+      may fail any number of times; a failed attempt appends to validation_attempts and the run
+      REMAINS in SEAM6_READY. There is no failure transition.
+
+  - name: VALIDATED
+    stage: 8
+    meaning: "Validation PASSED. A failed build never reaches this state."
+    entry_prerequisites:
+      - {p: artifact_exists, args: [products_csv]}
+      - {p: last_validation_passed}
+      - {p: field_equals, args: [execution_tracking.seam6_execution_status, validated]}
+      - {p: field_present, args: [validation_attempts]}
+    notes: "Warnings do not block: deprecated collection_rank, non-blocking pending validations,
+            limited inventory resilience, cache-bounded activation imprecision, unsupported
+            non-essential handoff capabilities."
+
+  - name: CAMPAIGN_APPROVED
+    stage: 8
+    entry_prerequisites:
+      - {p: owner_decision_recorded, args: [campaign_approved]}
+      - {p: field_equals, args: [execution_tracking.external_handoffs_status, authored]}
+
+  - name: LIVE
+    stage: 8
+    entry_prerequisites:
+      - {p: field_present, args: [verification.reprobe_at]}
+      - {p: field_equals, args: [verification.post_cache_verified, true]}
+      - {p: field_non_empty, args: [collection_freeze.snapshot]}
+      - {p: field_equals, args: [execution_tracking.seam6_execution_status, executed]}
+    on_entry:
+      - "freeze every externally referenced campaign collection (charter constraint_repo_005)"
+      - "record first_external_reference if not already set (charter identity_005)"
+    charter_ref: constraint_repo_005
+
+  - name: REVIEWED
+    stage: 9
+    entry_prerequisites:
+      - {p: artifact_exists, args: [stage9_measurement]}
+      - {p: artifact_exists, args: [review]}
+      - {p: each_has_non_null, args: [measurement, [desired_behavior, instrumentation_status, event,
+                                           retrieval_status, evaluation_owner, baseline_available,
+                                           attribution_window, success_condition,
+                                           measurement_limitations]], charter_ref: measurement_006}
+      - {p: field_present, args: [review.observed_results]}
+      - {p: field_present, args: [review.lessons]}
+    produces: ["campaigns/<run_id>/stage9_measurement.yaml", "campaigns/<run_id>/review.yaml"]
+    terminal: true
+    unpins_versions: true
+
+  - name: ABANDONED
+    stage: null
+    terminal: true
+    status: proposed_addition
+    rationale: >
+      Charter identity_005 states that an abandoned run releases the slug and that abandoned
+      externally-referenced ids remain retired. Neither rule is representable without a terminal
+      abandoned state. Included so the identity rules are enforceable; flagged for owner ruling.
+    status: approved
+    entry_prerequisites:
+      - {p: owner_decision_recorded, args: [abandon_run]}
+    on_entry:
+      - "write abandonment.run_id_status: retained — a run_id is NEVER reused"
+      - "compute abandonment.campaign_id_status from the derivation table (never_minted |
+         released | retired) and write identity.campaign_id.status to match"
+      - "preserve every artifact and all provenance; delete nothing"
+    outbound_transitions: none
+    reachable_from: "every nonterminal state before LIVE"
+    not_reachable_from: [LIVE, REVIEWED, ABANDONED]
+    notes: >
+      A LIVE campaign is not abandoned — it proceeds through operational close to REVIEWED.
+      Emergency withdrawal of a live campaign is a separate future concept, not abandonment.
+    charter_ref: identity_005
+
+# ═══════════════════════════════════════════════════════════════════
+# 3a · SETTABLE STATE PATHS  (C1)
+# The ONLY paths `run.py set` may write. Everything else in the state file is owned by
+# `new`, `record-decision`, `register-artifact` or `transition`. The state file is never
+# hand-edited; this list is what makes that rule keepable rather than aspirational.
+# Deliberately a small operational whitelist, not a generic any-path mechanism.
+# ═══════════════════════════════════════════════════════════════════
+
+settable_paths:
+  identity.campaign_id.value:                        {type: string}
+  identity.campaign_id.status:                       {type: enum, values: [proposed, confirmed, rejected, retired]}
+  identity.campaign_id.confirmed_by_owner:           {type: boolean}
+  identity.display_name:                             {type: string}
+  execution_tracking.activation_architecture_status: {type: enum, values: [not_started, drafted, approved]}
+  execution_tracking.external_handoffs_status:       {type: enum, values: [not_started, authored]}
+  execution_tracking.seam6_execution_status:         {type: enum, values: [not_started, ready, validated, executed]}
+  validation_attempts:                               {type: list}
+  verification:                                      {type: mapping}
+  collection_freeze:                                 {type: mapping}
+
+not_settable:
+  note: >
+    workflow.state (transition only) · workflow.history (transition only) · run.* (pinned at NEW)
+    · owner_decisions (record-decision only) · artifacts (register-artifact only) ·
+    identity.campaign_id.externally_referenced and first_external_reference (deferred — these
+    trigger immutability and need their own controlled operation) · abandonment (computed on
+    entry to ABANDONED) · capability_claims (deferred) · invalidated (deferred to reopen work).
+
+# ═══════════════════════════════════════════════════════════════════
+# 3b · ARTIFACT SCHEMA REGISTRY
+# Artifact structural validation is a SEPARATE phase from state or transition validation.
+# Only artifacts listed here are structurally checked; others are existence-checked only.
+# ═══════════════════════════════════════════════════════════════════
+
+artifact_schemas:
+  frame:          {schema: schemas/stage0_frame.schema.yaml,   validator: frame}
+  stage1_signals: {schema: schemas/stage1_signals.schema.yaml, validator: signals}
+
+validation_phases:
+  state:       "state-file structure, pinned versions, identity invariants, artifact presence"
+  artifacts:   "stage-artifact structure against its registered stage schema"
+  transition:  "edge legality, owner decisions, reopen obligations, target prerequisites"
+  not_governed: "campaign-content QUALITY. Whether research or strategy is any good is a
+                 human judgement and this validator never rules on it."
+
+# ═══════════════════════════════════════════════════════════════════
+# 3c · RESERVED — NOT IMPLEMENTED IN v1
+# These hooks are inert. They are NOT operational and no claim of working migration or
+# withdrawal enforcement may be made on their behalf.
+# ═══════════════════════════════════════════════════════════════════
+
+reserved_not_implemented:
+  run.charter_migration:
+    status: reserved_v1
+    behaviour_today: >
+      NO migration path exists. Any charter_version change mid-run is refused outright, whether
+      or not run.charter_migration is present. Supplying the key is itself an error, because it
+      implies a capability that does not exist.
+    refusal: charter_migration_not_supported
+  charter.withdrawn_versions:
+    status: reserved_v1
+    behaviour_today: >
+      No withdrawal registry exists. When the key is absent the validator emits a WARNING that
+      withdrawal enforcement is INACTIVE and passes. It does not silently imply enforcement.
+      If the key is present it is enforced literally.
+    warning: "withdrawal enforcement inactive: charter.withdrawn_versions is not defined (reserved, v1)"
+
+# ═══════════════════════════════════════════════════════════════════
+# 4 · PATH RESOLUTION
+# Maps a prerequisite path root to the document that owns it. The validator resolves
+# dotted paths against the state file unless the root appears here.
+# ═══════════════════════════════════════════════════════════════════
+
+path_resolution:
+  frame:               {artifact: frame}
+  stage1:              {artifact: stage1_signals}
+  signals:             {artifact: stage1_signals, key: signals}
+  opportunities:       {artifact: stage2_opportunities, key: opportunities}
+  interview:           {artifact: stage3_interview}
+  brief:               {artifact: stage4_brief}
+  routes:              {artifact: stage5_routes, key: routes}
+  activations:         {artifact: stage6_activation, key: activations}
+  delivery:            {artifact: stage6_activation, key: delivery}
+  rails:               {artifact: stage7_seam6, key: rails}
+  entities:            {artifact: stage7_seam6, key: entities}
+  collections:         {artifact: stage7_seam6, key: collections}
+  measurement:         {artifact: stage9_measurement}
+  review:              {artifact: review}
+  # everything else resolves against the state file:
+  #   run, identity, workflow, owner_decisions, artifacts, execution_tracking,
+  #   collection_freeze, capability_claims, validation_attempts, verification, abandonment
+
+# ═══════════════════════════════════════════════════════════════════
+# 5 · ITEM PREDICATES (used by each_satisfies)
+# ═══════════════════════════════════════════════════════════════════
+
+item_predicates:
+  exactly_one_collection:
+    charter_ref: rail_001
+    rule: "item.collection_id is a single non-null scalar. A list, a null, or an empty value fails."
+    failure_message: "ERROR: each rail must reference exactly one collection"
+  has_rail_position:
+    charter_ref: rail_002
+    rule: "item.rail_position is a non-null integer >= 0"
+    failure_message: "ERROR: rail_position is required for every pinned rail"
+  meets_technical_minimum:
+    charter_ref: render_001
+    rule: "item.eligible_count >= 1"
+    failure_message: "ERROR: entity has zero eligible items and cannot render"
+  meets_quality_minimum_or_has_exception:
+    charter_ref: render_002
+    rule: >
+      item.eligible_count >= quality_minimums[item.entity_type], OR item.quality_exception
+      carries approved: true with approved_by and rationale
+    quality_minimums: {products: 12, collections: 10, brands: 12}
+    failure_message: "ERROR: entity is below the approved presentation-quality minimum"
+    warning_message: "WARNING: entity has limited inventory resilience"
+
+# ═══════════════════════════════════════════════════════════════════
+# 6 · TRANSITIONS
+# Every transition carries a transition_type. Backward movement is never casual navigation.
+# ═══════════════════════════════════════════════════════════════════
+
+transition_types:
+  forward:  "advances the run. Prerequisites of the target state must hold."
+  reopen:   "returns to an earlier state. Requires an owner decision, records a reason,
+             invalidates dependent approvals, and supersedes dependent artifacts."
+  terminal: "enters a state with no outbound transitions."
+
+back_edge_rules:
+  applies_to: reopen
+  charter_ref: governance_001
+  requirements:
+    - "records the reason on the transition"
+    - "invalidates every dependent approval named in `invalidates`"
+    - "marks every dependent artifact superseded — NEVER deletes it"
+    - "names the owner decision that authorized it"
+    - "prevents a stale downstream artifact from satisfying any later gate
+       (prerequisites resolve only against artifacts with status: current)"
+
+transitions:
+
+  - {from: NEW,                 to: FRAME_READY,          transition_type: forward}
+  - {from: FRAME_READY,         to: RESEARCHING,          transition_type: forward}
+  - {from: RESEARCHING,         to: SIGNALS_READY,        transition_type: forward}
+  - {from: SIGNALS_READY,       to: OPPORTUNITIES_READY,  transition_type: forward}
+  - {from: OPPORTUNITIES_READY, to: OPPORTUNITY_SELECTED, transition_type: forward}
+
+  - from: OPPORTUNITIES_READY
+    to: RESEARCHING
+    transition_type: reopen
+    owner_decision: opportunities_rejected
+    transition_reason: deeper_scan_requested
+    invalidates: []
+    supersedes_artifacts: [stage2_opportunities, stage2_comparison]
+    note: >
+      Reject-all or request-deeper-scan. The owner is never forced to select from weak options.
+      No downstream approval exists yet, so nothing is invalidated — but the superseded
+      opportunity set can no longer satisfy the OPPORTUNITIES_READY gate.
+
+  - {from: OPPORTUNITY_SELECTED, to: INTERVIEW_COMPLETE, transition_type: forward}
+  - {from: INTERVIEW_COMPLETE,   to: BRIEF_DRAFT,        transition_type: forward}
+  - {from: BRIEF_DRAFT,          to: BRIEF_DRAFT,        transition_type: forward,
+     note: "Same-state revision round. Unbounded, requires no decision."}
+  - {from: BRIEF_DRAFT,          to: BRIEF_APPROVED,     transition_type: forward}
+
+  - from: BRIEF_APPROVED
+    to: BRIEF_DRAFT
+    transition_type: reopen
+    owner_decision: brief_reopened
+    transition_reason: brief_reopened
+    decision_value_required_fields: [reason, invalidating_finding, affected_artifacts]
+    invalidates:
+      - route_selected
+      - campaign_approved
+      - execution_tracking.activation_architecture_status
+      - execution_tracking.seam6_execution_status
+      - validation_attempts
+    supersedes_artifacts:
+      - stage5_routes
+      - stage6_activation
+      - stage7_seam6
+      - products_csv
+    cascade_note: >
+      Reopening an approved brief invalidates routes, the selected route, the activation
+      architecture, the Seam 6 specification, the validation result and campaign approval.
+      Artifacts are marked superseded, never deleted. The run returns to BRIEF_DRAFT and
+      retains its full history.
+    campaign_id_policy:
+      externally_referenced: "remains reserved — the id is immutable (charter identity_005)"
+      not_externally_referenced: >
+        may be released and replaced ONLY through an explicit owner decision, and only if the
+        durable occasion or subject has actually changed
+
+  - {from: BRIEF_APPROVED,   to: ROUTES_READY,      transition_type: forward}
+  - {from: ROUTES_READY,     to: ROUTE_SELECTED,    transition_type: forward}
+  - {from: ROUTE_SELECTED,   to: ACTIVATION_READY,  transition_type: forward}
+  - {from: ACTIVATION_READY, to: SEAM6_READY,       transition_type: forward}
+  - {from: SEAM6_READY,      to: VALIDATED,         transition_type: forward,
+     note: "Requires last_validation_passed. A failed attempt does NOT transition — the run
+            remains in SEAM6_READY and appends to validation_attempts."}
+
+  - from: VALIDATED
+    to: SEAM6_READY
+    transition_type: reopen
+    owner_decision: reopen_seam6_execution
+    transition_reason: execution_reopened
+    applies_when: "an already-validated execution artifact is deliberately changed"
+    does_not_apply_to: "an ordinary failed build — that never leaves SEAM6_READY"
+    invalidates:
+      - campaign_approved
+      - execution_tracking.seam6_execution_status
+    on_transition:
+      - "stamp the last validation_attempts entry with invalidated_at and
+         invalidated_by_decision — preserve the report as history"
+      - "supersede products_csv and the execution artifacts being changed"
+      - "clear every downstream approval that depended on the invalidated result"
+      - "require a fresh passing validation attempt before SEAM6_READY -> VALIDATED again"
+
+  - {from: VALIDATED,         to: CAMPAIGN_APPROVED, transition_type: forward}
+  - {from: CAMPAIGN_APPROVED, to: LIVE,              transition_type: forward}
+  - {from: LIVE,              to: REVIEWED,          transition_type: forward}
+
+  - from: ANY_PRE_LIVE
+    to: ABANDONED
+    transition_type: terminal
+    owner_decision: abandon_run
+    expands_to: [NEW, FRAME_READY, RESEARCHING, SIGNALS_READY, OPPORTUNITIES_READY,
+                 OPPORTUNITY_SELECTED, INTERVIEW_COMPLETE, BRIEF_DRAFT, BRIEF_APPROVED,
+                 ROUTES_READY, ROUTE_SELECTED, ACTIVATION_READY, SEAM6_READY, VALIDATED,
+                 CAMPAIGN_APPROVED]
+    note: "Not reachable from LIVE or REVIEWED. A live campaign proceeds to operational close."
+
+# ═══════════════════════════════════════════════════════════════════
+# 7 · REFUSALS — the validator exits non-zero and names every failure
+# ═══════════════════════════════════════════════════════════════════
+
+refusals:
+  spec_version_changed_mid_run:
+    charter_ref: governance_001
+    message: "spec_version is pinned for the life of the run. Refusing."
+  charter_version_changed_without_migration:
+    charter_ref: governance_001
+    message: "charter_version changed with no migration record. A new charter does not
+              auto-migrate an active run. Refusing."
+  withdrawn_version_loaded:
+    message: "Pinned spec or charter version is withdrawn. Refusing."
+  charter_not_approved:
+    charter_ref: governance_001
+    message: "NEW -> FRAME_READY requires an approved pinned charter. Refusing."
+  prerequisites_unmet:
+    message: "Entry prerequisites failed. Every failed predicate is listed with its path and
+              expected value. Refusing."
+  illegal_transition:
+    message: "No transition exists from <current> to <target>. Refusing."
+  closing_sentence_is_not_proof:
+    message: "A transition requiring owner_decision_recorded cannot proceed on conversational
+              inference. The model asserting that a stage is complete is not evidence."
+  reopen_without_decision:
+    charter_ref: governance_001
+    message: "A reopen transition requires its named owner decision, a recorded reason, and
+              supersession of every dependent artifact. Refusing."
+  stale_artifact_treated_as_current:
+    message: "Prerequisite <p> resolved against artifact <key>, which is superseded. A
+              superseded artifact can never satisfy a gate. Refusing."
+  artifact_deleted:
+    message: "Artifact <key> is referenced by run history but missing from disk. Artifacts are
+              superseded, never deleted. Refusing."
+  validation_failure_treated_as_transition:
+    message: "A failed validation attempt does not move the run. VALIDATED means validation
+              passed. Remain in SEAM6_READY and append to validation_attempts. Refusing."
+  abandon_after_live:
+    charter_ref: identity_005
+    message: "ABANDONED is not reachable from LIVE or REVIEWED. A live campaign proceeds
+              through operational close to REVIEWED. Refusing."
+  campaign_id_mutated_after_external_reference:
+    charter_ref: identity_005
+    message: "campaign_id is immutable from first external reference. Renaming requires a
+              migration, not an edit. Refusing."
+  campaign_id_collision:
+    charter_ref: identity_006
+    message: "Another active or externally-referenced campaign owns this occasion-year id.
+              Fail, or explicitly join the existing campaign. Refusing."
+  run_id_reused:
+    charter_ref: identity_002
+    message: "run_id is never reused, including after abandonment. Refusing."
+  capability_claimed_while_pending:
+    message: "The run claims <capability>, which an unpassed charter pending_validation blocks.
+              Refusing."
+  frozen_collection_modified:
+    charter_ref: constraint_repo_005
+    message: "Collection <id> is frozen from LIVE. A material change requires a new versioned
+              collection; an emergency correction requires a recorded exception with reason,
+              approved_by, approved_at, affected_collection_id and change_summary. Refusing."
+  artifact_structure_invalid:
+    message: "A registered stage artifact failed structural validation against its stage schema.
+              Structure only — content quality is not judged here. Refusing."
+  charter_migration_not_supported:
+    message: "run.charter_migration is RESERVED and unimplemented in v1. Charter migration does
+              not exist; a charter_version change mid-run is refused outright. Refusing."
+  handoff_reported_as_implemented:
+    charter_ref: scope_002
+    message: "external_handoffs_implemented may only be set from an explicit owner report,
+              never inferred from external_handoffs_status. Refusing."
+
+# ═══════════════════════════════════════════════════════════════════
+# 8 · RULINGS APPLIED IN 1.1.0
+# ═══════════════════════════════════════════════════════════════════
+
+rulings_applied:
+  - id: abandoned_state
+    decision: accepted
+    detail: "Terminal, owner-decision-gated, reachable from every nonterminal pre-LIVE state.
+             Classifies campaign_id as never_minted | released | retired; run_id retained and
+             never reused; all artifacts and provenance preserved; no outbound transitions."
+  - id: failed_validation_backedge
+    decision: rejected
+    detail: "Validation is an attempted action inside SEAM6_READY, not a transition. A failed
+             build appends to validation_attempts and the run does not move. VALIDATED now
+             means validation passed."
+  - id: validated_to_seam6_reopen
+    decision: accepted_as_reopen
+    detail: "Kept only for deliberately changing an artifact that previously passed. Named
+             execution_reopened, gated on reopen_seam6_execution, invalidates the prior result
+             while preserving its report, clears dependent approvals, requires fresh validation."
+  - id: brief_approved_reopen
+    decision: accepted_as_reopen
+    detail: "Gated on brief_reopened with reason, invalidating_finding and affected_artifacts.
+             Cascades to routes, route selection, activation, Seam 6, validation and campaign
+             approval. Artifacts superseded, never deleted."
+  - id: artifact_deletion
+    decision: rejected
+    detail: "Automatic deletion of downstream artifacts is refused. Supersession is required."
+  - id: transition_type
+    decision: added
+    detail: "forward | reopen | terminal, on every transition, with back_edge_rules governing
+             reopen."

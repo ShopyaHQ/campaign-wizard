@@ -1,0 +1,47 @@
+run:
+  run_id: cmp_01KZBV8MQ6NYNAKX94TGSJ9V21
+  spec_version: 1.2.0
+  charter_version: 0.2.0
+  created_at: '2026-08-06T15:32:26Z'
+  note: First real run. Integration test for the v1 process.
+identity:
+  campaign_id:
+    value: null
+    status: null
+    confirmed_by_owner: false
+    externally_referenced: false
+    first_external_reference: null
+  display_name: null
+workflow:
+  state: NEW
+  entered_at: '2026-08-06T15:32:26Z'
+  history:
+  - from: null
+    to: NEW
+    at: '2026-08-06T15:32:26Z'
+    transition_type: forward
+    pinned_spec_version: 1.2.0
+    pinned_charter_version: 0.2.0
+    decision_ref: null
+owner_decisions: {}
+artifacts:
+  frame:
+    path: campaigns/cmp_01KZBV8MQ6NYNAKX94TGSJ9V21/frame.yaml
+    written_at: '2026-08-06T15:32:49Z'
+    sha256: 407a177ab8491e7d569a397654f288c56e8fd8caaf51ebc2fdd41b3bbba51a42
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+invalidated: []
+execution_tracking:
+  activation_architecture_status: not_started
+  seam6_execution_status: not_started
+  external_handoffs_status: not_started
+  external_handoffs_implemented: unknown
+capability_claims: []
+validation_attempts: []
+collection_freeze:
+  snapshot: []
+  exceptions: []
+abandonment: null

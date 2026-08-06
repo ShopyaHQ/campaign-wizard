@@ -1,0 +1,49 @@
+# STAGE 4 · CAMPAIGN PLATFORM BRIEF
+# No stage4 artifact schema exists. Fields read from the BRIEF_APPROVED prerequisites.
+run_id: cmp_01KZBYH64JZ7F5VNSN7GEWK3AS
+selected_opportunity: OPP-02
+
+campaign_problem: "Summer ends on a fixed date; the wish to hold onto it does not resolve on that date."
+audience: returning_users
+current_behavior: "Saves occur but no seasonal return rhythm is evidenced."
+desired_behavior: "increase save.created activity among returning users"
+cultural_tension: "The season's domestic instinct is keeping. The product's core gesture is saving. They are the same gesture."
+campaign_proposition: "Keep what the season is taking away."
+shopya_role: "The save is the preserve gesture. Collections are where the kept thing lives."
+participation_mechanism: "Save into a named collection during the turn, and return to it."
+reason_to_believe: "Collections, price_when_saved and the save action are verified capabilities (charter product_truth_001/002/003)."
+why_now: "Signals SIG-002 (+500% collection verb), SIG-011 (decluttering inside end-of-summer search), SIG-001 (curating not copying)."
+delivery_intent: launch_window
+relevant_seams: [S1, S2, S5, S6]
+surface_roles:
+  explore: "product rails previewing the collections — SEAM 6, executable"
+  collection_pages: "the durable indexable destination"
+  S1_skin: "handoff — requires a code package that does not exist"
+  S2_cover: "handoff — Sanity"
+  S5_editorial: "handoff — Sanity, answers the permission questions"
+success_signals: ["save.created among returning users — NOT retrievable this run"]
+measurement:
+  intended_event: save.created
+  retrieval_status: unknown
+  causal_incrementality_measurable: false
+  proxy: null
+  status: "explicitly unmeasurable; disclosed and accepted"
+assumptions:
+  - "That saving reads to users as keeping. Only evidence is SIG-014 (2018, retail carts)."
+  - "That late August is still hot in the US market. No temperature data pulled."
+risks:
+  - "SIG-015 unread; the L3 claim rests on capability alone."
+  - "A campaign about restraint may suppress the very behaviour it targets."
+ownability:
+  level: L3-by-capability
+  rationale: "The mechanism is user collections plus the save action; transplanted to a generic commerce product it loses its function. L3-by-evidence is unclaimable (charter ownability_003)."
+
+tests:
+  truth: "Every factual clause cites a signal or is flagged as an assumption. PASS."
+  behavior: "save.created among returning users. PASS."
+  mechanism: "Save into a collection; collections are a verified capability. PASS."
+  surface: "explore previews, collection pages hold, editorial answers permission. Distinct roles. PASS."
+  ownability: "L3-by-capability, declared with rationale. PASS."
+  theme: "Removing the seasonal theme leaves 'keep what you are about to lose', which still stands. PASS."
+  feasibility: "S6 executable; S1/S2/S5 handoff and S1 needs a code package that does not exist. PARTIAL."
+  competitor: "A pure editorial publisher cannot run this — it has no save or collection. A commerce retailer can approximate it with a wishlist. PARTIAL."

@@ -1,0 +1,35 @@
+# STAGE 3 · DECISION INTERVIEW
+# No stage3 artifact schema exists. Fields read from the INTERVIEW_COMPLETE prerequisites.
+run_id: cmp_01KZBYX2QF7102EC7VP4J221HE
+selected_opportunity: OPP-02
+audience: returning_users
+current_behavior: "Browsing and saving intermittently; no established seasonal return rhythm is evidenced."
+desired_behavior: "increase save.created activity among returning users"
+delivery_intent: "launch_window — the campaign is not evergreen, but no start or end date is supplied."
+campaign_window:
+  value: null
+  interpretation_status: not_supplied
+avoid_terms: [back-to-school framing, cliched cosy or pumpkin autumn framing, discount-led or sale-led framing]
+avoid_terms_confirmed: true
+first_party_evidence: "none available (charter user_behavior_004)"
+competitor_claims: "none supplied"
+success_condition: >
+  EXPLICITLY UNMEASURABLE this run. No time-windowed first-party measure of save.created for a
+  returning-user segment exists (charter measurement_003, measurement_006). No proxy is selected.
+execution_constraints:
+  - "S6 executable only; S1-S5 handoff."
+  - "Maximum 4 new explore feeds (charter explore_002)."
+  - "Live catalog probe requires a human-run curl (charter constraints_006)."
+raw_user_responses:
+  - source: "AskUserQuestion 2026-08-06"
+    text: "More saves from returning users / Next 4-6 weeks / Seasonal turn (summer->fall) / No back-to-school framing, No cosy/pumpkin autumn cliches, No discount or sale language"
+  - source: "chat 2026-08-06"
+    text: "Yes, the market is the United States."
+  - source: "MI-02 diagnostic run"
+    text: "Interview answers below the frame level were NOT supplied by the owner; they are agent-completed under the diagnostic instruction."
+normalized:
+  selected_opportunity: OPP-02
+  desired_behavior: save.created
+  audience: returning_users
+  delivery_intent: launch_window
+  interpretation_status: inferred

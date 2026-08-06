@@ -1,0 +1,249 @@
+run:
+  run_id: cmp_01KZBYH64JZ7F5VNSN7GEWK3AS
+  spec_version: 1.3.0
+  charter_version: 0.2.0
+  created_at: '2026-08-06T16:29:32Z'
+  note: 'Diagnostic rerun after C1+C2. Target: zero direct state edits.'
+identity:
+  campaign_id:
+    value: seasonal-turn-replay-2026
+    status: confirmed
+    confirmed_by_owner: true
+    externally_referenced: false
+    first_external_reference: null
+  display_name: The Keeping
+workflow:
+  state: CAMPAIGN_APPROVED
+  entered_at: '2026-08-06T16:30:33Z'
+  history:
+  - from: null
+    to: NEW
+    at: '2026-08-06T16:29:32Z'
+    transition_type: forward
+    pinned_spec_version: 1.3.0
+    pinned_charter_version: 0.2.0
+    decision_ref: null
+  - from: NEW
+    to: FRAME_READY
+    at: '2026-08-06T16:29:47Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: FRAME_READY
+    to: RESEARCHING
+    at: '2026-08-06T16:29:47Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: RESEARCHING
+    to: SIGNALS_READY
+    at: '2026-08-06T16:29:47Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: SIGNALS_READY
+    to: OPPORTUNITIES_READY
+    at: '2026-08-06T16:29:47Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: OPPORTUNITIES_READY
+    to: OPPORTUNITY_SELECTED
+    at: '2026-08-06T16:29:48Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: OPPORTUNITY_SELECTED
+    to: INTERVIEW_COMPLETE
+    at: '2026-08-06T16:29:48Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: INTERVIEW_COMPLETE
+    to: BRIEF_DRAFT
+    at: '2026-08-06T16:29:48Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: BRIEF_DRAFT
+    to: BRIEF_APPROVED
+    at: '2026-08-06T16:29:48Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: BRIEF_APPROVED
+    to: ROUTES_READY
+    at: '2026-08-06T16:29:49Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: ROUTES_READY
+    to: ROUTE_SELECTED
+    at: '2026-08-06T16:30:14Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: seasonal-turn-replay-2026
+  - from: ROUTE_SELECTED
+    to: ACTIVATION_READY
+    at: '2026-08-06T16:30:14Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: seasonal-turn-replay-2026
+  - from: ACTIVATION_READY
+    to: SEAM6_READY
+    at: '2026-08-06T16:30:32Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: seasonal-turn-replay-2026
+  - from: SEAM6_READY
+    to: VALIDATED
+    at: '2026-08-06T16:30:32Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: seasonal-turn-replay-2026
+  - from: VALIDATED
+    to: CAMPAIGN_APPROVED
+    at: '2026-08-06T16:30:33Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: seasonal-turn-replay-2026
+owner_decisions:
+  market_confirmed:
+    decided: true
+    decided_by: product_owner_replay
+    decided_at: '2026-08-06T16:29:46Z'
+  frame_accepted:
+    decided: true
+    decided_by: product_owner_replay
+    decided_at: '2026-08-06T16:29:47Z'
+  opportunity_selected:
+    decided: true
+    decided_by: product_owner_replay
+    decided_at: '2026-08-06T16:29:47Z'
+  brief_approved:
+    decided: true
+    decided_by: product_owner_replay
+    decided_at: '2026-08-06T16:29:48Z'
+  route_selected:
+    decided: true
+    decided_by: product_owner_replay
+    decided_at: '2026-08-06T16:29:49Z'
+  campaign_approved:
+    decided: true
+    decided_by: product_owner_replay
+    decided_at: '2026-08-06T16:30:15Z'
+artifacts:
+  frame:
+    path: campaigns/cmp_01KZBYH64JZ7F5VNSN7GEWK3AS/frame.yaml
+    written_at: '2026-08-06T16:29:46Z'
+    sha256: edec78a82540ceef6336c486765a7f51889bd82d1458dbb66fb42d67aba2efe9
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage1_signals:
+    path: campaigns/cmp_01KZBYH64JZ7F5VNSN7GEWK3AS/stage1_signals.yaml
+    written_at: '2026-08-06T16:29:47Z'
+    sha256: 683cd082c3a42c7c504e60638b7309e6feb2f98b40261d2100e266594921d224
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage1_landscape:
+    path: campaigns/cmp_01KZBYH64JZ7F5VNSN7GEWK3AS/stage1_landscape.md
+    written_at: '2026-08-06T16:29:47Z'
+    sha256: 02fa8b7a8fe34a66c5b8c4c60cf4bf8eb8b92b16fb11d542b044de6ff51330ba
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  learning:
+    path: campaigns/cmp_01KZBYH64JZ7F5VNSN7GEWK3AS/learning.yaml
+    written_at: '2026-08-06T16:29:47Z'
+    sha256: 2475eae670349e63309acd7677c0e6dca6257133ca9092abb7abca7690dfea13
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage2_opportunities:
+    path: campaigns/cmp_01KZBYH64JZ7F5VNSN7GEWK3AS/stage2_opportunities.yaml
+    written_at: '2026-08-06T16:29:47Z'
+    sha256: d33031c9ee5ab941880221c25a0a596ab27d5af0df4da5bf159b32c3a054e434
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage2_comparison:
+    path: campaigns/cmp_01KZBYH64JZ7F5VNSN7GEWK3AS/stage2_comparison.md
+    written_at: '2026-08-06T16:29:47Z'
+    sha256: 9ef571725da639925f4e87006a70f59a1f75eee76278a0233ec94d3af9410eed
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage3_interview:
+    path: campaigns/cmp_01KZBYH64JZ7F5VNSN7GEWK3AS/stage3_interview.yaml
+    written_at: '2026-08-06T16:29:48Z'
+    sha256: 015757d29988ab108df1fd559ec05ff2bbef0deee1adaa9390694fc12a19b614
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage4_brief:
+    path: campaigns/cmp_01KZBYH64JZ7F5VNSN7GEWK3AS/stage4_brief.yaml
+    written_at: '2026-08-06T16:29:48Z'
+    sha256: 6d40c4d8fc31f15e7f4df9261905f3ef7e1c38615804e55d76110947dd327224
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage5_routes:
+    path: campaigns/cmp_01KZBYH64JZ7F5VNSN7GEWK3AS/stage5_routes.yaml
+    written_at: '2026-08-06T16:29:48Z'
+    sha256: dc0be4ef4e9177627f15e2198647eef8fb0b73c0c5a57caaac89c5cfa8c5085f
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage6_activation:
+    path: campaigns/cmp_01KZBYH64JZ7F5VNSN7GEWK3AS/stage6_activation.yaml
+    written_at: '2026-08-06T16:29:49Z'
+    sha256: 9bff9e6517d4deb61a2e864f07a9fe8107ea629c01870eabaae905e9f0814208
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage7_seam6:
+    path: campaigns/cmp_01KZBYH64JZ7F5VNSN7GEWK3AS/stage7_seam6.yaml
+    written_at: '2026-08-06T16:29:50Z'
+    sha256: bd905308912d521079032fc032005042b79780d8bfa0d72eb4be8bfff6e2f717
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  products_csv:
+    path: campaigns/cmp_01KZBYH64JZ7F5VNSN7GEWK3AS/execution/products.csv
+    written_at: '2026-08-06T16:29:50Z'
+    sha256: 6bf2d3972ca6f6d0c2eb94a6f9b14cfd8840cf146449cfdef6679a2f993dfa79
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+invalidated: []
+execution_tracking:
+  activation_architecture_status: approved
+  seam6_execution_status: validated
+  external_handoffs_status: authored
+  external_handoffs_implemented: unknown
+capability_claims: []
+validation_attempts:
+- attempted_at: '2026-08-06T16:40:00Z'
+  result: passed
+  failures: []
+  report_path: execution/products.csv
+  invalidated_at: null
+  invalidated_by_decision: null
+collection_freeze:
+  snapshot: []
+  exceptions: []
+abandonment: null

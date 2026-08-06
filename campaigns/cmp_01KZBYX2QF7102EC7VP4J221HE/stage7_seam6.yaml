@@ -1,0 +1,36 @@
+run_id: cmp_01KZBYX2QF7102EC7VP4J221HE
+campaign_id: seasonal-turn-exec-2026
+source_engine: shopya-collection-curation
+note: eligible_count is AVAILABLE products, joined from product_results_log.jsonl
+  at build time. unknown is never counted as available.
+collections:
+- collection_id: B6
+  name: Perfume Wardrobe
+  sub_group: beauty
+- collection_id: X1
+  name: The Summer Bag
+  sub_group: fashion
+rails:
+- rail_id: rail-b6
+  collection_id: B6
+  rail_position: 0
+  name: The Scent You Keep
+  sub_group: beauty
+- rail_id: rail-x1
+  collection_id: X1
+  rail_position: 1
+  name: The Bag That Survives The Turn
+  sub_group: fashion
+entities:
+- entity_id: B6
+  entity_type: products
+  eligible_count: 16
+  total_rows: 29
+  unknown_count: 12
+  unavailable_count: 1
+- entity_id: X1
+  entity_type: products
+  eligible_count: 16
+  total_rows: 28
+  unknown_count: 5
+  unavailable_count: 7

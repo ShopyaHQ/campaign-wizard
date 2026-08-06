@@ -1,0 +1,141 @@
+# STAGE 1 · SIGNAL LANDSCAPE — artifact schemas (two artifacts)
+#   stage1_signals.yaml   the machine-readable evidence ledger
+#   stage1_landscape.md   the human-readable landscape
+#
+# Stage 1 collects EVIDENCE. It does not propose campaigns. The validator checks structure
+# and provenance discipline; it does not judge whether the research is good.
+
+schema:
+  name: stage1_signals
+  version: 1.0.0
+  artifact_keys: [stage1_signals, stage1_landscape]
+  paths:
+    stage1_signals:   "campaigns/<run_id>/stage1_signals.yaml"
+    stage1_landscape: "campaigns/<run_id>/stage1_landscape.md"
+  produced_in_state: RESEARCHING
+  gates_entry_to: SIGNALS_READY
+  charter_min_version: 0.2.0
+
+forbids:
+  - campaign_names
+  - taglines
+  - rails
+  - collections
+  - product_library_access
+  - prior_campaign_reference      # charter governance_002 — excluded from INITIAL research only
+
+posture: >
+  Culture, trend, behavior and category analyst. Observe at two altitudes — ethos (art, film,
+  literature, language, folk calendar, sensory cues, behavior, cultural tensions) and territory
+  (editorial coverage, category activity, retail activity, runway and design signals, search
+  demand, query language, platform-native formats, releases and temporal catalysts,
+  counter-trends and fatigue). Separate direct observation from interpretation.
+
+evidence_families:
+  required_coverage: all
+  values:
+    - cultural_or_editorial
+    - demand_or_behavioral
+    - commercial_or_category
+    - visual_or_design
+    - counter_trend_or_fatigue
+    - temporal_catalyst
+  note: >
+    The SCAN must cover all six. An individual signal belongs to one. Not every opportunity
+    later needs every family.
+
+stop_condition:
+  rule: >
+    Stop when enough credible signals exist to form 4-6 evidence-backed opportunities AND
+    additional research is producing little new information, OR the configured research budget
+    is exhausted.
+  forbidden: "A fixed count of search or fetch calls is NOT a definition of completion."
+  must_state: [deviations, unavailable_data]
+
+# ───────────────────────────────────────────────────────────────────
+# stage1_signals.yaml
+# ───────────────────────────────────────────────────────────────────
+
+signals_document:
+  top_level:
+    run_id:                   {type: string, required: true}
+    produced_at:              {type: timestamp, required: true}
+    evidence_families_covered: {type: list, required: true, item_enum_from: evidence_families.values}
+    stop_condition_met:       {type: boolean, required: true}
+    stop_condition_basis:     {type: string, required: true}
+    deviations:               {type: list, required: true, allows_empty: true}
+    unavailable_data:         {type: list, required: true, allows_empty: true,
+                               note: "Named as unavailable, never estimated. Charter: search
+                                      volume, keyword difficulty, trend direction, social
+                                      engagement, sell-through, first-party behavior."}
+    signals:                  {type: list, required: true, min_items: 1}
+
+  signal_record:
+    signal_id:          {type: string, required: true, pattern: "^SIG-[0-9]{3}$"}
+    claim:              {type: string, required: true, description: "One factual sentence."}
+    evidence_type:      {type: enum, required: true, values_from: evidence_families.values}
+    source:             {type: string, required: true, description: "URL, publication or probe."}
+    source_date:        {type: string, required: true, nullable: true,
+                         note: "Null permitted ONLY when the source carries no date; say so in limitations."}
+    observed_date:      {type: date, required: true}
+    geography:          {type: string, required: true}
+    direct_observation: {type: string, required: true,
+                         description: "What was literally seen. No reading, no inference."}
+    interpretation:     {type: string, required: true, nullable: true,
+                         description: "What it might mean. MUST be separable from the observation."}
+    confidence:         {type: enum, required: true, values: [strong, moderate, weak, unknown]}
+    limitations:        {type: string, required: true,
+                         description: "What this signal cannot support. Never empty."}
+    autocomplete_signal: {type: mapping, required: false, schema_ref: autocomplete_signal}
+
+  rules:
+    - "direct_observation and interpretation are DISTINCT fields and must not restate each other."
+    - "confidence is qualitative. No numeric scores — false precision is forbidden."
+    - "limitations is required on every signal. 'None' is not an acceptable value."
+    - "A signal with no source is not a signal. Record it as a hunch inside interpretation of
+       another signal, or omit it."
+
+autocomplete_signal:
+  charter_ref: "Stage 1 optional-signal rule"
+  status: optional_evidence_type
+  never: load_bearing
+  caveats: [localized, potentially_personalized, unstable_over_time, easy_to_over_interpret]
+  fields:
+    query:                      {type: string, required: true}
+    returned_terms:             {type: list, required: true}
+    provider:                   {type: string, required: true}
+    geography:                  {type: string, required: true}
+    language:                   {type: string, required: true}
+    session_conditions:         {type: string, required: true}
+    observed_at:                {type: timestamp, required: true}
+    reproducibility_notes:      {type: string, required: true}
+    interpretation_limitations: {type: string, required: true}
+
+# ───────────────────────────────────────────────────────────────────
+# stage1_landscape.md
+# ───────────────────────────────────────────────────────────────────
+
+landscape_document:
+  format: markdown
+  required_sections:
+    - id: moment
+      heading: "The moment — ethos altitude"
+      contents: ["what the calendar says vs the body", "what other cultures NAME this moment",
+                 "light", "colour", "sound", "smell", "taste", "what people actually do",
+                 "where the register already lives in art", "what the moment is NOT"]
+    - id: evidence
+      heading: "The evidence — territory altitude"
+      contents: ["findings by evidence family", "every item traceable to a signal_id",
+                 "contaminated terms called out", "unavailable data named as unavailable"]
+    - id: crossing
+      heading: "The crossing"
+      contents: ["where ethos and territory meet", "where they do not",
+                 "which register language is search-dead and why that is not a conflict"]
+    - id: open_questions
+      heading: "Open questions"
+      contents: ["what is unresolved", "what had to be assumed", "what to research next"]
+  rules:
+    - "Every factual assertion cites a signal_id from stage1_signals.yaml."
+    - "No campaign names, taglines, collections or rails anywhere in the document."
+    - "Candidate unifying ideas MAY be sketched, but they are NOT opportunities — opportunity
+       formation is Stage 2 and produces its own decision objects."

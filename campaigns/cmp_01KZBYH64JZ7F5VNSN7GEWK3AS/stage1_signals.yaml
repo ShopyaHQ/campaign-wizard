@@ -1,0 +1,408 @@
+# STAGE 1 · SIGNAL LEDGER
+# schema: schemas/stage1_signals.schema.yaml v1.0.0
+# Evidence only. No campaigns, names, rails or collections. direct_observation and
+# interpretation are separate fields and must not restate each other.
+
+run_id: cmp_01KZBYH64JZ7F5VNSN7GEWK3AS
+produced_at: 2026-08-06T16:05:00Z
+
+evidence_families_covered:
+  - cultural_or_editorial
+  - demand_or_behavioral
+  - commercial_or_category
+  - visual_or_design
+  - counter_trend_or_fatigue
+  - temporal_catalyst
+
+stop_condition_met: true
+stop_condition_basis: >
+  28 signals across all six families. Later queries returned material already represented
+  (transitional-dressing editorial, deinfluencing coverage, fall runway roundups), and the two
+  sources that would have added genuinely new information were unreadable. Enough to form 4-6
+  evidence-backed opportunities; continuing would have added volume, not information.
+
+deviations:
+  - "Autocomplete was used 16 times across this run and the preparatory session. It is one
+     optional family member, not the backbone: 10 of 28 signals are autocomplete-derived and
+     none of the six families rests on it alone."
+  - "Nine signals (SIG-001..003, SIG-006, SIG-008..013, SIG-019) were observed 2026-08-06/07
+     during preparatory work, before the run's frame existed. They are real, dated and sourced,
+     and are carried in rather than re-gathered. Flagged as LRN-011: the schema has no field
+     distinguishing in-run from carried evidence."
+  - "Prior Shopya campaigns were excluded from this scan (charter governance_002, novelty
+     desired). They remain available for later duplication checks."
+
+unavailable_data:
+  - "Search volume, keyword difficulty and rising-vs-flat trend direction. Would require a paid
+     tool. Never estimated."
+  - "Social engagement figures beyond what a source itself states."
+  - "Sell-through and inventory-depletion data."
+  - "First-party Shopya behaviour: site search logs, save/click data, Search Console.
+     Charter user_behavior_004, measurement_003, measurement_004."
+  - "The findings of SIG-015 ('Heart it or cart it'). The paper exists and is identified; both
+     the publisher page (robots-disallowed) and the ProQuest record (403) were unreadable. The
+     single most on-objective source in the scan could not be read."
+
+signals:
+
+# ══ cultural_or_editorial ═════════════════════════════════════════
+- signal_id: SIG-001
+  claim: "Pinterest's 2026 forecast organises its predictions under emotional comfort and belonging, curating not copying, and grounded optimism."
+  evidence_type: cultural_or_editorial
+  source: "Pinterest Predicts 2026 (business.pinterest.com / newsroom.pinterest.com)"
+  source_date: 2025-12
+  observed_date: 2026-08-06
+  geography: global
+  direct_observation: "The report names three overarching themes and 21 trends beneath them."
+  interpretation: "Two of the three themes describe a curatorial rather than acquisitive posture, which is the posture a save-driven product already serves."
+  confidence: moderate
+  limitations: "Vendor report from a platform selling ad inventory against its own predictions; self-reported 88% historical accuracy. Framing is marketing; the percentages are platform search data."
+
+- signal_id: SIG-002
+  claim: "'Niche perfume collection' rose 500% in Pinterest search, the largest single figure in the 2026 report."
+  evidence_type: cultural_or_editorial
+  source: "Pinterest Predicts 2026, Scent Stacking"
+  source_date: 2025-12
+  observed_date: 2026-08-06
+  geography: global
+  direct_observation: "+500% on 'niche perfume collection'; +125% on 'perfume layering'."
+  interpretation: "The verb is collecting, not buying. A collection is assembled over time and revisited, which is browse-and-save behaviour rather than transaction behaviour."
+  confidence: moderate
+  limitations: "Vendor figure with no absolute base. A 500% rise on a small base is a small number. Fragrance may not be a category this platform serves."
+
+- signal_id: SIG-003
+  claim: "Poetcore is the one Pinterest-named 2026 aesthetic that has crossed into Google search behaviour."
+  evidence_type: cultural_or_editorial
+  source: "Pinterest Predicts 2026 ('poet aesthetic' +175%) cross-checked against Google autocomplete"
+  source_date: 2025-12
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Autocomplete on 'poetcore' returns ten fashion-intent completions with no contamination. Autocomplete on 'brooch' — also a named 2026 trend — returns definitional and bridal completions instead."
+  interpretation: "Crossing platforms distinguishes a trend with independent momentum from one confined to the platform that named it."
+  confidence: moderate
+  limitations: "Two terms tested, not the full 21. Crossing is not the same as scale, and no volume figure is available for either."
+
+- signal_id: SIG-004
+  claim: "US August 2026 fashion buy-lists are explicitly transitional and say so in their own copy."
+  evidence_type: cultural_or_editorial
+  source: "Who What Wear, '10 Fashion Items to Buy in August 2026'"
+  source_date: 2026-08
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Recommendations include cotton and linen sweaters for 'late-summer-early-fall days', layering tanks for 'weird-weather times to come', and a colour framed as 'you can start wearing it now'."
+  interpretation: "The editorial trade already treats this fortnight as its own dressing problem rather than as the start of autumn."
+  confidence: strong
+  limitations: "One outlet, one article. Editorial recommendation is not demand evidence."
+
+- signal_id: SIG-005
+  claim: "Anti-overconsumption is a sustained multi-year position, not a passing hashtag."
+  evidence_type: cultural_or_editorial
+  source: "Creative Salon, TikTok anti-overconsumption and deinfluencing"
+  source_date: 2024-03-04
+  observed_date: 2026-08-06
+  geography: global
+  direct_observation: "Documents #deinfluencing and the 'Rule of 5' (five fashion purchases a year), attributed to Gen Z and Gen Alpha concern about waste and climate."
+  interpretation: "A durable audience position rather than a seasonal mood, which matters for a campaign that asks people to save rather than buy."
+  confidence: moderate
+  limitations: "Published 2024; two years stale. Its own view counts show #deinfluencing at 28,000 against #TikTokMadeMeBuyIt in the billions — the counter-movement is culturally loud and numerically tiny."
+
+# ══ demand_or_behavioral ══════════════════════════════════════════
+- signal_id: SIG-006
+  claim: "'What to wear in September' is a travel-packing query, not a seasonal-dressing query."
+  evidence_type: demand_or_behavioral
+  source: "Google public autocomplete"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "All ten completions are destinations: Italy, Paris, Ireland, Japan, Portugal, London, New York, Switzerland, Greece, plus the bare term. Not one is about dressing for the season at home."
+  interpretation: "The obvious phrase for this moment is occupied by a different intent. Naming anything after it would attract the wrong audience."
+  confidence: strong
+  limitations: "Autocomplete is ordering, not volume. A separate seasonal intent may exist below the visible completions."
+  autocomplete_signal:
+    query: "what to wear in september"
+    returned_terms: [in italy, "(bare term)", in paris, in ireland, in japan, in portugal, in london, in new york, in switzerland, in greece]
+    provider: "Google suggestqueries, client=firefox"
+    geography: US
+    language: en
+    session_conditions: "Server-side fetch, no user session, no personalisation, no cookies."
+    observed_at: 2026-08-06T15:58:00Z
+    reproducibility_notes: "Unstable over time and localised. Re-probe before reuse."
+    interpretation_limitations: "Ranked completions only. No volume, difficulty or direction."
+
+- signal_id: SIG-007
+  claim: "'Transitional outfits' carries real search intent, explicitly names summer-to-fall, and its year-tagged variants are still on 2025."
+  evidence_type: demand_or_behavioral
+  source: "Google public autocomplete"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Completions: transitional outfits; winter to spring; summer to fall; meaning; ideas; summer to fall 2025; for fall; women; nordstrom; spring. 'Meaning' ranks fourth."
+  interpretation: "People are meeting the term and looking it up, and the 2026 variants have not accumulated. Whether that is an opening or simply early cannot be settled without volume data."
+  confidence: moderate
+  limitations: "Same autocomplete limits. 'Meaning' at position four could equally indicate a term nobody understands."
+  autocomplete_signal:
+    query: "transitional outfit"
+    returned_terms: [transitional outfits, winter to spring, summer to fall, meaning, ideas, summer to fall 2025, for fall, women, nordstrom, spring]
+    provider: "Google suggestqueries, client=firefox"
+    geography: US
+    language: en
+    session_conditions: "Server-side fetch, no user session."
+    observed_at: 2026-08-06T16:00:00Z
+    reproducibility_notes: "Re-probe before reuse."
+    interpretation_limitations: "Ordering only."
+
+- signal_id: SIG-008
+  claim: "People search for permission to wear things at a season boundary."
+  evidence_type: demand_or_behavioral
+  source: "Google public autocomplete"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Completions include 'when can you start wearing white again', 'white after labor day', 'suede boots in summer', 'when can you start wearing linen'."
+  interpretation: "The uncertainty is about timing and permission, not about what exists or where to buy it."
+  confidence: moderate
+  limitations: "Autocomplete ordering only. These may be a small tail. No volume."
+
+- signal_id: SIG-009
+  claim: "'How to wear' completions are dominated by objects the searcher already owns."
+  evidence_type: demand_or_behavioral
+  source: "Google public autocomplete"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Completions: graduation cap, bandana, masters hood, graduation hood, eye patches, scarf, cufflinks, bandana on head, pocket watch, bolo tie."
+  interpretation: "Deployment uncertainty rather than acquisition uncertainty. Several are ceremonial rather than wardrobe items, so the pattern is weaker than it first appears."
+  confidence: weak
+  limitations: "The unmodified head term is heavily influenced by graduation season and ceremonial dress. Not a clean fashion signal."
+
+- signal_id: SIG-010
+  claim: "Product-level search modifiers are transactional rather than seasonal, with outerwear the exception."
+  evidence_type: demand_or_behavioral
+  source: "Google public autocomplete across boots, denim, jackets, bags"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Completions cluster on fit (ankle, knee high, wide calf, straight leg, baggy, low rise, high waisted, oversized, cropped), colour, audience and 'near me'. Almost no year tags and almost no 'fall' — except outerwear, which returns 'fall jackets 2026' and 'fall jacket trends 2026'."
+  interpretation: "Seasonal language is not how most product search is phrased, so seasonal naming would have to sit above the product layer rather than inside it."
+  confidence: strong
+  limitations: "Four categories sampled. Ordering only, no volume."
+
+- signal_id: SIG-011
+  claim: "'End of summer' is one of the few seasonal phrases where a current year tag outranks the bare term."
+  evidence_type: demand_or_behavioral
+  source: "Google public autocomplete"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "'End of summer 2026' ranks above 'end of summer'; then nails, sales, date, decluttering, party. 'Decluttering' ranks sixth."
+  interpretation: "The phrase is live and dated rather than evergreen. A tidying-and-resetting intent sits inside it alongside the party and shopping intents."
+  confidence: moderate
+  limitations: "'Sales' also ranks, and that territory is excluded by the frame. Ordering only."
+
+- signal_id: SIG-012
+  claim: "Colour terms are routinely captured by unrelated categories and must be probed before use."
+  evidence_type: demand_or_behavioral
+  source: "Google public autocomplete"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "'Royal purple' returns motor oil, smoke tree, fuel injector cleaner and 5W-30 — fashion does not appear in ten completions, while editorial is promoting it as a fall colour. 'Chocolate brown' returns hair dye and brownie recipes, with fashion at position seven."
+  interpretation: "Editorial colour consensus and search behaviour are independent. A colour term is only safe once qualified onto an object."
+  confidence: strong
+  limitations: "Two colours tested."
+
+- signal_id: SIG-013
+  claim: "The most evocative language for this moment is already owned by other subjects in search."
+  evidence_type: demand_or_behavioral
+  source: "Google public autocomplete"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "'Golden hour' returns song lyrics, hemp, tulips, Kacey Musgraves and coffee. 'Indian summer' returns a movie, a TV cast, rudbeckia, a golf course and apple juice."
+  interpretation: "Evocative naming and findable naming are separable problems, and this moment's best vocabulary sits on the wrong side of that line."
+  confidence: strong
+  limitations: "Ordering only. Says nothing about whether the phrases work as non-search language."
+
+- signal_id: SIG-014
+  claim: "Users treat a cart as a tentative save and a wishlist as a committed one, and avoid wishlists because of perceived cost and connotation."
+  evidence_type: demand_or_behavioral
+  source: "Nielsen Norman Group, 'Wishlist or shopping cart? Saving products for later in ecommerce', research across 49 ecommerce sites"
+  source_date: 2018-11
+  observed_date: 2026-08-06
+  geography: "not stated"
+  direct_observation: "Reports that users read cart placement as 'I might want that' and wishlist placement as 'I definitely want that'; that participants were reluctant to use wishlists because of expected registration burden; and that the word 'wishlist' carried a gift-sharing connotation users found uncomfortable."
+  interpretation: "Saving carries a declared level of intent, and the label attached to the save changes what the user believes they are declaring."
+  confidence: moderate
+  limitations: "Published 2018 and describes retail carts, not a discovery platform. Eight years stale; generalising to Shopya's save is an assumption, not a finding."
+
+- signal_id: SIG-015
+  claim: "A 2026 peer-reviewed study on wishlist-versus-cart placement and purchase likelihood exists, and its findings could not be retrieved."
+  evidence_type: demand_or_behavioral
+  source: "'Heart it or cart it: The mere placement effect and its impact on purchase likelihood', Journal of Retailing and Consumer Services (Elsevier), S0969698926001013"
+  source_date: 2026
+  observed_date: 2026-08-06
+  geography: "not stated"
+  direct_observation: "The article is indexed under that title, journal and identifier. The publisher page is robots-disallowed and the ProQuest record returns 403; neither abstract nor findings were read."
+  interpretation: null
+  confidence: unknown
+  limitations: "NO FINDING IS CLAIMED. The title implies a directional result and that implication must not be used. This is the most on-objective source in the scan and it is unread. Recorded so it is not silently omitted."
+
+# ══ commercial_or_category ════════════════════════════════════════
+- signal_id: SIG-016
+  claim: "The 2026 industry outlook is low growth with value-conscious consumers, and resale is forecast to grow two to three times faster than firsthand."
+  evidence_type: commercial_or_category
+  source: "McKinsey and BoF, The State of Fashion 2026"
+  source_date: 2025-11-17
+  observed_date: 2026-08-06
+  geography: global
+  direct_observation: "Projects low single-digit industry growth; 46% of executives expect conditions to worsen; secondhand to expand two to three times faster than firsthand through 2027; jewellery unit sales to grow more than four times clothing. Named themes include Resale Sprint, The Elevation Game and The AI Shopper."
+  interpretation: "Interest is shifting toward considered and durable acquisition, which suits saving and returning over immediate purchase."
+  confidence: strong
+  limitations: "Global and industry-level. Says nothing about US late-summer behaviour or about this platform's audience. Published nine months before this run."
+
+- signal_id: SIG-017
+  claim: "Specific autumn outerwear was reported selling out during the first week of August 2026."
+  evidence_type: commercial_or_category
+  source: "Who What Wear, August 2026 buy list"
+  source_date: 2026-08
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Toggle-closure jackets described as returning for autumn with 'sell-outs are already happening'."
+  interpretation: "Demand for autumn outerwear is running ahead of autumn weather."
+  confidence: weak
+  limitations: "One outlet, no data behind the claim, and editorial sell-out language is often promotional. No sell-through figure available."
+
+- signal_id: SIG-018
+  claim: "Maximalism currently reads as an interiors search behaviour rather than a fashion one."
+  evidence_type: commercial_or_category
+  source: "Google public autocomplete"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Completions on 'maximalist' rank decor, interior design, wallpaper and rugs above outfit and fashion."
+  interpretation: "A trend can be live in one category and absent in another, and cross-category platforms can see the difference."
+  confidence: weak
+  limitations: "One probe on one head term. Needs corroboration before it carries weight."
+
+# ══ visual_or_design ══════════════════════════════════════════════
+- signal_id: SIG-019
+  claim: "Fall 2026 runway coverage converges on six recurring directions across named houses."
+  evidence_type: visual_or_design
+  source: "Marie Claire, 'The Biggest Fall 2026 Fashion Trends, According to the Runways'"
+  source_date: 2026
+  observed_date: 2026-08-06
+  geography: "international runways, US publication"
+  direct_observation: "Names Fair Isle knits (Altuzarra, Khaite, Marni, Brandon Maxwell); tactile and embellished fabrics (Bottega Veneta, Dior); sharp tailoring (Jil Sander, Tod's); statement coats; sport-inspired separates (Prada, Tory Burch, Dries Van Noten, Marni); unexpected layering (Chloé, Prada)."
+  interpretation: "Layering and heritage knitwear are the two directions that intersect a warm-but-turning moment; the rest are cold-weather propositions."
+  confidence: strong
+  limitations: "One outlet's synthesis. Runway is a design signal, not a demand signal, and the gap to what people buy is wide."
+
+- signal_id: SIG-020
+  claim: "Football-terrace dressing has escaped its origin subculture into general fashion search."
+  evidence_type: visual_or_design
+  source: "Google public autocomplete; Trendalytics coverage of World Cup 2026 retail data"
+  source_date: 2026
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "'Blokecore' returns fashion, meaning, aesthetic, jersey, style, outfits, and separate 'men' and 'women' completions. Trade coverage tracked its commercial rise through the tournament, which ended 2026-07-19."
+  interpretation: "A gendered split in completions indicates a term being adopted beyond the group that coined it. Whether interest is decaying now the tournament has ended is untested."
+  confidence: moderate
+  limitations: "No post-tournament trend direction available; that is precisely what autocomplete cannot show."
+
+# ══ counter_trend_or_fatigue ══════════════════════════════════════
+- signal_id: SIG-021
+  claim: "Underconsumption-core has persisted across at least two years and is framed against economic conditions."
+  evidence_type: counter_trend_or_fatigue
+  source: "Pajiba, 'Will 2026 Be the Year of Underconsumption-Core?'"
+  source_date: 2026
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Describes reusing what you own or investing in sturdier and often secondhand items; states the topic has trended 'for a couple of years now'; attributes momentum partly to recession conditions and shrinkflation; reports visible audience condemnation of consumption-display content."
+  interpretation: "Displaying abundance now carries social risk, while displaying restraint or curation does not."
+  confidence: moderate
+  limitations: "Opinion commentary, not research. No figures. A single writer's reading of comment sections."
+
+- signal_id: SIG-022
+  claim: "Coverage declaring quiet luxury over is abundant but almost entirely low-quality."
+  evidence_type: counter_trend_or_fatigue
+  source: "Search results for quiet luxury 2026 across multiple outlets"
+  source_date: 2026
+  observed_date: 2026-08-06
+  geography: "mixed"
+  direct_observation: "Of eight results returned, seven are SEO-oriented blogs and content farms rather than primary reporting or trade press."
+  interpretation: "The volume of trend-death commentary is itself a fatigue signal about trend commentary; it is not evidence about the trend."
+  confidence: weak
+  limitations: "A search-result sample is not a survey of the discourse. This signal cannot support any claim about quiet luxury itself."
+
+- signal_id: SIG-023
+  claim: "The counter-consumption position is culturally loud and numerically small."
+  evidence_type: counter_trend_or_fatigue
+  source: "Creative Salon, view-count comparison"
+  source_date: 2024-03-04
+  observed_date: 2026-08-06
+  geography: global
+  direct_observation: "Reports #deinfluencing at 28,000 views against #TikTokMadeMeBuyIt in the billions, and that 71% of TikTok users said creators authentically motivated a purchase."
+  interpretation: "The restraint position shapes what is socially acceptable to display without displacing the behaviour it criticises."
+  confidence: moderate
+  limitations: "2024 figures, two years stale. Hashtag view counts are a poor proxy for anything, and the two hashtags are not comparable in kind."
+
+# ══ temporal_catalyst ═════════════════════════════════════════════
+- signal_id: SIG-024
+  claim: "Spring 2027 fashion month falls inside this run's planning horizon."
+  evidence_type: temporal_catalyst
+  source: "Fashionista, Spring 2027 fashion month schedules; CFDA preliminary NYFW schedule"
+  source_date: 2026-07
+  observed_date: 2026-08-06
+  geography: "New York, London, Milan, Paris"
+  direct_observation: "New York begins 2026-09-10 with debuts from Conner Ives, Magda Butrym and Zaldy; Milan begins 2026-09-25 with new Moschino creative directors; Paris runs 2026-09-28 to 2026-10-06 with Carven and Courrèges debuts. The planning horizon of four to six weeks from 2026-08-06 ends between 2026-09-03 and 2026-09-17."
+  interpretation: "A dense, dated attention spike sits inside the window; at four weeks the horizon ends before New York opens and at six weeks it ends during it."
+  confidence: strong
+  limitations: "Schedules described as preliminary and subject to change. Fashion week drives industry and enthusiast attention; its reach into a general audience is unmeasured here."
+
+- signal_id: SIG-025
+  claim: "The traditional East Asian calendar marks the beginning of autumn in the first week of August, at the hottest point of the year."
+  evidence_type: temporal_catalyst
+  source: "Japan's 72 microseasons (TokyoPony; Nippon.com)"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: Japan
+  direct_observation: "立秋 Risshū, 'beginning of autumn', falls 2026-08-07. The microseasons following it are 涼風至 'cool winds blow' (Aug 8-12), 寒蝉鳴 'evening cicadas sing' (Aug 13-17), 蒙霧升降 'thick fog descends' (Aug 18-22), then 処暑 Shosho, 'manageable heat', from about Aug 23. Japanese also has 残暑, zansho, for heat persisting after autumn has formally begun."
+  interpretation: "A calendar that names this specific gap between formal season and felt weather is evidence the gap is a durable human observation rather than a merchandising conceit."
+  confidence: strong
+  limitations: "Japanese, not US. Cultural reference material with no bearing on US demand. Popular-explainer sources rather than a scholarly calendar."
+
+- signal_id: SIG-026
+  claim: "Several unrelated European languages have a dedicated name for the late-warm spell, and two personify it as an old woman."
+  evidence_type: temporal_catalyst
+  source: "The Local (German word of the day: Altweibersommer); Wiktionary"
+  source_date: 2025-08-28
+  observed_date: 2026-08-06
+  geography: "German-speaking Europe; Slavic Europe; Sweden"
+  direct_observation: "German Altweibersommer, 'old women's summer', named for Altweiberfäden, the gossamer spider threads that float in early autumn. Slavic babje leto, 'grandmother's summer'. Swedish Brittsommar, after St Bridget."
+  interpretation: "Independent naming across languages indicates the moment is widely recognised. The old-woman personification is a shared image, not a universal one — the Swedish term is a saint's day."
+  confidence: moderate
+  limitations: "Popular-etymology source; folk etymologies are frequently disputed. European, not US. No relevance to demand."
+
+- signal_id: SIG-027
+  claim: "Labor Day 2026 falls on 7 September, inside the planning horizon, and is the hinge of the best-known US dress-timing convention."
+  evidence_type: temporal_catalyst
+  source: "US federal holiday calendar (first Monday of September), computed"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "2026-09-07 is the first Monday of September. Autocomplete separately returns 'white after labor day' as a live completion (SIG-008)."
+  interpretation: "A dated moment exists where a permission question people are already asking becomes topical."
+  confidence: strong
+  limitations: "The date is a fact; that it drives behaviour is not established here. Labor Day is also a major discount weekend, and discount framing is excluded by the frame."
+
+- signal_id: SIG-028
+  claim: "Michaelmas, 29 September 2026, carries a folk deadline for picking blackberries."
+  evidence_type: temporal_catalyst
+  source: "English folk calendar; date computed"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: "England"
+  direct_observation: "2026-09-29 is Michaelmas. English folklore holds that blackberries picked after it belong to the devil."
+  interpretation: "An example of a seasonal deadline that is cultural rather than meteorological."
+  confidence: weak
+  limitations: "English folklore with no US currency. Falls outside the six-week planning horizon. Included as register material only, and it should not be mistaken for a signal about anything measurable."

@@ -1,0 +1,829 @@
+# SHOPYA CONTENT CHARTER — PROPOSED, NOT ADOPTED
+# Companion to SHOPYA_CAMPAIGN_CHARTER.yaml. That charter governs whether a campaign is
+# technically valid. This one governs whether it is any good.
+#
+# STATUS: proposal for review. Nothing here is in force. No code, schema, workflow state,
+# campaign artifact or frontend file was modified to produce it.
+#
+# EVIDENCE DISCIPLINE — every rule carries one:
+#   FE     a frontend or API field that demonstrably exists (cited to the technical charter)
+#   P1     a failure observed in the Pass 1 diagnostic
+#   BRAND  an established Shopya brand principle
+#   OPS    a clear operational need
+#   SPEC   speculative enhancement — labelled and DEFERRED, never required
+
+charter:
+  name: shopya_content_charter
+  version: 0.1.0-proposed
+  status: proposed
+  companion_to: {file: SHOPYA_CAMPAIGN_CHARTER.yaml, version: 0.2.0}
+  interpretation_vocabulary: schemas/interpretation_rules.yaml   # reuse, do not invent a second one
+  control_version:
+    run: cmp_01KZBYX2QF7102EC7VP4J221HE
+    note: "The execution-ready campaign is PRESERVED UNMODIFIED as the control. Any content
+           system is judged against it, not against a memory of it."
+
+core_operating_principle:
+  sequence: >
+    campaign premise -> merchandising thesis -> collection roles -> product-selection criteria
+    -> available products -> surface-specific copy
+  violation_observed:
+    evidence: P1
+    detail: >
+      B6 and X1 were selected because they held the most products (29 and 28). The merchandising
+      argument was written afterwards. Both were built for a July summer campaign and carry
+      summer names; neither was authored for this campaign.
+  rule: >
+    A collection may never qualify primarily on product count. Availability is a FILTER applied
+    after a collection has earned its place, never a reason for its place.
+
+# ═══════════════════════════════════════════════════════════════════
+# 1 · CONTENT SURFACE MANIFEST
+# Every field a publishable campaign needs. A field with no demonstrable frontend or API
+# home is marked SPEC and deferred — inventing content fields is how a content system starts
+# producing copy nobody renders.
+# ═══════════════════════════════════════════════════════════════════
+
+surface_manifest:
+
+- field: campaign_display_name
+  surface: [explore, home]
+  level: campaign
+  purpose: "Human-facing campaign name. Distinct from campaign_id, which is a join key."
+  source: stage5_routes -> identity.display_name
+  required: true
+  dynamic: static_after_approval
+  length: "<= 28 chars"
+  fallback: "none — a campaign without a name cannot be presented"
+  validated_by: "field_non_empty(identity.display_name) — already enforced at ROUTE_SELECTED"
+  evidence: [FE, OPS]
+  fe_basis: "charter identity_007; ?campaign= override and package id are separate (campaign_001)"
+
+- field: campaign_dek
+  surface: [explore, home]
+  level: campaign
+  purpose: "One line under the campaign name stating the premise in the campaign's own voice."
+  source: stage4_brief.campaign_proposition -> stage6_activation
+  required: true
+  dynamic: static_after_approval
+  length: "<= 90 chars"
+  fallback: "suppress the dek; never substitute the proposition verbatim"
+  validated_by: "presence + swap test + no restatement of display_name"
+  evidence: [FE, P1]
+  fe_basis: "lib/packages/home.ts hero dekText is a shipped pattern (charter brand_002)"
+  p1_basis: "MISSING ENTIRELY in the control run"
+
+- field: hero_copy
+  surface: [home, explore]
+  level: campaign
+  purpose: "Hero/collage takeover copy for the skin package."
+  source: stage6_activation -> handoffs/S1_skin.md
+  required: true
+  execution_mode: handoff
+  owner: code
+  dynamic: static_after_approval
+  length: "headline <= 42, dek <= 110"
+  fallback: "default package hero — the campaign then reads as undressed"
+  validated_by: "handoff artifact exists and carries both fields"
+  evidence: [FE, P1]
+  fe_basis: "HOME_PACKAGES hero fills; data-campaign-skin (charter product_truth_004)"
+  p1_basis: "handoff stub written with no copy in it"
+
+- field: collection_name
+  surface: [explore, collection_pages]
+  level: collection
+  purpose: "The editorial title. Also the page title tag: '{name} - Shopya'."
+  source: stage7_seam6.collections[].name
+  required: true
+  dynamic: static_after_approval
+  length: "<= 34 chars"
+  fallback: "none"
+  validated_by: "presence + distinctness + swap test + no category-noun substitution"
+  evidence: [FE, P1]
+  fe_basis: "CollectionResponse.name; generateMetadata title (charter product_truth_002, surface_004)"
+  p1_basis: "INHERITED from a July summer campaign, never authored for this one"
+
+- field: collection_description
+  surface: [collection_pages]
+  level: collection
+  purpose: "The page's meta description AND the on-page statement of the collection's argument."
+  source: stage7_seam6.collections[].description
+  required: true
+  dynamic: regenerable_with_review
+  length: "<= 155 chars (meta description truncation)"
+  fallback: "none — an indexable page with no description wastes the only rankable surface we have"
+  validated_by: "presence + must not restate collection_name + must state the sub-angle"
+  evidence: [FE, P1]
+  fe_basis: "CollectionResponse.description; collection page generateMetadata description (surface_004)"
+  p1_basis: "MISSING. This is a real product requirement, not an enhancement."
+
+- field: collection_cover_treatment
+  surface: [explore, collection_pages]
+  level: collection
+  purpose: "Cover image plus art direction; also the OpenGraph image."
+  source: stage7_seam6.collections[].cover_direction
+  required: true
+  execution_mode: "direction executable here; asset production is handoff"
+  dynamic: static_after_approval
+  length: "direction <= 200 chars"
+  fallback: "first available product image — acceptable, visibly weaker"
+  validated_by: "direction present; image_url present at execution"
+  evidence: [FE, P1]
+  fe_basis: "CollectionResponse.image_url, featured_images, openGraph.images (product_truth_002, surface_004)"
+
+- field: rail_name
+  surface: [explore]
+  level: rail
+  purpose: "Renders VERBATIM as the on-page rail title. Orientation, not headline."
+  source: stage7_seam6.rails[].name
+  required: true
+  dynamic: static_after_approval
+  length: "<= 38 chars"
+  fallback: "none — FeedCreate requires name"
+  validated_by: "presence + must differ from collection_name + swap test + no shared title template"
+  evidence: [FE, P1]
+  fe_basis: "feed.name renders verbatim; FeedCreate requires name (surface_001, constraints_002)"
+  p1_basis: "both rail names were the campaign proposition with a noun swapped in"
+
+- field: rail_subtitle
+  surface: [explore]
+  level: rail
+  required: false
+  status: SPEC_DEFERRED
+  evidence: [SPEC]
+  rationale: >
+    NO FRONTEND FIELD EXISTS. The feed contract is {id, slug, name, sort_order, sub_group}
+    (charter surface_001). The curation engine's build_rails.py writes a rail_subtitle into its
+    own YAML, but nothing carries it to the API or the page. Specifying a subtitle now would
+    produce copy nobody renders. DEFERRED until a frontend field exists.
+
+- field: editorial_module_copy
+  surface: [explore]
+  level: campaign
+  purpose: "S5 editorial rail — the guide content that answers what products cannot."
+  source: stage6_activation -> handoffs/S5_editorial.md
+  required: "when S5 is a selected seam"
+  execution_mode: handoff
+  owner: sanity
+  dynamic: regenerable_with_review
+  fallback: "the rail does not appear; anti-starvation rules apply"
+  validated_by: "handoff artifact carries headline, standfirst and the questions answered"
+  evidence: [FE, P1]
+  fe_basis: "post.campaign, S5 inject lock, cap 2 (charter campaign_002)"
+
+- field: in_fold_banner_copy
+  surface: [explore]
+  level: campaign
+  purpose: "S3 in-fold banner."
+  source: handoffs/S3_banner.md
+  required: "when S3 is a selected seam"
+  execution_mode: handoff
+  owner: sanity
+  evidence: [FE, P1]
+  fe_basis: "S3 composedAsset (charter surface_003)"
+  p1_basis: "NO HANDOFF WRITTEN AT ALL in the control run"
+
+- field: marketing_band_copy
+  surface: [explore, home]
+  level: campaign
+  purpose: "S4 marketing band."
+  source: handoffs/S4_band.md
+  required: "when S4 is a selected seam"
+  execution_mode: handoff
+  owner: sanity
+  evidence: [FE, P1]
+  fe_basis: "marketingBandAsset (charter surface_003)"
+  p1_basis: "NO HANDOFF WRITTEN AT ALL"
+
+- field: product_annotation
+  surface: [collection_pages, explore]
+  level: product
+  purpose: "One specific reason to notice this item here."
+  source: stage7_seam6 -> products.csv notes
+  required: "for pinned products only"
+  dynamic: regenerable_no_approval
+  length: "<= 90 chars"
+  fallback: "omit — an absent annotation is better than a generic one"
+  validated_by: "grounding check + swap test + non-praise check"
+  evidence: [FE, P1]
+  fe_basis: "CollectionItemCreate carries per-item notes and tags (charter product_truth_002)"
+  fe_caveat: "WHETHER THE FRONTEND RENDERS THESE IS UNVERIFIED. The API field exists; the
+              display path does not. Required for the execution artifact; display is SPEC."
+  p1_basis: "inherited verbatim from the engine's Why_It_Matches, truncated to 60 chars"
+
+manifest_summary:
+  required_fields: 11
+  present_in_control_run: 2
+  spec_deferred: 1
+  note: "9 of 11 required fields are absent from the control campaign."
+
+# ═══════════════════════════════════════════════════════════════════
+# 2 · EDITORIAL HIERARCHY
+# ═══════════════════════════════════════════════════════════════════
+
+hierarchy:
+
+  campaign:
+    answers: "Why is this happening now, and what is our position on it?"
+    may_contain: [premise, cultural claim, point of view, a stated exclusion]
+    must_not_contain: [product categories, collection names, merchandising rationale]
+    relation_to_parent: none
+    differentiation: "one campaign at a time"
+    length_discipline: "the premise is one sentence; if it needs two, it is two ideas"
+
+  collection:
+    answers: "What specific sub-argument does this make, that the others do not?"
+    may_contain: [a sub-angle, a product logic, a stated tension within the campaign premise]
+    must_not_contain:
+      - "the campaign premise restated"
+      - "the campaign display_name with a category noun attached"
+      - "language that would work identically for a sibling collection"
+    relation_to_parent: "advances the campaign argument along one axis; does not summarise it"
+    differentiation: >
+      Two collections in one campaign must differ by ANGLE, not by product category. 'Bags' and
+      'Perfume' is not differentiation; 'what you keep' and 'what you finally let go' is.
+    evidence: P1
+    p1_basis: "both control collections were 'a summer thing you hold onto', differing only by category"
+
+  rail:
+    answers: "What am I looking at, and why are these together, in this order?"
+    may_contain: [orientation, a selection principle, a reason the order matters]
+    must_not_contain:
+      - "the collection name restated"
+      - "a competing headline — the rail is not the campaign's second title"
+      - "superlatives about the products"
+    relation_to_parent: "a preview of exactly one collection; it earns the click, it does not summarise"
+    differentiation: "rail_name must differ from collection_name while sharing its keyword family"
+    evidence: [FE, BRAND]
+
+  product_annotation:
+    answers: "Why should I notice THIS one, HERE?"
+    may_contain:
+      - "shape, material, silhouette, construction"
+      - "how it behaves in use"
+      - "its styling role in this collection"
+      - "price-to-access relationship"
+      - "a specific cultural reference"
+      - "why it advances the collection's argument"
+    must_not_contain:
+      - "praise as the primary content"
+      - "restated product metadata the card already shows (brand, price, colour)"
+      - "styling advice that applies to most products"
+    relation_to_parent: "evidence for the collection's argument"
+    differentiation: "no two annotations in one collection may share a syntactic template"
+
+anti_restatement_rules:
+  - id: AR-1
+    rule: "A collection name may not contain the campaign display_name or its head noun."
+    evidence: P1
+  - id: AR-2
+    rule: >
+      A collection name may not be the campaign premise with a product-category noun
+      substituted. Test: replace the category noun with three other categories from the
+      catalogue. If all four read as equally plausible collection names for this campaign,
+      the name is a template, not a name.
+    evidence: P1
+    p1_basis: "'The ___ You Keep' works for every product in the catalogue"
+  - id: AR-3
+    rule: "A rail name may not equal, contain, or be contained by its collection name."
+    evidence: [FE, OPS]
+  - id: AR-4
+    rule: >
+      A product annotation may not be reducible to metadata already rendered on the card.
+      If deleting the annotation loses no information the shopper did not already have, it
+      fails.
+    evidence: P1
+
+# ═══════════════════════════════════════════════════════════════════
+# 3 · CAMPAIGN PREMISE — the decision object that must exist before collections
+# ═══════════════════════════════════════════════════════════════════
+
+campaign_premise:
+  produced_at_stage: 4
+  home: "stage4_brief.yaml — extend, do not create a new artifact"
+  blocks: "any collection selection or engine-collection reuse"
+  evidence: P1
+  p1_basis: >
+    All five load-bearing premise values in the control run were invented by the agent with no
+    input, no offered choice, and no rule to check against.
+
+  fields:
+    why_now:
+      required: true
+      must_cite: "at least one signal_id from stage1_signals"
+      status_vocabulary: [direct, normalized, inferred, proposed]
+      rule: "A calendar date is not a reason. 'It is late August' is not why_now."
+    shopper_tension:
+      required: true
+      rule: >
+        A tension is something the shopper holds two ways at once. 'Wants autumn clothes' is a
+        desire; 'wants autumn but cannot wear it yet' is a tension.
+    evidence:
+      required: true
+      must_cite: "signal_ids, with the unavailable named as unavailable"
+    editorial_point_of_view:
+      required: true
+      rule: >
+        A claim about the world that could be disagreed with. Test: can a reasonable person
+        argue the opposite? If not, it is an observation, not a point of view.
+      example_pass: "The shapes people are carrying solve nothing and photograph extremely well."
+      example_fail: "Transitional dressing is important in late summer."
+    campaign_mode:
+      required: true
+      one_of: [discovery, utility, inspiration, conversion, identity, entertainment]
+      rule: "Exactly one primary. A campaign that is all six is none of them."
+    intended_shopper_response:
+      required: true
+      must_map_to: "an instrumented event, or be declared uninstrumented (campaign charter behavior_rule_002)"
+    voice_range:
+      required: true
+      rule: "Per-campaign position on the eight axes, expressed as a deviation from default."
+    deliberate_exclusions:
+      required: true
+      rule: >
+        What this campaign refuses to be, beyond the owner's avoid_terms. A campaign with
+        nothing excluded has not been narrowed.
+
+  provenance:
+    rule: >
+      Every field carries an interpretation_status from schemas/interpretation_rules.yaml.
+      Sourced evidence, agent interpretation and owner-approved editorial judgement are
+      distinguished, and an agent proposal is never rendered as an owner decision.
+    evidence: [OPS, P1]
+
+# ═══════════════════════════════════════════════════════════════════
+# 4 · MERCHANDISING THESIS AND COLLECTION ARCHITECTURE
+# The upstream fix. This is where Pass 1 actually failed.
+# ═══════════════════════════════════════════════════════════════════
+
+merchandising:
+  produced_at_stage: [2, 4]
+  home: "stage2_opportunities (hypothesis) -> stage4_brief (thesis)"
+  hard_rule: "No collection may be named, reused or built before the thesis exists."
+
+  thesis:
+    fields:
+      organising_logic:
+        required: true
+        one_of:
+          - shared_use_case
+          - cultural_signal
+          - aesthetic_tension
+          - emerging_behaviour
+          - price_or_access_strategy
+          - styling_combination
+          - safe_to_experimental_progression
+          - competing_interpretations_of_one_trend
+        rule: "Named explicitly. 'These go together' is not an organising logic."
+      why_these_axes:
+        required: true
+        rule: "Why the campaign divides THIS way rather than another."
+      expected_collection_count:
+        required: true
+        rule: "Derived from the argument's axes, never from how many collections are available."
+
+  collection_qualification:
+    rule: "A collection qualifies on FOUR criteria. Product count is not one of them."
+    criteria:
+      - id: CQ-1
+        name: distinct_sub_angle
+        test: "States an angle no sibling collection states."
+      - id: CQ-2
+        name: distinct_job
+        test: >
+          Removing it would remove something from the campaign argument. If the campaign reads
+          the same without it, it is filler.
+      - id: CQ-3
+        name: product_evidence
+        test: >
+          At least three named products that could ONLY belong here, not in a sibling. Named at
+          proposal time as evidence, not selected afterwards.
+      - id: CQ-4
+        name: belongs_now
+        test: "Why this collection in THIS campaign, at THIS moment. Not merely compatible."
+    disqualifier:
+      rule: "Sufficient product count is not qualification."
+      evidence: P1
+      p1_basis: "B6 and X1 qualified on 29 and 28 rows and nothing else"
+
+  inclusion_logic:
+    required: true
+    rule: "A stated predicate a product either satisfies or does not."
+  exclusion_logic:
+    required: true
+    rule: >
+      What is deliberately kept out, and why. A collection with no exclusion rule is a
+      category, not a collection.
+
+  engine_collection_disposition:
+    rule: "An existing engine collection is a CANDIDATE, never a default."
+    decisions:
+      reuse:
+        permitted_when:
+          - "its existing thesis matches the new sub-angle without reinterpretation"
+          - "its name works under the new campaign premise without change"
+          - "charter constraint_repo_005 freeze rules are respected"
+        forbidden_when: "the name was authored for a different campaign and would have to be re-read"
+        evidence: P1
+        p1_basis: "'Perfume Wardrobe' and 'The Summer Bag' were reused under a premise they predate"
+      adapt:
+        rule: "New name and description under this campaign; membership unchanged. Produces a v2."
+      split:
+        rule: "One source collection yields two sub-angles. Each must pass CQ-1..CQ-4 independently."
+      merge:
+        rule: "Two sources serve one angle. Permitted only if the merged set passes exclusion logic."
+      reject:
+        rule: "Fails any of CQ-1..CQ-4. Rejection is the expected outcome for most candidates."
+    ordering_rule: >
+      Disposition is decided AFTER the sub-angle exists. Browsing the engine for what is
+      available and then writing an angle around it is the Pass 1 failure exactly.
+
+# ═══════════════════════════════════════════════════════════════════
+# 5 · PRODUCT SELECTION AND ANNOTATION
+# ═══════════════════════════════════════════════════════════════════
+
+product_rules:
+
+  selection:
+    - id: PS-1
+      rule: "A product must satisfy the collection's stated inclusion logic. No exceptions on merit."
+    - id: PS-2
+      rule: >
+        Availability filters, it does not select. Unavailable and unknown products may sit in a
+        collection but may never be pinned. Already enforced in build_csv.py.
+      evidence: [OPS, FE]
+    - id: PS-3
+      rule: >
+        Pin order follows the collection's argument, not a demand score alone. If position 1 is
+        not the clearest statement of the collection's thesis, the order is wrong.
+    - id: PS-4
+      name: redundancy_cap
+      rule: >
+        No more than two pinned products may share brand AND product type. A rail of twelve
+        near-identical items shows one idea twelve times.
+    - id: PS-5
+      name: range_requirement
+      rule: >
+        Pinned products must span the collection's declared price or interpretation range. A
+        'safe to experimental' logic with twelve safe items has not been executed.
+    - id: PS-6
+      rule: "Every product carries a one-line defensible relationship to the collection thesis."
+      evidence: P1
+
+  annotation:
+    grounding_required: true
+    must_be_grounded_in_one_of:
+      [shape, material, construction, silhouette, behaviour_in_use, styling_role,
+       price_to_access, cultural_reference, argument_advancement]
+    prohibited:
+      - "praise as the primary content"
+      - "restating brand, price or colour already on the card"
+      - "styling advice applicable to most products"
+      - "unsupported factual claims about materials, origin or performance"
+      - "trend-relevance claims with no signal_id or stated editorial rationale"
+    tests:
+      - id: AN-1
+        name: swap_test
+        rule: "Move the annotation to another product in the collection. If it still reads true, it fails."
+      - id: AN-2
+        name: deletion_test
+        rule: "Delete it. If nothing is lost, it should not exist."
+      - id: AN-3
+        name: template_test
+        rule: "No two annotations in one collection may share a syntactic template."
+    default_behaviour: "Omit rather than generate. An absent annotation beats a generic one."
+    evidence: [P1, BRAND]
+
+# ═══════════════════════════════════════════════════════════════════
+# 6 · CONTENT QUALITY RULES — four tiers, structure weighted over phrases
+# ═══════════════════════════════════════════════════════════════════
+
+quality_rules:
+
+  weighting_principle:
+    rule: "Structural failures outrank phrase failures."
+    evidence: P1
+    p1_basis: >
+      The control run scored ZERO cliche hits across 215 authored strings while failing the
+      swap test on every rail name and repeating one title formula five times. A phrase
+      blacklist would have passed it.
+
+  tier_1_structural:
+    blocking: automatic
+    tests:
+      - {id: S-1, name: required_fields_present, rule: "Every required manifest field exists.", detects: "9-of-11 absence"}
+      - {id: S-2, name: length_limits, rule: "Within the manifest's stated maximum."}
+      - {id: S-3, name: referenced_products_exist, rule: "Every referenced product resolves."}
+      - {id: S-4, name: claims_traceable, rule: "Trend or cultural claims cite a signal_id."}
+      - {id: S-5, name: dynamic_fields_resolve, rule: "No unresolved placeholders."}
+      - {id: S-6, name: distinctness, rule: "Collection names, rail names and descriptions are pairwise distinct."}
+      - {id: S-7, name: no_metadata_contradiction, rule: "Copy does not contradict product metadata."}
+
+  tier_2_linguistic:
+    blocking: "automatic for T-1..T-4; advisory for T-5..T-9"
+    tests:
+      - id: T-1
+        name: swap_test
+        rule: >
+          Substitute the head noun with three other catalogue categories. If all four readings
+          are equally plausible, the string is a template.
+        weight: highest
+        evidence: P1
+      - id: T-2
+        name: title_template_repetition
+        rule: >
+          No more than 40% of names at one level may share an opening construction. Detection:
+          group by first two tokens plus syntactic shape.
+        evidence: P1
+        p1_basis: "5 of 11 names began with 'The'"
+      - id: T-3
+        name: self_restatement_across_levels
+        rule: "A child's copy may not contain its parent's head noun or premise verb."
+        evidence: P1
+      - id: T-4
+        name: generic_category_substitution
+        rule: "A name that is [campaign concept] + [category noun] fails."
+        evidence: P1
+      - id: T-5
+        name: contrast_formula
+        rule: "'not X but Y' / 'rather than' at most once per campaign."
+        evidence: P1
+        p1_basis: "7 occurrences"
+      - id: T-6
+        name: em_dash_density
+        rule: "At most one em dash per 200 words of campaign-facing copy."
+        evidence: P1
+        p1_basis: "13 across authored copy"
+      - id: T-7
+        name: three_part_rhythm
+        rule: "At most two three-part comma rhythms per campaign."
+        evidence: P1
+        p1_basis: "10 detected"
+      - id: T-8
+        name: repeated_adjectives
+        rule: "No tone adjective more than twice across all campaign copy."
+        evidence: P1
+      - id: T-9
+        name: phrase_blacklist
+        rule: >
+          Vague promotional claims: perfect for any occasion, elevate your style, must-have,
+          effortlessly chic, timeless yet modern, dressing up or down, curated just for you,
+          discover the, a curated edit, obsessed, we love, your new favourite.
+        weight: lowest
+        note: "Retained as a floor. It caught nothing in the control run."
+
+  tier_3_editorial_judgement:
+    blocking: "human review only — never automatic"
+    questions:
+      - "Does the campaign hold a point of view someone could disagree with?"
+      - "Is each collection doing different work, or the same work on different categories?"
+      - "Does the copy add meaning the products do not already show?"
+      - "Is it specific enough that it could not have run last season?"
+      - "Are the products evidence for the idea, or were they grouped and justified after?"
+      - "Would a human editor publish this without rewriting most of it?"
+      - "Does it exercise taste — is anything presented as better than anything else?"
+
+  tier_4_brand:
+    blocking: "human review only"
+    questions:
+      - "Is this recognisably Shopya?"
+      - "Does it hold product calm, culture alive?"
+      - "Is the tone right for the surface — a rail title is not a hero line?"
+      - "Does it avoid both sterile taxonomy and trend-report breathlessness?"
+      - "Is it useful to a shopper while still carrying taste?"
+      - "Is there any fake familiarity or simulated friendship?"
+
+  slop_patterns:
+    evidence: [P1, BRAND]
+    catalogue:
+      - vague lifestyle language with no referent
+      - symmetrical three-part sentences used repeatedly
+      - adjective stacking
+      - confident assertion with no evidence
+      - '"from X to Y" constructions'
+      - explaining what the image already shows
+      - summary paragraphs that add nothing
+      - inclusivity language unrelated to the content
+      - title-case slogans
+      - every collection framed as "a curated edit"
+
+# ═══════════════════════════════════════════════════════════════════
+# 7 · VOICE PROFILE — durable, repo-level, not per-run
+# ═══════════════════════════════════════════════════════════════════
+
+voice_profile:
+  status: owner_supplied
+  governing_balance: "product calm, culture alive"
+  axes:
+    restrained_vs_expressive:    {default: 60/40, operational: "Expressive moments are earned and rare. Default to the plainer of two options."}
+    editorial_vs_conversational: {default: 65/35, operational: "Written, not spoken. No second-person familiarity."}
+    knowing_vs_explanatory:      {default: 65/35, operational: "Assume the reader recognises the reference. Do not gloss."}
+    serious_vs_playful:          {default: 60/40, operational: "Dry and culturally aware; never jokey or promotional-funny."}
+    insider_vs_generic:          {default: 55/45, operational: "Insider register, accessible vocabulary. A reference may be missed without losing the sentence."}
+    useful_vs_atmospheric:       {default: 55/45, operational: "Every atmospheric line must sit next to a useful one."}
+    opinionated_vs_neutral:      {default: 65/35, operational: "Take a position. Not everything is equally good."}
+    cultural_vs_commercial:      {default: 60/40, operational: "Lead with the observation; the product follows."}
+  per_campaign_deviation:
+    permitted: true
+    rule: "Stated as a deviation from default in stage4_brief.voice_range, with a reason. Max two axes may move by more than 15 points."
+  calibration:
+    pass: "This shape is everywhere because it solves nothing and photographs extremely well."
+    fail: "Discover the season's hottest must-have bags, curated just for you."
+    owner_line: "Still too hot for fall. Already bored of summer."
+
+# ═══════════════════════════════════════════════════════════════════
+# 8 · DYNAMIC CONTENT POLICY
+# ═══════════════════════════════════════════════════════════════════
+
+dynamic_policy:
+  principle: >
+    Stable editorial structure, dynamic inputs, controlled regeneration. The campaign's point
+    of view does not change because inventory did.
+
+  frozen_after_approval:
+    fields:
+      - campaign premise, point of view, mode
+      - voice range
+      - collection architecture, sub-angles and roles
+      - collection names
+      - rail names
+      - inclusion and exclusion logic
+    rule: "Changing any of these is a campaign REOPEN (campaign charter brief_reopened cascade)."
+
+  regenerable_no_approval:
+    fields:
+      - product annotations for newly-pinned products
+      - pin order within a rail, when driven by availability
+      - product counts
+    triggers: [availability_change, product_removed, ranking_change]
+
+  regenerable_with_review:
+    fields:
+      - collection_description
+      - editorial module copy
+      - length variants for a different surface
+    triggers: [trend_signal_update, surface_length_change, membership_change_over_20_percent]
+
+  requires_reopen:
+    fields:
+      - any change to a frozen field
+      - a collection failing CQ-1..CQ-4 after membership change
+      - the campaign premise no longer supported by its cited signals
+
+  drift_guard:
+    rule: >
+      Regeneration is bounded by the approved voice_range and the frozen fields. A regenerated
+      annotation is re-checked against Tier 1 and Tier 2; it never re-derives the premise.
+
+# ═══════════════════════════════════════════════════════════════════
+# 9 · WIZARD REQUIREMENTS — minimum editorial questions
+# Seven. Not a brand questionnaire.
+# ═══════════════════════════════════════════════════════════════════
+
+wizard_questions:
+
+- id: WQ-1
+  question: "What is the shopper holding two ways at once right now?"
+  supplies: campaign_premise.shopper_tension
+  source: human_required
+  present_choices: "agent proposes 3 from signals; human picks or rewrites"
+  downstream: [campaign_dek, all collection sub-angles, editorial modules]
+  rationale: "The tension is the campaign. It cannot be inferred from an objective."
+
+- id: WQ-2
+  question: "What is our position on it — the thing someone could disagree with?"
+  supplies: campaign_premise.editorial_point_of_view
+  source: human_required
+  present_choices: "agent proposes 2-3 positions, each with its signal evidence"
+  downstream: [display_name, dek, hero, every collection name]
+  rationale: "Invented wholesale in the control run."
+  evidence: P1
+
+- id: WQ-3
+  question: "What is this campaign's primary job?"
+  supplies: campaign_premise.campaign_mode
+  source: human_required
+  present_choices: "six options, single select"
+  downstream: [voice deviation, rail job, annotation density]
+
+- id: WQ-4
+  question: "What is the audience tired of seeing in this territory?"
+  supplies: [campaign_premise.deliberate_exclusions, quality_rules context]
+  source: human_preferred_agent_may_propose
+  present_choices: "agent proposes from counter_trend signals; human confirms or overrides"
+  downstream: [exclusions beyond avoid_terms, slop checks]
+
+- id: WQ-5
+  question: "What holds these collections together as one argument?"
+  supplies: merchandising.thesis.organising_logic
+  source: human_required
+  present_choices: "eight named logics, single select, each with a worked example"
+  downstream: [collection architecture, CQ-1..CQ-4, inclusion logic]
+  rationale: "The Pass 1 failure. Asked BEFORE any collection is looked at."
+  evidence: P1
+
+- id: WQ-6
+  question: "Which axes move for this campaign, and why?"
+  supplies: campaign_premise.voice_range
+  source: agent_proposes_human_confirms
+  present_choices: "defaults shown; deviation requires a stated reason"
+  downstream: "all generated copy"
+
+- id: WQ-7
+  question: "For each proposed collection: what does it argue that its siblings do not?"
+  supplies: "collection sub-angle and distinct job"
+  source: agent_proposes_human_confirms
+  present_choices: "agent proposes the sub-angle and 3 products only that collection could hold"
+  downstream: [collection_name, description, cover direction, inclusion logic]
+  rationale: "Forces CQ-1 and CQ-3 to be answered before products are counted."
+  evidence: P1
+
+wizard_discipline:
+  - "No question whose answer has no downstream field. Mood words without consequence are banned."
+  - "No question the agent can answer from signals — those become proposals, not questions."
+  - "Seven questions total. WQ-1, WQ-2, WQ-3 and WQ-5 are human-required; the rest are confirmations."
+
+# ═══════════════════════════════════════════════════════════════════
+# 10 · VALIDATION AND REVIEW MODEL — mapped into EXISTING stages
+# No new workflow states are proposed.
+# ═══════════════════════════════════════════════════════════════════
+
+review_model:
+  layers:
+    - {layer: completeness,           blocking: automatic, where: "SEAM6_READY entry", checks: "Tier 1 S-1, S-2, S-5"}
+    - {layer: structural_coherence,   blocking: automatic, where: "SEAM6_READY entry", checks: "Tier 1 S-3, S-4, S-6, S-7"}
+    - {layer: merchandising_coherence,blocking: automatic, where: "BRIEF_APPROVED + ROUTE_SELECTED entry", checks: "CQ-1..CQ-4 declared; thesis exists before collections"}
+    - {layer: linguistic_quality,     blocking: "automatic T-1..T-4, advisory T-5..T-9", where: "VALIDATED entry"}
+    - {layer: brand_fit,              blocking: human, where: "CAMPAIGN_APPROVED decision", checks: "Tier 3 and Tier 4"}
+    - {layer: rendered_frontend,      blocking: human, where: "LIVE entry, alongside post-cache verification", checks: "cards, rail headers, mobile, truncation, repeated modules"}
+  principle: >
+    Mechanical checks gate transitions. Editorial judgement gates the two OWNER DECISIONS that
+    already exist (brief_approved, campaign_approved). No new state is needed because the
+    decision points are already there.
+
+# ═══════════════════════════════════════════════════════════════════
+# 11 · MINIMUM IMPLEMENTATION RECOMMENDATION
+# ═══════════════════════════════════════════════════════════════════
+
+implementation:
+
+  extend_existing_artifacts:
+    stage2_opportunities:
+      add: [merchandising_hypothesis]
+      note: "One field. The full thesis lands at Stage 4."
+    stage4_brief:
+      add: [campaign_premise (8 fields), merchandising_thesis (3 fields), voice_range]
+      note: "The largest change. This is where the premise belongs and where it was missing."
+    stage5_routes:
+      add: [title_system, naming_constraints]
+      note: "Routes already carry tone and visual_logic; naming rules belong beside them."
+    stage6_activation:
+      add: [surface copy per activation — dek, hero, module copy; handoff copy for S2..S5]
+      note: "The activation record already lists seams. Copy attaches to the seam it renders on."
+    stage7_seam6:
+      add: [collection sub_angle, distinct_job, description, cover_direction, inclusion_logic,
+            exclusion_logic, cq_evidence, per-product annotation]
+      note: "Second-largest change. The merchandising record becomes an editorial record."
+
+  new_artifacts:
+    - name: content_review.yaml
+      justification: >
+        Review findings have nowhere to live. learning.yaml is process learning; this is
+        per-campaign quality. ONE new artifact.
+      status: proposed
+    - name: voice_profile
+      decision: "NOT a new artifact. It is section 7 of this charter — repo-level and durable."
+
+  validator_additions:
+    minimum:
+      - "Reuse each_has_non_null for all new required fields. No new predicate needed."
+      - "ONE new predicate: all_distinct(path, field) — serves S-6 and T-2."
+      - "ONE new predicate: no_substring_of(path_a, path_b) — serves AR-1, AR-3, T-3."
+    deferred:
+      - "swap test (T-1) — needs catalogue-category substitution; start as a review rubric, not a validator"
+      - "syntactic template detection (T-3, AN-3) — needs a parser; rubric first"
+
+  wizard_changes:
+    - "Seven questions (WQ-1..WQ-7), four human-required."
+    - "WQ-5 asked BEFORE any engine collection is inspected."
+    - "review-inputs extended to show editorial decisions alongside scope inputs."
+
+  remains_human:
+    - "Tier 3 editorial judgement and Tier 4 brand fit"
+    - "the swap test until it is mechanised"
+    - "rendered frontend review"
+    - "collection disposition: reuse, adapt, split, merge or reject"
+
+  explicitly_deferred:
+    - {item: rail_subtitle, reason: "no frontend field exists", evidence: SPEC}
+    - {item: "product annotation display", reason: "API field exists; render path unverified", evidence: SPEC}
+    - {item: "automated brand scoring", reason: "a single score hides which layer failed"}
+    - {item: "generated docs, retrospectives, per-surface length variants", reason: "no observed need"}
+    - {item: "new workflow states for content", reason: "existing decision points suffice"}
+    - {item: "Stage 2-6 schemas", reason: "unchanged from Pass 1 — the prerequisites still suffice"}
+
+  sequencing_note: >
+    Pass 3 should implement the WIZARD questions and the Stage 4 premise fields ONLY, then
+    re-run the campaign. Stage 7 editorial fields and the linguistic validators come after,
+    once we have seen whether better inputs alone fix the output. Implementing all of it at
+    once repeats the mistake this whole project has been correcting.

@@ -1,0 +1,174 @@
+# STAGE 0 · CAMPAIGN FRAME  (corrected)
+# schema: schemas/stage0_frame.schema.yaml v1.1.0
+# interpretation rules: schemas/interpretation_rules.yaml v1.0.0
+# Market confirmed by owner 2026-08-06 (decision: market_confirmed).
+# Compatibility aliases below are TRANSITIONAL, not a parallel source of truth. LRN-009 is
+# accepted as deferred debt: at workflow spec 1.3.0 the FRAME_READY predicates point at the
+# structured Stage 0 fields directly and these aliases are removed.
+# Corrected 2026-08-06 under the existing run. This is a CONTENT + SCHEMA correction, not a
+# state migration. The run stays pinned to workflow spec 1.2.0 and charter 0.2.0, and remains
+# in FRAME_READY. See learning.yaml for the eight findings that drove it.
+
+schema_version: 1.1.0
+interpretation_rules_version: 1.0.0
+
+# ═══ OWNER INPUT — what was actually said ═══════════════════════════
+owner_inputs:
+
+  objective:
+    raw: "More saves from returning users"
+    normalized:
+      desired_behavior: increase save.created activity
+      audience: returning_users
+    interpretation_status: normalized
+
+  requested_launch:
+    raw: "Today"
+    normalized_date: 2026-08-06
+    interpretation_status: normalized
+
+  planning_horizon:
+    raw: "Next 4-6 weeks"
+    minimum_weeks: 4
+    maximum_weeks: 6
+    interpretation_status: normalized
+
+  starting_territory:
+    raw: "Seasonal turn (summer->fall)"
+    normalized: late-summer-to-autumn seasonal transition
+    interpretation_status: normalized
+
+  exclusions:
+    raw:
+      - "No back-to-school framing"
+      - "No cosy/pumpkin autumn cliches"
+      - "No discount or sale language"
+    normalized_frames:
+      - back-to-school framing
+      - cliched cosy or pumpkin autumn framing
+      - discount-led or sale-led framing
+    interpretation_status: direct
+
+# ═══ TIMING — five distinct concepts ════════════════════════════════
+timing:
+  requested_launch_date: 2026-08-06
+  operational_interpretation:
+    value: begin campaign workflow immediately
+    interpretation_status: inferred
+  earliest_actual_campaign_launch:
+    value: null
+    interpretation_status: not_supplied
+  desired_campaign_end:
+    value: null
+    interpretation_status: not_supplied
+
+# ═══ OBJECTIVE — behaviour only, no lift claim ══════════════════════
+objective:
+  desired_behavior: increase save.created activity
+  audience: returning_users
+  event_mapping: save.created
+  interpretation_status: normalized
+
+# ═══ MEASUREMENT — disclosed, not solved ════════════════════════════
+measurement:
+  intended_event: save.created
+  audience_segment: returning_users
+  retrieval_status: unknown
+  baseline_available: unknown
+  causal_incrementality_measurable: false
+  proxy:
+    value: null
+    interpretation_status: not_supplied
+
+# ═══ AVOIDANCE — scoped to campaign expression ══════════════════════
+avoidance:
+  prohibited_campaign_frames:
+    - back-to-school framing
+    - cliched cosy or pumpkin autumn framing
+    - discount-led or sale-led framing
+  evidence_may_describe_prohibited_frames: true
+  prohibited_frames_may_not_be_adopted_as_recommendations: true
+  additional_restrictions:
+    value: []
+    interpretation_status: not_supplied
+
+# ═══ SCOPE — available is not selected ══════════════════════════════
+scope:
+  live_surfaces:
+    - explore
+    - collection_pages
+  seams_available_for_consideration: [S1, S2, S3, S4, S5, S6]
+  selected_seams: []
+  executable_seams: [S6]
+  handoff_seams: [S1, S2, S3, S4, S5]
+  market:
+    value: United States
+    interpretation_status: direct
+    basis: "Owner-confirmed 2026-08-06. Was a proposal; the owner confirmed it verbatim."
+    needs_confirmation: false
+    decision_ref: market_confirmed
+  derivation:
+    source: SHOPYA_CAMPAIGN_CHARTER.yaml
+    claims: [surface_001, surface_002, surface_003, surface_004, scope_001]
+    interpretation_status: inferred
+    note: >
+      Surfaces and seam execution modes are product facts read from the charter, not owner
+      input. selected_seams is EMPTY and is an owner decision at a later stage.
+
+# ═══ COMPATIBILITY (pinned workflow spec 1.2.0 prerequisites) ═══════
+planning_horizon: "Next 4-6 weeks"
+market: "United States"
+eligible_seams: [S1, S2, S3, S4, S5, S6]
+eligible_surfaces: [explore, collection_pages]
+hard_constraints:
+  - "No back-to-school framing"
+  - "No cosy/pumpkin autumn cliches"
+  - "No discount or sale language"
+
+known_unknowns:
+  - id: campaign_window
+    question: "No campaign start or end date was supplied — only a planning horizon."
+    interpretation_status: not_supplied
+    consequence: "Campaign duration is undetermined. It is not 4-6 weeks; that is how far ahead
+                  we are planning."
+  - id: first_party_behaviour
+    question: "No first-party save or search behaviour is available to this run."
+    interpretation_status: inferred
+    consequence: "Opportunity scoring rests on capability, not evidence. L3-by-evidence is
+                  unclaimable this run."
+    charter_ref: [user_behavior_004, ownability_003]
+  - id: save_retrieval
+    question: "Whether save.created is retrievable for returning users is unestablished."
+    interpretation_status: inferred
+    consequence: "Disclosed. No proxy is selected, and none is authorized by this gap alone."
+    charter_ref: [measurement_003, measurement_006]
+  - id: s6_scheduling
+    question: "S6 feed date-window semantics are unverified."
+    interpretation_status: inferred
+    consequence: "Any dated activation may need manual is_active handling."
+    charter_ref: scheduling_005
+  - id: rail_to_collection_link
+    question: "Rail view-all resolves to /feeds/{id}, not the indexable collection page."
+    interpretation_status: inferred
+    consequence: "Collection pages are rankable but unlinked from their own rail. Handoff."
+    charter_ref: [surface_004, surface_004b, view_all_001]
+  - id: explore_baseline
+    question: "Live explore is 11 feeds, mostly QA-named, with sort_order collisions at 0."
+    interpretation_status: inferred
+    consequence: "No trustworthy denominator. Absolute cap of 4 new feeds; proportional rule
+                  stays deferred."
+    charter_ref: [surface_008, explore_001, explore_002]
+  - id: probe_access
+    question: "The staging API 403s this tool's egress (Cloudflare edge rule)."
+    interpretation_status: inferred
+    consequence: "The live probe requires a human-run curl."
+    charter_ref: constraints_006
+  - id: brand_voice_doc
+    question: "The designing-for-shopya voice skill has not been read."
+    interpretation_status: inferred
+    consequence: "Copy would be authored without the brand's own voice document."
+    charter_ref: brand_003
+
+campaign_id:
+  value: null
+  status: null

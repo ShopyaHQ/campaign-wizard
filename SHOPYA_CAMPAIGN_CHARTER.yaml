@@ -1,0 +1,1086 @@
+# SHOPYA CAMPAIGN CHARTER
+# Machine-readable product and campaign contract. Read by the state validator.
+# No campaign run may pass NEW -> FRAME_READY unless the pinned charter version is approved.
+#
+# status:
+#   implemented   - directly verified in product code or an authoritative technical contract
+#   position      - approved PRODUCT, BRAND, or STRATEGIC position
+#   approved_rule - approved GOVERNANCE or OPERATING rule (workflow, validation, execution,
+#                   identity, lifecycle, thresholds). Enforced by the wizard, not by the product
+#   proposed      - rule or interpretation still awaiting a decision
+#   unknown       - cannot currently be established
+#
+# position and approved_rule are NOT interchangeable. A brand promise is a position;
+# a validator invariant is an approved_rule.
+#
+# Proposed and inferred claims are NEVER silently promoted to product truth.
+
+charter:
+  version: 0.2.0
+  status: approved
+  approved_by: product_owner
+  approved_at: 2026-08-06T15:00:27Z
+  supersedes: 0.1.0
+
+  approval:
+    rationale: >
+      All owner decisions of 2026-08-06 are recorded as claims. Every unresolved item is
+      classified as blocking_charter_approval, blocking_capability, or accepted_nonblocking.
+      No item blocks charter approval.
+    effect: >
+      Approval promotes every proposed governance or operating rule to approved_rule and clears
+      requires_owner_confirmation on it. Product, brand and strategic positions remain position.
+      Claims with status unknown are NOT promoted — approval cannot resolve an open question —
+      and retain requires_owner_confirmation: true.
+    status_vocabulary_note: >
+      approved_rule was added in this revision. Promoting operating rules to position overloaded
+      that status: position is reserved for product, brand and strategic positions, while
+      validator rules, state transitions, rail invariants, scheduling disclosures and lifecycle
+      controls are approved operating rules.
+    rulings_applied:
+      - "constraint_repo_005: absolute never-edited rule REJECTED; replaced by a lifecycle
+         rule (editable before LIVE, frozen at LIVE, versioned collection for material
+         post-launch change, recorded exception for emergencies). Validator-enforced, not
+         API-enforced."
+      - "scheduling_002: DOWNGRADED to proposed / partially_verified. Direct inspection of
+         composed-assets.ts was required and is impossible from this session — shopya-frontend
+         is not a connected folder." 
+
+  evidence_base:
+    - source: shopya-frontend provenance audit
+      commit: e137b56d
+      audited_at: 2026-08-06
+      authority: authoritative until a live sync is built (v2)
+      coverage_gaps:
+        - "api-develop unreadable (stale snapshot, no feeds code). Backend claims rest on
+           committed OpenAPI + admin-develop client + live staging probes."
+        - "First-party event storage (ghostframe2025) not audited."
+        - "Sanity dataset contents not audited (schema/loader code only)."
+    - source: shopya-campaign-wizard/scripts
+      authority: repository operational contract, read directly 2026-08-06
+    - source: shopya-collection-curation
+      authority: sibling curation engine contracts, read 2026-08-06
+    - source: owner decisions
+      recorded: 2026-08-06
+      authority: product-owner rulings on scope, identity, scheduling, rails, thresholds
+
+  # Pending validations do NOT block charter approval. Each blocks only a named capability.
+  # Until a validation passes, its capability is unavailable to campaign execution.
+  pending_validations:
+    - id: s6_window_semantics
+      blocking_for:
+        - claiming_s6_window_scheduling_verified
+      blocking_for_charter_approval: false
+      test_matrix:
+        - "future start: absent before threshold, present after"
+        - "expired end: absent after threshold"
+        - "current valid window: present"
+        - "is_active false: absent  (REGRESSION case, not an unknown)"
+        - "exact start/end boundary and timezone normalization"
+    - id: collection_item_order_persistence
+      blocking_for:
+        - claiming_persisted_collection_item_order
+      blocking_for_charter_approval: false
+      test_matrix:
+        - "initial creation order"
+        - "additions after creation"
+        - "removals and re-additions"
+        - "bulk import"
+        - "API retrieval order"
+        - "admin edits"
+      notes: "Initial creation order alone does not establish a durable ordering contract."
+    - id: first_party_event_retrieval
+      blocking_for:
+        - claiming_L3_by_evidence
+        - claiming_wizard_queryable_measurement
+      blocking_for_charter_approval: false
+    - id: list_viewed_firing_semantics
+      blocking_for:
+        - using_commerce_list_viewed_as_exposure_denominator
+      blocking_for_charter_approval: false
+    - id: rail_view_all_destination
+      blocking_for:
+        - claiming_rail_links_to_collection_page
+      blocking_for_charter_approval: false
+    - id: explore_default_set_normalization
+      blocking_for:
+        - restoring_proportional_page_share_guardrail
+      blocking_for_charter_approval: false
+    - id: sanity_window_production_path
+      blocking_for:
+        - claiming_sanity_window_scheduling_production_verified
+      blocking_for_charter_approval: false
+      test_matrix:
+        - "predicate present at lib/sanity/composed-assets.ts:40-44"
+        - "production asset-loading path demonstrably uses that query"
+      notes: "Requires shopya-frontend to be reachable. See scheduling_002." 
+
+  unresolved_claims: []   # none block charter approval
+
+claims:
+
+  # ═══ 0 · TERMINOLOGY ═════════════════════════════════════════════
+  - id: terminology_001
+    category: campaign_definition
+    claim: "S1-S6 are SEAMS, not surfaces. A surface is a page or channel (home, explore, email, paid); a seam is an authoring slot with a fixed owner and activation authority. Do not use the words interchangeably."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner ruling 2026-08-06", "surface_003 six-seam ownership table"]
+    requires_owner_confirmation: false
+    notes: ""
+
+  # ═══ 1 · PRODUCT TRUTH ═══════════════════════════════════════════
+  - id: product_truth_001
+    category: product_truth
+    claim: "The core user action is saving a product into user-owned collections; instrumented as save.created / save.removed / save.context_changed."
+    status: implemented
+    sources:
+      - {path: lib/telemetry/schemas/index.ts, reference: "save.created, save.removed, save.context_changed"}
+      - {path: hooks/useSaveProductConfig.ts, reference: "canonical save mutation hook"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "The product's central gesture; anchor for campaign-worthy behavior."
+
+  - id: product_truth_002
+    category: product_truth
+    claim: "Collections are user-creatable groupings with name, description, cover image, public/featured flags, and per-item notes/tags."
+    status: implemented
+    sources:
+      - {path: agent_knowledge/api/openapi.json, reference: "POST /collections; POST /collections/{id}/items"}
+      - {path: lib/types/collection.ts, reference: CollectionResponse}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "User-created and campaign-authored collections are the SAME entity type."
+
+  - id: product_truth_003
+    category: product_truth
+    claim: "Saved-price context is captured at save time (price_when_saved); product cards carry save/manage actions on every browse rail."
+    status: implemented
+    sources:
+      - {path: agent_knowledge/api/openapi.json, reference: CollectionItemCreate.price_when_saved}
+      - {path: components/browse/BrowseSurfaceProductRail.tsx, reference: "openManageProduct via ProductRailSection"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: ""
+
+  - id: product_truth_004
+    category: product_truth
+    claim: "First open lands on a marketing/editorial home with collage hero, mascot narrative sections and trending/collections rails; campaign packages can redress it."
+    status: implemented
+    sources:
+      - {path: "app/(app)/page.tsx", reference: "Surface Package resolve ~144; data-campaign-skin ~122"}
+      - {path: lib/packages/home.ts, reference: HOME_PACKAGES}
+    basis: []
+    requires_owner_confirmation: false
+    notes: ""
+
+  - id: product_truth_005
+    category: product_truth
+    claim: "Public profile and user surfaces exist (/profile, /users, /creators) alongside product/brand/collection detail pages."
+    status: implemented
+    sources:
+      - {path: "app/(app)/", reference: "route directories"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "Depth not audited."
+
+  # ═══ 2 · USER BEHAVIOR ═══════════════════════════════════════════
+  - id: user_behavior_001
+    category: user_behavior
+    claim: "The client instruments exactly 18 events: auth.sign_up, auth.signed_in, auth.signed_out, commerce.list_viewed, commerce.outbound_clicked, commerce.product_viewed, consent.banner_viewed, consent.decided, consent.preferences_opened, error.client, interaction.clicked, interaction.impression, interaction.scroll_depth, route.viewed, save.context_changed, save.created, save.removed, search.submitted."
+    status: implemented
+    sources:
+      - {path: lib/telemetry/schemas/index.ts, reference: "18-event registry"}
+      - {path: lib/telemetry/track.ts, reference: "track() entry point"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "The currently INSTRUMENTED set. It is not a limit on what a campaign may target
+            (see behavior_rule_001) — only on what is measurable without new instrumentation."
+
+  - id: user_behavior_002
+    category: user_behavior
+    claim: "Events fan out to GA4 and a first-party receiver, gated by a consent module with analytics/personalization/marketing categories."
+    status: implemented
+    sources:
+      - {path: lib/telemetry/fanout.ts, reference: "dual-sink fanout"}
+      - {path: lib/telemetry/consent.ts, reference: "consent SSOT"}
+      - {path: agent_knowledge/telemetry/EVENT_CONTRACT.md, reference: "envelope + routing"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: ""
+
+  - id: user_behavior_003
+    category: user_behavior
+    claim: "Passive exposure is instrumented: route views, scroll depth, list impressions and outbound retailer clicks."
+    status: implemented
+    sources:
+      - {path: lib/telemetry/RouteObserver.tsx, reference: route.viewed}
+      - {path: lib/telemetry/ScrollDepthObserver.tsx, reference: interaction.scroll_depth}
+      - {path: lib/telemetry/useListViewed.ts, reference: commerce.list_viewed}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "commerce.list_viewed is a CANDIDATE exposure denominator only. Its firing semantics
+            on campaign surfaces are unverified — see pending_validations.list_viewed_firing_semantics."
+
+  - id: user_behavior_004
+    category: user_behavior
+    claim: "Whether recorded first-party events are retrievable after ingestion cannot be verified; storage lives in the ghostframe2025 receiver."
+    status: unknown
+    sources:
+      - {path: agent_knowledge/telemetry/CROSS_REPO_STATUS.md, reference: "receiver-side phase status"}
+    basis: ["Receiver repo not audited; this repo only sends."]
+    requires_owner_confirmation: true
+    notes: "Blocks L3-by-evidence and wizard-queryable measurement. Does not block the charter."
+
+  - id: user_behavior_005
+    category: user_behavior
+    claim: "Follow, dismiss and share are not in the instrumented taxonomy, though the API exposes collection like/share/save endpoints."
+    status: implemented
+    sources:
+      - {path: lib/telemetry/schemas/index.ts, reference: "absence from registry"}
+      - {path: agent_knowledge/api/openapi.json, reference: "POST /collections/{id}/like|share|save"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "A campaign MAY target these; it must then disclose them as uninstrumented."
+
+  # ═══ 3 · SURFACE AND SEAM INVENTORY ══════════════════════════════
+  - id: surface_001
+    category: surface_inventory
+    claim: "/explore is live on the catalog-as-manifest model: it renders whatever GET /feeds?group=explore returns, ordered by sort_order, titled by feed.name, with zero frontend slug maps."
+    status: implemented
+    sources:
+      - {path: lib/feeds/browse-catalog-loader.ts, reference: "loadBrowseSurface 129-172; flatten sort 92-100"}
+      - {path: "app/(app)/explore/page.tsx", reference: "74-97"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "Authoring a feed IS authoring the page. No deploy required."
+
+  - id: surface_002
+    category: surface_inventory
+    claim: "/home and /discover rails are pre-migration (interim list-API-backed); only header copy varies by campaign. Authored feed rails cannot land there today."
+    status: implemented
+    sources:
+      - {path: agent_knowledge/sanity/PRESENTABLE_ASSETS.md, reference: "S6 row: interim list-API w/ copy fills"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "/trending and /for-you exist but sit outside current surface focus."
+
+  - id: surface_003
+    category: surface_inventory
+    claim: "Campaign authoring is split across six seams with fixed owners: skin+package (code), S2 cover / S3 banner (Sanity composedAsset), S4 marketing bands (Sanity marketingBandAsset), S5 editorial (Sanity post.campaign), S6 feed rails (backend catalog via admin)."
+    status: implemented
+    sources:
+      - {path: agent_knowledge/sanity/PRESENTABLE_ASSETS.md, reference: "six-seams table, graduated 2026-07-07"}
+      - {path: lib/packages/types.ts, reference: SurfacePackage}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "S6 is this repository's ONLY execution scope."
+
+  - id: surface_004
+    category: surface_inventory
+    claim: "Collection pages are public, indexable URLs at /collections/[id] with per-collection title tags ({name} - Shopya), descriptions and OpenGraph images; robots.txt does not disallow them; no sitemap file exists."
+    status: implemented
+    sources:
+      - {path: "app/(app)/collections/[id]/page.tsx", reference: "generateMetadata 36-62"}
+      - {path: app/robots.ts, reference: "allow '/'; disallow /api/ /studio/ /auth/callback /logo-cards /save"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "Collection pages are durable organic campaign destinations. Keyword strategy on
+            collection names has a real surface."
+
+  - id: surface_004b
+    category: surface_inventory
+    claim: "Rail 'View all' resolves to /feeds/{feedId}, not /collections/{id}. The indexable collection asset receives no internal link from its own rail."
+    status: implemented
+    sources:
+      - {path: components/browse/CatalogRails.tsx, reference: "line 46 feedIndexHref; universal View-all contract 41-45"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "HANDOFF CAPABILITY, not a charter blocker. Future contract in view_all_001.
+            /feeds/[feedId] robots status not established."
+
+  - id: view_all_001
+    category: surface_inventory
+    claim: "Intended future contract: view_all_destination {type: collection|feed, id}. Default routing — a campaign rail previewing a campaign collection resolves to the collection page; a standalone feed with no public collection equivalent resolves to the feed page; an ambiguous mapping is a validation failure or an explicit override."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner ruling 2026-08-06", "surface_004 indexability", "surface_004b current behavior"]
+    requires_owner_confirmation: false
+    notes: "Handoff requirement until the frontend or backend supports it. The wizard must not
+            claim a rail links to its collection page while surface_004b holds."
+
+  - id: surface_006
+    category: surface_inventory
+    claim: "Closed sub_group set: fashion, home_interior, tech, beauty, travel, wellness_health. A tagged feed appears on its vertical AND on unfiltered All; an untagged feed appears on All only; vertical views are exclusive server re-queries."
+    status: implemented
+    sources:
+      - {path: lib/feeds/types.ts, reference: "FeedSubGroupSchema 48-55"}
+      - {path: lib/feeds/feed-client.ts, reference: "sub_group: Exclusive"}
+      - {path: components/browse/BrowseSurfaceToolbar.tsx, reference: "97-99, 139-140 ?category_slug"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "Live probe 2026-08-06 confirmed tagged feeds in the unfiltered response."
+
+  - id: surface_007
+    category: surface_inventory
+    claim: "A feed disappears from the page when its resolve fails, times out (5s), returns non-OK, returns ZERO items, fails structural narrowing, has a non-products/collections/brands entity, or is_active is false. The drop threshold is EMPTY, not a minimum count."
+    status: implemented
+    sources:
+      - {path: lib/feeds/surface-feed-loader.ts, reference: "103-105, 119-121, 135+ null on empty/fail"}
+      - {path: lib/feeds/feed-client.ts, reference: "FETCH_TIMEOUT_MS 5000"}
+      - {path: lib/feeds/browse-catalog-loader.ts, reference: "74-77 unknown-entity skip; 166-171 drop"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "12/10/12 are DEFAULT_RAIL_SIZE display caps, not floors. See render_001/render_002."
+
+  - id: surface_008
+    category: surface_inventory
+    claim: "Live staging explore (2026-08-06) holds 11 feeds, mostly QA/test-named, with sort_order collisions at 0, and only the fashion sub_group tagged."
+    status: implemented
+    sources:
+      - {path: "https://api-staging.shopya.app/api/v1/feeds?group=explore", reference: "live GET 200, 2026-08-06"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "The denominator is untrustworthy. See explore_001."
+
+  # ═══ 4 · BRAND POSITION ══════════════════════════════════════════
+  - id: brand_001
+    category: brand_position
+    claim: "Public meta copy positions Shopya around save-driven discovery: '/trending - What people are saving now'; '/explore - Browse by category ... trending products, top brands, featured collections, recent guides'."
+    status: implemented
+    sources:
+      - {path: lib/seo/surfaceMetadata.ts, reference: "25-27 explore; 77-78 trending"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "Shipped in <head> today. 'What people are saving now' should constrain campaign voice."
+
+  - id: brand_002
+    category: brand_position
+    claim: "Campaign copy claims price-watching as a product promise: 'Shopya watches the prices while you find gifts they will keep'."
+    status: position
+    sources:
+      - {path: lib/packages/home.ts, reference: "34, 48 hero dekText"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "price_alerts / price_history endpoints exist; client depth unverified."
+
+  - id: brand_003
+    category: brand_position
+    claim: "Brand voice and visual direction are governed by the designing-for-shopya skill and a two-weight, sentence-case, token-only design discipline."
+    status: position
+    sources:
+      - {path: .claude/skills/designing-for-shopya/SKILL.md, reference: "brand direction skill"}
+      - {path: .claude/rules/architecture-catalog.md, reference: "Rule 6 design parity"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "Skill body not deep-read. Flagged for v2 sync — this tool authors copy without it."
+
+  # ═══ 5 · CAMPAIGN DEFINITION AND SCOPE ═══════════════════════════
+  - id: campaign_001
+    category: campaign_definition
+    claim: "campaign_id is a cross-system join label used by code packages, ?campaign= overrides, Sanity campaign fields, campaign registries, CSV and execution artifacts."
+    status: implemented
+    sources:
+      - {path: agent_knowledge/campaigns/CAMPAIGN_AUTHORING_CONTRACT.md, reference: "§1 Campaign identity"}
+      - {path: lib/packages/types.ts, reference: "SurfacePackage.id"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "It is an identifier other systems key on, not a creative output."
+
+  - id: campaign_002
+    category: campaign_definition
+    claim: "Campaign differs from editorial by mechanism: campaign content is seam-dressing selected by the active package; editorial is post-backed content a campaign can only tag and inject (S5 lead, cap 2, anti-starvation)."
+    status: implemented
+    sources:
+      - {path: agent_knowledge/sanity/PRESENTABLE_ASSETS.md, reference: "S5 row D3 inject lock"}
+      - {path: components/browse/ExploreRailsLoader.tsx, reference: "53 loadExploreVibeStreams(campaign)"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: ""
+
+  - id: campaign_003
+    category: campaign_definition
+    claim: "Seven campaign package ids exist per surface (default, holiday-2026, black-friday-2026, back-to-school-2026, summer-editorial-2026, spring-refresh-2026, july-4-2026); all are preview-only with no window."
+    status: implemented
+    sources:
+      - {path: lib/packages/explore.ts, reference: "EXPLORE_PACKAGES; 'No window -> never auto-activates'"}
+      - {path: lib/packages/home.ts, reference: "HOME_PACKAGES incl JULY_4_2026"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "A campaign needing a NEW skin needs a code change, not just authoring. This is a
+            handoff dependency, not a charter blocker."
+
+  - id: scope_001
+    category: campaign_definition
+    claim: "Authoring scope is every seam and surface with a defined strategic role for the selected campaign. Execution scope is Seam 6 only: product rails, source collections, product eligibility, source probing, pinned rail ordering, feed configuration, CSV generation, repository-supported validation."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner scope decision 2026-08-06", "surface_003", "constraints_003 no write path"]
+    requires_owner_confirmation: false
+    notes: "No campaign is required to use every surface."
+
+  - id: scope_002
+    category: campaign_definition
+    claim: "Every seam or surface included in an activation architecture declares execution_mode (executable | handoff), owner, activation_authority, implementation_status and artifact. The wizard must never imply a handoff was implemented."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner scope decision 2026-08-06"]
+    requires_owner_confirmation: false
+    notes: "State must separately track activation_architecture_status, seam6_execution_status,
+            external_handoffs_status and external_handoffs_implemented."
+
+  # ═══ 6 · IDENTITY MODEL ══════════════════════════════════════════
+  - id: identity_001
+    category: identity
+    claim: "Three distinct identity layers: run_id (internal), campaign_id (external join label), display_name (creative)."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner ruling 2026-08-06", "campaign_001 cross-system key"]
+    requires_owner_confirmation: false
+    notes: ""
+
+  - id: identity_002
+    category: identity
+    claim: "run_id is cmp_<ulid>, minted at NEW, immutable, internal to the wizard; used for state, research provenance, draft artifacts and abandoned runs. It is never the package id, Sanity campaign field, ?campaign= override or registry label."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner ruling 2026-08-06"]
+    requires_owner_confirmation: false
+    notes: ""
+
+  - id: identity_003
+    category: identity
+    claim: "campaign_id format is <occasion-or-durable-subject>-<year>. It must derive from the durable occasion, territory or subject — never from the creative route or display_name — and must satisfy the existing campaign-label validation contract."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources:
+      - {path: agent_knowledge/campaigns/CAMPAIGN_AUTHORING_CONTRACT.md, reference: "§1"}
+    basis: ["Owner ruling 2026-08-06"]
+    requires_owner_confirmation: false
+    notes: "Examples: black-friday-2026, back-to-school-2026, summer-travel-2026."
+
+  - id: identity_004
+    category: identity
+    claim: "campaign_id may be PROPOSED as soon as the durable subject is clear, including at opportunity selection. Proposing or minting is not approval; owner confirmation remains a mandatory gate before execution."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner ruling 2026-08-06"]
+    requires_owner_confirmation: false
+    notes: "Record as {value, status, confirmed_by_owner, externally_referenced}."
+
+  - id: identity_005
+    category: identity
+    claim: "Immutability begins at the FIRST EXTERNAL REFERENCE. Before that point an abandoned run releases the slug, a rejected id returns to the pool, and the id may be revised through the approval gate. After it, the id is immutable, renaming requires a migration, and abandoned externally-referenced ids stay retired."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner ruling 2026-08-06"]
+    requires_owner_confirmation: false
+    notes: "Record first_external_reference {system, artifact, timestamp}."
+
+  - id: identity_006
+    category: identity
+    claim: "Only one active or externally-referenced campaign may own a given occasion-year id. A second concurrent run claiming the same id must fail validation or explicitly join the existing campaign."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner ruling 2026-08-06"]
+    requires_owner_confirmation: false
+    notes: "Intentional protection against parallel runs fragmenting one occasion."
+
+  - id: identity_007
+    category: identity
+    claim: "display_name is creative and presentational, created during route development or after route selection, may change without changing campaign_id, and is never the cross-system join key."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner ruling 2026-08-06"]
+    requires_owner_confirmation: false
+    notes: ""
+
+  # ═══ 7 · SCHEDULING AND ACTIVATION ═══════════════════════════════
+  - id: scheduling_001
+    category: scheduling
+    claim: "Code-package seams: activation_authority package_window, semantic_status verified, evaluation_mode request_time. resolvePackage evaluates the window per request on the dynamically rendered path. This is the sharpest available activation lever, subject to downstream page caching."
+    status: implemented
+    sources:
+      - {path: lib/packages/types.ts, reference: "SurfacePackage.window"}
+      - {path: agent_knowledge/campaigns/CAMPAIGN_AUTHORING_CONTRACT.md, reference: "§1 activation authority"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: ""
+
+  - id: scheduling_002
+    category: scheduling
+    claim: "Sanity-backed seams: activation_authority sanity_isActive_startAt_endAt, evaluation_mode query_time, precision cache-bounded. Asserted predicate: isActive == true AND (!defined(startAt) OR startAt <= now()) AND (!defined(endAt) OR endAt > now())."
+    status: proposed
+    verification_status: partially_verified
+    sources:
+      - {path: "lib/sanity/composed-assets.ts:40-44", reference: "ASSERTED location of the predicate — NOT INSPECTED"}
+    basis:
+      - "Owner assertion 2026-08-06 citing composed-assets.ts:40-44"
+      - "Direct inspection IMPOSSIBLE from this session: shopya-frontend is not a connected
+         folder. Reachable mounts are shopya-campaign-wizard, shopya-collection-curation and
+         an empty CollectionCuration. A filesystem search for composed-assets* returned nothing."
+    requires_owner_confirmation: false
+    notes: >
+      Downgraded from implemented per owner ruling: the claim must not rest on an assertion or
+      an audit summary when the repository could settle it. The repository CANNOT settle it from
+      here. Two things remain unestablished — that the predicate is present at that location, and
+      that the production Sanity asset-loading path uses that query. Blocks only
+      claiming_sanity_window_scheduling_production_verified. Does not block charter approval.
+      Upgrade path: connect shopya-frontend, inspect the file and its call sites, then promote
+      to implemented with a production call-path reference.
+  - id: scheduling_003
+    category: scheduling
+    claim: "Activation precision is bounded by cache windows, recorded per consumer rather than as one universal number: collage_slides 60s, feed contents 300s, feed catalog 600s. Fetch timeout is 5s."
+    status: implemented
+    sources:
+      - {path: lib/feeds/feed-client.ts, reference: "CATALOG_REVALIDATE 600, RESOLVE 300, TIMEOUT 5000"}
+      - {path: agent_knowledge/sanity/PRESENTABLE_ASSETS.md, reference: "collageSlide revalidate 60"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "No campaign may promise minute-precise activation unless the selected seams and
+            their caches support it. Activation records must expose go_live.expected_visibility
+            {earliest, latest} and cache_assumptions."
+
+  - id: scheduling_004
+    category: scheduling
+    claim: "Seam 6 feeds: is_active gating is VERIFIED — the public catalog excludes inactive feeds and admin must pass include_inactive=true to see them. New feeds default is_active:false."
+    status: implemented
+    sources:
+      - {path: admin-develop/lib/feeds.ts, reference: "101+110 include_inactive"}
+      - {path: admin-develop/components/FeedForm.tsx, reference: "line 132 default is_active false"}
+      - {path: agent_knowledge/api/openapi.json, reference: "FeedCreate is_active"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "is_active:false -> absent is a REGRESSION test case, not an unresolved capability."
+
+  - id: scheduling_005
+    category: scheduling
+    claim: "Seam 6 window semantics are PARTIALLY VERIFIED. Verified: is_active gating. Pending: start window behavior, end window behavior, exact boundary behavior, timezone normalization. Precision cache-bounded."
+    status: implemented
+    sources:
+      - {path: agent_knowledge/api/openapi.json, reference: "FeedCreate active_from, active_until"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "Until the s6_window_semantics matrix passes, S6 date-window scheduling must NEVER
+            be described as verified. Blocks a capability, not the charter."
+
+  - id: scheduling_006
+    category: scheduling
+    claim: "Timing INTENT and technical scheduling CAPABILITY are separate records. delivery.intent carries mode (evergreen | launch_window | manual_release) with desired_start/desired_end; each seam separately carries its scheduling capability record."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner ruling 2026-08-06"]
+    requires_owner_confirmation: false
+    notes: "Replaces the earlier evergreen|scheduled fork, which conflated the two."
+
+  # ═══ 8 · RAIL AND ORDERING INVARIANTS ════════════════════════════
+  - id: rail_001
+    category: rail_contract
+    claim: "HARD INVARIANT: one pinned rail maps to exactly one collection. Zero collections is invalid; more than one is invalid. A multi-collection rail must be unrepresentable in wizard output."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources:
+      - {path: scripts/build_csv.py, reference: "'collections mapped to more than one rail'"}
+    basis: ["Owner ruling 2026-08-06"]
+    requires_owner_confirmation: false
+    notes: "Not to be softened in explanatory prose or side clauses. Any earlier 'where multiple
+            collections populate a rail' language is REMOVED.
+            ERROR: each rail must reference exactly one collection"
+
+  - id: rail_002
+    category: rail_contract
+    claim: "rail_position is REQUIRED for every pinned rail and controls order through the ordered feed.include_ids array. Persistence: supported."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources:
+      - {path: admin-develop/lib/feeds.ts, reference: "29-37 FeedRules; include_ids order 31-34"}
+    basis: ["Owner ruling 2026-08-06"]
+    requires_owner_confirmation: false
+    notes: "ERROR: rail_position is required for every pinned rail"
+
+  - id: rail_003
+    category: rail_contract
+    claim: "collection_rank is DEPRECATED and non-operative. It may remain temporarily as a human-readable field but must not be represented as executable. Violation is a WARNING, not a hard failure."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources:
+      - {path: scripts/build_csv.py, reference: "COLS includes collection_rank"}
+      - {path: agent_knowledge/api/openapi.json, reference: "no position field; no reorder endpoint"}
+    basis: ["Owner ruling 2026-08-06", "constraints_005"]
+    requires_owner_confirmation: false
+    notes: "WARNING: collection_rank is deprecated and has no persistence effect.
+            Use rail_position to control feed include_ids order."
+
+  - id: rail_004
+    category: rail_contract
+    claim: "collection_item_position is UNSUPPORTED — persistence: unsupported, implementation: none. Do not claim a curated rail sequence continues on the collection page."
+    status: implemented
+    sources:
+      - {path: agent_knowledge/api/openapi.json, reference: "CollectionItemUpdate; GET items params page,size only"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "Must never be confused with rail_position."
+
+  - id: rail_005
+    category: rail_contract
+    claim: "Initiative first_class_campaign_collections carries two INDEPENDENTLY estimable capabilities: source_collection_id and collection_item_position. Neither blocks the other."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner ruling 2026-08-06"]
+    requires_owner_confirmation: false
+    notes: "Backend/product roadmap item, tracked here so the wizard does not conflate them."
+
+  # ═══ 9 · RENDER AND QUALITY THRESHOLDS ═══════════════════════════
+  - id: render_001
+    category: render_contract
+    claim: "The only TECHNICAL rendering requirement is non-empty inventory: technical_minimum 1. Zero eligible items is a hard failure."
+    status: implemented
+    sources:
+      - {path: lib/feeds/surface-feed-loader.ts, reference: "null on zero items"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "ERROR: entity has zero eligible items and cannot render"
+
+  - id: render_002
+    category: render_contract
+    claim: "Presentation quality minimums are products 12, collections 10, brands 12. These are first-paint quality thresholds, NOT rendering floors. Below-minimum is a quality failure by default; a documented quality_exception {approved, approved_by, rationale} may override."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources:
+      - {path: lib/feeds/browse-catalog-loader.ts, reference: "DEFAULT_RAIL_SIZE 42-46"}
+    basis: ["Owner ruling 2026-08-06", "surface_007 drop threshold is zero"]
+    requires_owner_confirmation: false
+    notes: "ERROR: entity is below the approved presentation-quality minimum
+            WARNING: entity has limited inventory resilience"
+
+  - id: render_003
+    category: render_contract
+    claim: "There is NO universal >50-item collection expectation. Inventory buffer is campaign-dependent, defined by volatility, exclusions, campaign duration and feed behavior."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources:
+      - {path: CLAUDE.md, reference: "line 264 'Collection sizing - target > 50 items' (SUPERSEDED)"}
+    basis: ["Owner ruling 2026-08-06"]
+    requires_owner_confirmation: false
+    notes: "The >50 rule was derived from the false 12-floor. Both are corrected."
+
+  - id: constraint_repo_001
+    category: render_contract
+    claim: "build_csv.py currently hard-exits below 12 rows citing silent rail vanishing; render_rules.md line 52 propagates the same false claim. Both must be corrected to the render_001/render_002 model."
+    status: implemented
+    sources:
+      - {path: scripts/build_csv.py, reference: "FLOOR = 12; 'BELOW THE RENDER FLOOR ... would silently vanish'"}
+      - {path: .claude/skills/new-campaign/references/render_rules.md, reference: "line 52 'Below the render cap the feed resolves empty and is silently dropped'"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "RESOLVED by owner ruling. Correction is implementation-sequence step 11; the claim
+            is recorded so the code change is traceable to a decision."
+
+  # ═══ 10 · REPOSITORY OPERATIONAL CONTRACTS ═══════════════════════
+  - id: constraints_001
+    category: constraints
+    claim: "Publishing latency is bounded by server caches: feed catalog 600s, feed contents 300s, 5s fetch timeout, home collage slides 60s."
+    status: implemented
+    sources:
+      - {path: lib/feeds/feed-client.ts, reference: "CATALOG_REVALIDATE_SECONDS 600, RESOLVE 300, TIMEOUT 5000"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "Verification after authoring must wait >= 10 minutes."
+
+  - id: constraints_002
+    category: constraints
+    claim: "Feed creation requires entity, group, slug, name; membership is rules {include_ids (ordered pins), exclude_ids, clauses}; admin exposes reorder, duplicate and dry-run preview."
+    status: implemented
+    sources:
+      - {path: agent_knowledge/api/openapi.json, reference: "POST /admin/feeds; FeedRules; /admin/feeds/reorder; /preview"}
+      - {path: admin-develop/lib/feeds.ts, reference: "29-37 FeedRules"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "include_ids order -> render order is a sibling-repo contract, not verified backend code."
+
+  - id: constraints_003
+    category: constraints
+    claim: "shopya-frontend has no write path to catalog data; all persistence is via the HTTPS API and writes happen through the admin GUI."
+    status: implemented
+    sources:
+      - {path: .claude/rules/prod-safety.md, reference: "Rule 1"}
+      - {path: CLAUDE.md, reference: "GIT IS READ-ONLY"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "Confirms the human-executes-in-admin model."
+
+  - id: constraints_004
+    category: constraints
+    claim: "Catalog pagination is client-traversed at 100 per page with a 20-page cap."
+    status: implemented
+    sources:
+      - {path: lib/feeds/feed-client.ts, reference: "CATALOG_MANIFEST_SIZE 100, CATALOG_MAX_PAGES 20"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: ""
+
+  - id: constraints_005
+    category: constraints
+    claim: "Collection item rank is not durably expressible through the public API: no position field on CollectionItemUpdate, no sort param on items listing, no reorder endpoint."
+    status: implemented
+    sources:
+      - {path: agent_knowledge/api/openapi.json, reference: "CollectionItemUpdate; GET /collections/{id}/items params page,size"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "Rail order IS controllable via feed include_ids order."
+
+  - id: constraints_006
+    category: constraints
+    claim: "The staging API returns 403 to this tool's sandbox egress while returning 200 unauthenticated from the dev machine; the cause is a Cloudflare edge rule, not auth."
+    status: implemented
+    sources:
+      - {path: scripts/probe_feeds.py, reference: "403 handler and hint text"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "Automated probe is UNAVAILABLE to the tool. The human runs curl and passes JSON to
+            slot_sort_order.py --live. Any stage requiring a live probe must model a human step."
+
+  - id: constraint_repo_002
+    category: constraints
+    claim: "build_csv.py emits campaign_id, collection_name, rail_name, collection_rank, pinned, product_url, product_name, brand, price, currency, image_url, notes; it enforces one-rail-per-collection structurally; sort_order never appears per row."
+    status: implemented
+    sources:
+      - {path: scripts/build_csv.py, reference: COLS}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "Required changes (step 11): add rail_position as required for pinned rows;
+            demote collection_rank to a warning; replace FLOOR with technical_minimum +
+            quality_minimums + quality_exception."
+
+  - id: constraint_repo_003
+    category: constraints
+    claim: "probe_feeds.py reads the live catalog, refuses to proceed on failure, and reports sort_order collisions and taken slots; slot_sort_order.py assigns collision-free sort_orders against a live payload and does not renumber existing feeds on mid-page insert."
+    status: implemented
+    sources:
+      - {path: scripts/probe_feeds.py, reference: "fetch/flatten/collision report"}
+      - {path: scripts/slot_sort_order.py, reference: "start = after+1 or max+1"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "Correct and unaffected. Blocked only by constraints_006."
+
+  - id: constraint_repo_004
+    category: constraints
+    claim: "Canonical curation UID rule is slug(brand):slug(product_name):slug(colorway); the stable parent key is external_id = slug(brand):slug(product). Variants carry curation_uid to join the observation log for price history."
+    status: implemented
+    sources:
+      - {path: shopya-collection-curation/CURATION_PROTOCOL.md, reference: "line 197 UID RULE"}
+      - {path: shopya-collection-curation/INGEST_CONTRACT.md, reference: "lines 23, 33, 53"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "Sibling-repo contract. Observations append via a single write path."
+
+  - id: constraint_repo_005
+    category: governance
+    status: approved_rule
+    approved_in_version: 0.2.0
+    claim: >
+      Campaign collections remain editable before LIVE. At LIVE, every externally
+      referenced campaign collection becomes frozen. Material post-launch changes
+      require a new versioned collection. Emergency corrections require a recorded
+      exception.
+    rationale: "Reproducibility, measurement integrity, and reliable handoffs."
+    lifecycle:
+      editable_states:
+        - NEW
+        - FRAME_READY
+        - RESEARCHING
+        - SIGNALS_READY
+        - OPPORTUNITIES_READY
+        - OPPORTUNITY_SELECTED
+        - INTERVIEW_COMPLETE
+        - BRIEF_DRAFT
+        - BRIEF_APPROVED
+        - ROUTES_READY
+        - ROUTE_SELECTED
+        - ACTIVATION_READY
+        - SEAM6_READY
+        - VALIDATED
+        - CAMPAIGN_APPROVED
+      frozen_from_state: LIVE
+    enforcement:
+      validator_required: true
+      api_enforced: false
+    exception:
+      permitted: true
+      required_fields:
+        - reason
+        - approved_by
+        - approved_at
+        - affected_collection_id
+        - change_summary
+    sources:
+      - {path: CLAUDE.md, reference: "line 268 'Collections are frozen' — SUPERSEDED absolute form"}
+      - {path: agent_knowledge/api/openapi.json, reference: "collections are ordinary editable records; no immutability"}
+    basis: ["Owner ruling 2026-08-06 replacing the absolute never-edited rule"]
+    requires_owner_confirmation: false
+    notes: >
+      This is a wizard-side lifecycle rule, NOT an existing API invariant. The API does not
+      enforce it and must never be described as doing so. Enforcement is the validator's job.
+      Supersedes the v0.1.0/v0.2.0-draft absolute immutability claim.
+  - id: explore_001
+    category: explore_limits
+    claim: "The proportional page-share rule is DEFERRED, not rejected. The current Explore denominator is untrustworthy: QA-named feeds remain live, sort collisions exist, tagging is incomplete, documentation and live state disagree, and the intended default vertical set is unresolved."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources:
+      - {path: "live probe 2026-08-06", reference: "11 feeds, mostly QA-named, collisions at 0"}
+    basis: ["Owner ruling 2026-08-06", "surface_008", "conflict: verticals authored"]
+    requires_owner_confirmation: false
+    notes: "proposed_max_share 0.333; prerequisite normalized_explore_default_set."
+
+  - id: explore_002
+    category: explore_limits
+    claim: "Interim absolute guardrail: normal_range [1,4]; maximum_new_campaign_feeds 4. Four is a CEILING, not an entitlement — every feed must be justified by the activation architecture."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner ruling 2026-08-06"]
+    requires_owner_confirmation: false
+    notes: "After normalization: allowed_new_feeds = min(absolute_campaign_cap, proportional_page_cap)."
+
+  # ═══ 12 · CAMPAIGN-WORTHY BEHAVIOR ═══════════════════════════════
+  - id: behavior_rule_001
+    category: campaign_worthy_behavior
+    claim: "A campaign must name a CONCRETE desired user behavior plus an instrumentation_mapping. The behavior is not required to be one of the 18 existing events. Known candidate events include save.created, commerce.outbound_clicked and commerce.list_viewed."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner ruling 2026-08-06 superseding the v0.1.0 taxonomy restriction", "user_behavior_001"]
+    requires_owner_confirmation: false
+    notes: "REVISED from v0.1.0, which required the behavior to come from the 18-event list."
+
+  - id: behavior_rule_002
+    category: campaign_worthy_behavior
+    claim: "A campaign MAY target an uninstrumented behavior. It must then be labelled uninstrumented, no proxy may be represented as equivalent without evidence, and the limitation must be accepted at approval. Strategy is not prohibited because analytics are incomplete."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner ruling 2026-08-06 REPLACING the v0.1.0 prohibition"]
+    requires_owner_confirmation: false
+    notes: "v0.1.0 behavior_rule_002 (a hard prohibition) is REJECTED and replaced by this claim."
+
+  - id: behavior_rule_003
+    category: campaign_worthy_behavior
+    claim: "An event name alone does not establish that its firing semantics match the relevant seam and behavior. commerce.list_viewed must not be treated as an exposure denominator until its firing semantics are verified on the campaign surface in question."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources:
+      - {path: lib/telemetry/useListViewed.ts, reference: "producer; per-surface firing conditions unverified"}
+    basis: ["Owner ruling 2026-08-06"]
+    requires_owner_confirmation: false
+    notes: "See pending_validations.list_viewed_firing_semantics."
+
+  # ═══ 13 · OWNABILITY ═════════════════════════════════════════════
+  - id: ownability_001
+    category: opportunity_definition
+    claim: "Ownability levels: L1 category-generic (any shopping or inspiration product could run it); L2 Shopya-adapted (uses Shopya language or features but does not depend on them); L3 Shopya-native. A level must ALWAYS include a rationale."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner ruling 2026-08-06"]
+    requires_owner_confirmation: false
+    notes: "Not every campaign must reach L3. The level must be declared."
+
+  - id: ownability_002
+    category: opportunity_definition
+    claim: "L3 requires a mechanism materially dependent on a verified Shopya capability or data relationship, such that it LOSES ITS CORE FUNCTION when transplanted unchanged to a generic commerce or inspiration product. Verified candidate foundations include save behavior, price_when_saved and user collections — examples, not a permanently closed set."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources:
+      - {path: "charter product_truth_001/002/003", reference: "verified foundations"}
+    basis: ["Owner ruling 2026-08-06"]
+    requires_owner_confirmation: false
+    notes: ""
+
+  - id: ownability_003
+    category: opportunity_definition
+    claim: "L3-by-capability (product behavior verifies the mechanism is native) and L3-by-evidence (first-party data shows users actually use or value it) are distinct. Absent first-party behavioral data, L3-by-capability may be claimed; L3-by-evidence may not."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner ruling 2026-08-06", "user_behavior_004 retrieval unverified"]
+    requires_owner_confirmation: false
+    notes: "Blocks a capability, not the charter."
+
+  # ═══ 14 · MEASUREMENT ════════════════════════════════════════════
+  - id: measurement_001
+    category: measurement
+    claim: "Site search exists at /search and queries are instrumented as search.submitted."
+    status: implemented
+    sources:
+      - {path: "app/(app)/search", reference: "route directory"}
+      - {path: lib/telemetry/schemas/index.ts, reference: search.submitted}
+    basis: []
+    requires_owner_confirmation: false
+    notes: ""
+
+  - id: measurement_002
+    category: measurement
+    claim: "GA4 is wired client-side and consent-gated. Its retrieval_status is EXTERNALLY_QUERYABLE unless and until this tool gains and verifies direct access."
+    status: implemented
+    sources:
+      - {path: lib/telemetry/GoogleAnalyticsMount.tsx, reference: "GA4 mount"}
+      - {path: lib/telemetry/ga4.ts, reference: "GA4 sink"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: ""
+
+  - id: measurement_003
+    category: measurement
+    claim: "'What are users saving most this week' is not answerable: the API offers all-time most_saved sort; time-windowed save velocity is filed and unshipped."
+    status: implemented
+    sources:
+      - {path: lib/feeds/types.ts, reference: "FeedSortFieldSchema most_saved (all-time)"}
+      - {path: agent_knowledge/api/BACKEND_API_WISHLIST.md, reference: "§37 saves_today, unshipped"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: "Closest live proxy: a feed sorted by most_saved."
+
+  - id: measurement_004
+    category: measurement
+    claim: "No Search Console or SEO tooling connection is referenced in shopya-frontend."
+    status: unknown
+    sources:
+      - {path: lib/seo/surfaceMetadata.ts, reference: "no verification tokens found"}
+    basis: ["Absence of evidence in repo; connection may exist at DNS/dashboard level."]
+    requires_owner_confirmation: true
+    notes: ""
+
+  - id: measurement_006
+    category: measurement
+    claim: "retrieval_status is a four-valued field: queryable (the wizard can directly retrieve and evaluate), externally_queryable (another system or owner can, the wizard cannot), unavailable (no usable path), unknown (not established)."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner ruling 2026-08-06 REPLACING v0.1.0 measurement_005"]
+    requires_owner_confirmation: false
+    notes: "v0.1.0 measurement_005 treated GA4-only as a charter blocker. It is not: it is a
+            disclosure requirement. Every campaign records instrumentation_status and
+            retrieval_status rather than asserting measurability."
+
+  # ═══ 15 · WORKFLOW GOVERNANCE ════════════════════════════════════
+  - id: governance_001
+    category: governance
+    claim: "Each run pins spec_version and charter_version at NEW for the life of the run. The validator refuses: changing spec version mid-run, changing charter version without explicit migration, loading a withdrawn version, entering a state with unmet prerequisites, and treating an expected closing sentence as proof of completion."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner ruling 2026-08-06"]
+    requires_owner_confirmation: false
+    notes: "A new charter does not auto-migrate an active run."
+
+  - id: governance_002
+    category: governance
+    claim: "Prior campaigns are excluded from initial landscape research when novelty is desired, but must remain available for duplication checks, operational learning, measurement comparison, reusable patterns and failure analysis."
+    status: approved_rule
+    approved_in_version: 0.2.0
+    sources: []
+    basis: ["Owner ruling 2026-08-06"]
+    requires_owner_confirmation: false
+    notes: ""
+
+unknowns:
+  - question: "Does the public GET /feeds evaluate active_from/active_until, and in what timezone?"
+    category: scheduling
+    blocking_for: [claiming_s6_window_scheduling_verified]
+    blocking_for_charter_approval: false
+    where_it_might_live: "api-develop current source; or the throwaway-feed test matrix."
+  - question: "Are first-party events queryable after ingestion, and by whom?"
+    category: measurement
+    blocking_for: [claiming_L3_by_evidence, claiming_wizard_queryable_measurement]
+    blocking_for_charter_approval: false
+    where_it_might_live: "ghostframe2025 receiver repo."
+  - question: "Does collection item insertion order persist across additions, removals, bulk import, API retrieval and admin edits?"
+    category: rail_contract
+    blocking_for: [claiming_persisted_collection_item_order]
+    blocking_for_charter_approval: false
+    where_it_might_live: "api-develop source; or empirical test."
+  - question: "Why does staging 403 the tool's sandbox egress while returning 200 from the dev machine?"
+    category: constraints
+    blocking_for: [automated_catalog_probing]
+    blocking_for_charter_approval: false
+    where_it_might_live: "Cloudflare dashboard — infra config, no repo."
+  - question: "Is /feeds/[feedId] indexable, and will rail view-all support a collection destination?"
+    category: surface_inventory
+    blocking_for: [claiming_rail_links_to_collection_page]
+    blocking_for_charter_approval: false
+    where_it_might_live: "shopya-frontend routing + robots; a frontend decision."
+  - question: "Under what conditions does commerce.list_viewed fire on each campaign surface?"
+    category: measurement
+    blocking_for: [using_commerce_list_viewed_as_exposure_denominator]
+    blocking_for_charter_approval: false
+    where_it_might_live: "lib/telemetry/useListViewed.ts call sites."
+  - question: "What does the designing-for-shopya skill say about voice?"
+    category: brand_position
+    blocking_for: [authoring_copy_against_verified_brand_voice]
+    blocking_for_charter_approval: false
+    where_it_might_live: "shopya-frontend/.claude/skills/designing-for-shopya/SKILL.md — v2 sync."
+
+conflicts:
+  - claim: "Which sub_group verticals are actually authored on /explore."
+    source_a: {path: agent_knowledge/api/BACKEND_API_WISHLIST.md, says: "§45: ~6 verticals exist"}
+    source_b: {path: "live probe 2026-08-06", says: "only 'fashion' appears; 11 feeds, mostly QA-named"}
+    status: unresolved
+    blocking_for: [restoring_proportional_page_share_guardrail]
+    blocking_for_charter_approval: false
+    notes: "Do not plan vertical coverage against the doc. Feeds explore_001."
+  - claim: "Whether FeedPublicMeta / FeedCreate carry sub_group."
+    source_a: {path: agent_knowledge/api/openapi.json, says: "omits sub_group; entity/group only"}
+    source_b: {path: admin-develop/lib/feeds.ts, says: "sub_group present; live API accepts and returns it"}
+    status: known_staleness
+    blocking_for: []
+    blocking_for_charter_approval: false
+    notes: "Committed spec lags live API; wishlist §46. Trust the live API."
+  - claim: "The render floor for a rail."
+    source_a: {path: scripts/build_csv.py, says: "12 minimum or the rail silently vanishes"}
+    source_b: {path: lib/feeds/surface-feed-loader.ts, says: "drops only on ZERO items; 12 is a display cap"}
+    status: resolved
+    resolution: "Owner ruling 2026-08-06: technical_minimum 1; quality_minimums 12/10/12 with
+                 documented exception. Code correction is implementation-sequence step 11."
+    blocking_for_charter_approval: false
+
+superseded_from_v0_1_0:
+  - id: behavior_rule_002
+    was: "A campaign may not be designed to cause an uninstrumented behavior."
+    now: "Uninstrumented behavior is DISCLOSED, not prohibited. See behavior_rule_002 (revised)."
+  - id: measurement_005
+    was: "No windowed measure exists — BLOCKING for charter approval."
+    now: "Reclassified as a disclosure requirement. See measurement_006 four-valued retrieval_status."
+  - id: constraint_repo_001
+    was: "BLOCKING contradiction on the render floor."
+    now: "Resolved by owner ruling. See render_001/render_002/render_003."
+  - id: campaign_005
+    was: "BLOCKING — no scheduled activation exists."
+    now: "Reclassified. Intent and capability are separate records (scheduling_006); package
+          scheduling is verified (scheduling_001); S6 windows are partially verified (scheduling_005)."
+  - id: surface_004b
+    was: "BLOCKING — rail does not link to collection page."
+    now: "Handoff capability with a future contract. See view_all_001."
+  - note: "The v0.1.0 requirement that desired_user_action come from the 18-event taxonomy is
+           removed. Concrete behavior + instrumentation_mapping replaces it."
+
+v2_notes:
+  - "Sync shopya-frontend rather than hardcoding the audit; re-verify claims against a live read."
+  - "Audit api-develop once readable; several backend claims rest on sibling-repo contracts."
+  - "Audit ghostframe2025 to resolve first-party measurement."
+  - "Read designing-for-shopya SKILL.md and fold voice rules into the charter."
+  - "Independently verify the Sanity activation predicate recorded in scheduling_002."
+  - "Resolve the Cloudflare 403 so the tool can probe without a human in the loop."
+  - "Normalize the Explore default set, then restore the proportional guardrail."

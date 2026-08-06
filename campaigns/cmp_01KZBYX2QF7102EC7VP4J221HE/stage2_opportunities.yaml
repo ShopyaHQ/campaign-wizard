@@ -1,0 +1,119 @@
+# STAGE 2 · OPPORTUNITIES
+# NOTE: no stage2 artifact schema exists in schemas/artifact_schemas. Field requirements were
+# read directly from the SIGNALS_READY->OPPORTUNITIES_READY prerequisites in
+# schemas/workflow_state.schema.yaml. Structural validation therefore does NOT apply to this
+# artifact; only the workflow prerequisites do.
+run_id: cmp_01KZBYX2QF7102EC7VP4J221HE
+produced_at: 2026-08-06T16:30:00Z
+
+opportunities:
+
+- opportunity_id: OPP-01
+  territory: "Permission at a season boundary"
+  observation: "People search for permission to wear things at the turn, and a dated hinge for that convention falls inside the horizon."
+  cultural_tension: "Retail says the season has changed; the weather has not; the shopper does not know what she is allowed to wear."
+  audience_behavior: "Asking timing questions rather than product questions."
+  why_now: "Labor Day 2026-09-07 sits inside the planning horizon and is the hinge of the best-known US dress-timing convention."
+  shopya_role: "A platform holding no inventory can credibly say 'not yet' about a category it does not need to move."
+  desired_user_action: "Save items flagged as wearable now rather than wearable later."
+  instrumentation_mapping: save.created
+  supporting_signal_ids: [SIG-008, SIG-027, SIG-011, SIG-004]
+  contradicting_signal_ids: [SIG-006]
+  relevant_seams: [S5, S6]
+  surface_potential: [explore, collection_pages]
+  ownability:
+    level: L2
+    rationale: "Uses the no-inventory position, but any editorial publisher could run the same permission angle. Not mechanism-dependent."
+    dependency: "none verified"
+  expiration: "Decays sharply after Labor Day; dead by October."
+  confidence: moderate
+  assumptions: ["That permission queries indicate felt uncertainty rather than idle curiosity."]
+  operational_risks: ["Labor Day is a discount weekend; the frame excludes discount framing, so proximity is a hazard."]
+
+- opportunity_id: OPP-02
+  territory: "Keeping"
+  observation: "The season's domestic instinct is preserving, and the product's core gesture is saving."
+  cultural_tension: "Summer ends whether or not you were ready; the impulse is to hold onto it."
+  audience_behavior: "Collecting and revisiting rather than purchasing."
+  why_now: "The largest figure in the year's biggest forecast is a collection verb, and 'decluttering' ranks inside end-of-summer search."
+  shopya_role: "The save IS the preserve gesture. The product's central action and the season's central instinct are the same action."
+  desired_user_action: "Save into a named collection and return to it."
+  instrumentation_mapping: save.created
+  supporting_signal_ids: [SIG-002, SIG-011, SIG-001, SIG-014]
+  contradicting_signal_ids: [SIG-015, SIG-023]
+  relevant_seams: [S1, S2, S5, S6]
+  surface_potential: [explore, collection_pages]
+  ownability:
+    level: L3-by-capability
+    rationale: "Collections and price_when_saved are verified product capabilities (charter product_truth_002, 003). Transplanted to a generic commerce product the mechanism loses its function."
+    dependency: "charter product_truth_001, product_truth_002, product_truth_003"
+  expiration: "Evergreen with a seasonal peak. Does not expire with the weather."
+  confidence: moderate
+  assumptions: ["That saving reads to users as keeping rather than as a shopping-list action. The only evidence is 2018 retail-cart research."]
+  operational_risks: ["The one current on-objective source is unread (SIG-015). L3-by-evidence is unclaimable this run."]
+
+- opportunity_id: OPP-03
+  territory: "Transitional dressing, literally"
+  observation: "'Transitional' is the one phrase in this territory carrying real search intent, and it names summer-to-fall explicitly."
+  cultural_tension: "The wardrobe has to do two seasons at once for six weeks."
+  audience_behavior: "Searching the term and looking up what it means."
+  why_now: "Year-tagged variants are still on 2025; the 2026 versions have not accumulated."
+  shopya_role: "Cross-brand assembly of a look no single retailer merchandises as one thing."
+  desired_user_action: "Save multi-season pieces."
+  instrumentation_mapping: save.created
+  supporting_signal_ids: [SIG-007, SIG-004, SIG-010, SIG-019]
+  contradicting_signal_ids: [SIG-012, SIG-013]
+  relevant_seams: [S6]
+  surface_potential: [explore, collection_pages]
+  ownability:
+    level: L1
+    rationale: "Any retailer runs this every August. Nothing about it requires this product."
+    dependency: none
+  expiration: "Six to eight weeks."
+  confidence: strong
+  assumptions: ["That search intent on the term converts to browse behaviour."]
+  operational_risks: ["Generic. High chance of producing a merchandising plan rather than a campaign."]
+
+- opportunity_id: OPP-04
+  territory: "Fashion month as attention catalyst"
+  observation: "Spring 2027 fashion month runs 10 Sep to 6 Oct, inside the horizon."
+  cultural_tension: "Runway attention peaks precisely when nobody can buy or wear any of it."
+  audience_behavior: "Looking at clothes with no purchase intent — pure browse."
+  why_now: "Dated: New York 09-10, Milan 09-25, Paris 09-28 to 10-06, with named debuts."
+  shopya_role: "Saving is the natural response to something you cannot buy for six months."
+  desired_user_action: "Save runway-adjacent product during the shows."
+  instrumentation_mapping: save.created
+  supporting_signal_ids: [SIG-024, SIG-019, SIG-020]
+  contradicting_signal_ids: [SIG-016]
+  relevant_seams: [S2, S5, S6]
+  surface_potential: [explore, collection_pages]
+  ownability:
+    level: L2
+    rationale: "The save-what-you-cannot-buy logic fits the product, but every fashion publisher covers fashion month."
+    dependency: "charter product_truth_001"
+  expiration: "Hard stop 2026-10-06."
+  confidence: moderate
+  assumptions: ["That fashion month reaches a general audience, not only the trade. Unmeasured."]
+  operational_risks: ["At a four-week horizon the window closes before New York opens."]
+
+- opportunity_id: OPP-05
+  territory: "Curation over acquisition"
+  observation: "Displaying abundance now carries social risk; displaying taste does not."
+  cultural_tension: "People still want things but no longer want to be seen wanting things."
+  audience_behavior: "Curating publicly, buying privately."
+  why_now: "Underconsumption-core has persisted two years; the industry outlook is low-growth and value-conscious."
+  shopya_role: "Public collections let taste be displayed without a purchase being displayed."
+  desired_user_action: "Build and make public a collection."
+  instrumentation_mapping: "save.created (collection public/featured flags are not in the instrumented event taxonomy — UNINSTRUMENTED, disclosed per charter behavior_rule_002)"
+  supporting_signal_ids: [SIG-021, SIG-005, SIG-001, SIG-016]
+  contradicting_signal_ids: [SIG-023, SIG-022]
+  relevant_seams: [S4, S5, S6]
+  surface_potential: [explore, collection_pages]
+  ownability:
+    level: L3-by-capability
+    rationale: "Public user collections are a verified capability (charter product_truth_002) and are the mechanism itself."
+    dependency: "charter product_truth_002"
+  expiration: "Evergreen."
+  confidence: weak
+  assumptions: ["That the restraint position describes this audience. SIG-023 says it is loud and numerically tiny."]
+  operational_risks: ["Making a collection public is uninstrumented; success would be unmeasurable even in principle."]

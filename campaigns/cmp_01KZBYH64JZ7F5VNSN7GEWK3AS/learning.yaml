@@ -1,0 +1,301 @@
+# LEARNING LOG — one file per run, v1.
+# Records evidence and the adopted LOCAL reusable change. It does NOT modify the charter or the
+# workflow specification. Promotion of a reusable change into either is a separate owner action.
+
+run_id: cmp_01KZBYH64JZ7F5VNSN7GEWK3AS
+opened_at: 2026-08-06
+vocabulary:
+  type: [schema_gap, interpretation_error, validator_gap, interface_failure, product_fact_gap]
+  scope: [run_only, stage, system_wide, product]
+  severity: [low, medium, high]
+
+versioning_note: >
+  The Stage 0 artifact was corrected under the existing run as a CONTENT AND SCHEMA correction,
+  not a state migration. The run remains pinned to workflow spec 1.2.0 and charter 0.2.0 and
+  stays in FRAME_READY. Stage 0 schema moved 1.0.0 -> 1.1.0; interpretation_rules.yaml is 1.0.0.
+  No migration support is claimed.
+
+events:
+
+  - id: LRN-001
+    stage: 0
+    observed_problem:
+      owner_input: "Today (requested launch)"
+      agent_output: "Window: 6 Aug -> ~17 Sep 2026"
+      failure: >
+        A requested launch date was collapsed into a fixed campaign window. The owner asked to
+        start now; the agent invented both a duration and an end.
+    classification: {type: interpretation_error, scope: stage, severity: high}
+    immediate_run_fix: >
+      timing decomposed. requested_launch_date 2026-08-06; operational_interpretation 'begin
+      campaign workflow immediately' labelled inferred; earliest_actual_campaign_launch and
+      desired_campaign_end both null / not_supplied.
+    reusable_change:
+      target: schemas/interpretation_rules.yaml#timing_concepts_are_distinct
+      description: >
+        Requested launch, planning horizon, campaign window, desired end and earliest feasible
+        launch are five distinct concepts; none may be derived from another without a labelled
+        inference or proposal.
+    regression_test: "tests/test_stage0.py::today_does_not_prove_launch_date"
+    status: addressed_in_run
+
+  - id: LRN-002
+    stage: 0
+    observed_problem:
+      owner_input: "Next 4-6 weeks (planning horizon)"
+      agent_output: "planning_horizon: '6 Aug through approximately 17 Sep 2026'"
+      failure: "A planning horizon was converted into a campaign end date."
+    classification: {type: interpretation_error, scope: stage, severity: high}
+    immediate_run_fix: >
+      owner_inputs.planning_horizon holds raw + minimum_weeks 4 + maximum_weeks 6.
+      timing.desired_campaign_end is null / not_supplied.
+    reusable_change:
+      target: schemas/stage0_frame.schema.yaml#semantic_requirements.horizon_is_not_duration
+      description: "Planning horizon must not automatically become campaign duration."
+    regression_test: "tests/test_stage0.py::horizon_does_not_set_end"
+    status: addressed_in_run
+
+  - id: LRN-003
+    stage: 0
+    observed_problem:
+      owner_input: "More saves from returning users"
+      agent_output: >
+        "More people saving more products in that window than they otherwise would"
+      failure: >
+        The objective was rewritten as an unsupported counterfactual. 'Than they otherwise
+        would' is a causal-lift claim, and no baseline, retrieval path or attribution model
+        exists to support it.
+    classification: {type: interpretation_error, scope: system_wide, severity: high}
+    immediate_run_fix: >
+      objective states desired_behavior 'increase save.created activity', audience
+      returning_users, event_mapping save.created. No lift language.
+      measurement.causal_incrementality_measurable: false.
+    reusable_change:
+      target: schemas/interpretation_rules.yaml#objective_is_not_measurement_claim
+      description: >
+        A behavioural objective may not assert causal lift, baseline-relative improvement or
+        measurable incrementality unless baseline, retrieval and attribution are established.
+    regression_test: "tests/test_stage0.py::objective_makes_no_counterfactual_claim"
+    status: addressed_in_run
+
+  - id: LRN-004
+    stage: 0
+    observed_problem:
+      owner_input: "No discount or sale language"
+      agent_output: >
+        avoid_stems included shop now, buy now, don't miss, limited time, save money
+      failure: >
+        Owner exclusions were expanded into unrequested prohibitions. 'Shop now' and urgency
+        language were never supplied by the owner.
+    classification: {type: interpretation_error, scope: system_wide, severity: high}
+    immediate_run_fix: >
+      avoidance.prohibited_campaign_frames holds exactly the three owner frames.
+      additional_restrictions is [] with interpretation_status not_supplied.
+    reusable_change:
+      target: schemas/interpretation_rules.yaml#no_added_restrictions
+      description: >
+        No agent-added avoid terms, prohibited language or strategic restrictions unless
+        recorded separately as proposed and then confirmed.
+    regression_test: "tests/test_stage0.py::no_invented_exclusions"
+    status: addressed_in_run
+
+  - id: LRN-005
+    stage: 0
+    observed_problem:
+      owner_input: "No back-to-school framing"
+      agent_output: "avoid_stems: school, dorm, campus, semester, homeroom, classroom"
+      failure: >
+        A campaign-expression exclusion was applied as though it prohibited internal research
+        language. Under that reading the run could not have accurately described a competitor's
+        back-to-school campaign, quoted a source, or analysed the pattern it must avoid.
+    classification: {type: interpretation_error, scope: system_wide, severity: medium}
+    immediate_run_fix: >
+      evidence_may_describe_prohibited_frames: true;
+      prohibited_frames_may_not_be_adopted_as_recommendations: true.
+    reusable_change:
+      target: schemas/interpretation_rules.yaml#exclusions_are_scoped
+      description: >
+        Prohibited framing bars ADOPTION in strategy and campaign-facing expression. It does not
+        bar accurate research, quotation, competitor description or analysis of the pattern.
+    regression_test: "tests/test_stage0.py::exclusions_do_not_gag_research"
+    status: addressed_in_run
+
+  - id: LRN-006
+    stage: 0
+    observed_problem:
+      owner_input: "(none — the owner never selected seams)"
+      agent_output: "eligible_seams: [S1..S6]  presented as 'all six seams eligible'"
+      failure: >
+        Seams available for consideration were described as though selected. One field carried
+        two meanings, so a capability read as a decision.
+    classification: {type: schema_gap, scope: stage, severity: medium}
+    immediate_run_fix: >
+      scope.seams_available_for_consideration [S1..S6]; scope.selected_seams []; executable and
+      handoff recorded separately. eligible_seams retained as a compatibility alias with an
+      explicit note that it has never meant selected.
+    reusable_change:
+      target: schemas/stage0_frame.schema.yaml#semantic_requirements.available_is_not_selected
+      description: "Availability and selection are separate fields; selection is an owner act."
+    regression_test: "tests/test_stage0.py::available_seams_are_not_selected"
+    status: addressed_in_run
+
+  - id: LRN-007
+    stage: 0
+    observed_problem:
+      owner_input: "(none — the owner never asked for a proxy)"
+      agent_output: >
+        "success condition must name a GA4-observable proxy or be recorded as unmeasurable"
+      failure: >
+        A measurement gap was framed as forcing a proxy choice. Disclosure of a limit is not
+        authorization to substitute a different metric.
+    classification: {type: interpretation_error, scope: system_wide, severity: medium}
+    immediate_run_fix: >
+      measurement.proxy.value null with interpretation_status not_supplied; retrieval_status and
+      baseline_available both 'unknown' rather than assumed.
+    reusable_change:
+      target: schemas/interpretation_rules.yaml#measurement_limit_does_not_force_proxy
+      description: >
+        Missing measurement access must be disclosed but does not automatically authorize
+        selection of a proxy metric.
+    regression_test: "tests/test_stage0.py::no_automatic_proxy"
+    status: addressed_in_run
+
+  - id: LRN-008
+    stage: 0
+    observed_problem:
+      owner_input: "(n/a — surfaced by executing a real transition)"
+      agent_output: >
+        PermissionError unlinking campaigns/<run>/.state.proposed.yaml AFTER the state had
+        already committed
+      failure: >
+        The mounted filesystem forbids deletion, so proposal cleanup crashed after commit. A
+        committed transition exited non-zero and would read as failed to any caller.
+    classification: {type: interface_failure, scope: system_wide, severity: high}
+    immediate_run_fix: >
+      Proposal now held outside the repository; validator gained --run-dir so a run is not
+      mistaken for its own sibling; cleanup is best-effort and can never turn a committed
+      transition into a crash. Stray file quarantined to campaigns/_to_delete/.
+    reusable_change:
+      target: scripts/run.py#cmd_transition
+      description: >
+        Scratch state never lives inside the repository, and cleanup failure is never fatal.
+    regression_test: >
+      tests/test_validator.py::"a committed transition exits 0 and leaves no scratch in the run
+      dir" and ::"run dir holds only real artifacts after a refusal"
+    status: addressed
+
+  - id: LRN-009
+    stage: 0
+    observed_problem:
+      owner_input: "(n/a — noticed while applying the Stage 0 correction)"
+      agent_output: "frame.yaml carries duplicate compatibility fields"
+      failure: >
+        The pinned workflow spec's FRAME_READY prerequisites reference flat frame fields
+        (frame.planning_horizon, frame.eligible_seams, ...). Restructuring Stage 0 without
+        altering state meanings therefore required keeping those fields as aliases.
+    classification: {type: schema_gap, scope: system_wide, severity: low}
+    immediate_run_fix: "Aliases retained and annotated with compatibility_alias_of."
+    reusable_change:
+      target: schemas/workflow_state.schema.yaml
+      description: >
+        When the workflow spec next versions, point FRAME_READY prerequisites at the structured
+        Stage 0 blocks and drop the aliases. NOT done now — that would alter a state meaning.
+    regression_test: null
+    status: deferred
+
+  # ── exposed by the live Stage 1 research run, 2026-08-06 ──────────
+
+  - id: LRN-010
+    stage: 1
+    observed_problem:
+      owner_input: "(n/a — surfaced during live research)"
+      agent_output: "SIG-015 recorded with its unreadability described in prose, in `limitations`"
+      failure: >
+        The single most on-objective source in the scan — a 2026 peer-reviewed study on
+        wishlist-versus-cart placement and purchase likelihood — exists and is identified, but
+        the publisher page is robots-disallowed and the ProQuest record returns 403. The signal
+        schema has no first-class way to say "this source exists and was NOT read". The fact
+        survives only as prose inside `limitations`, so it is not queryable and a later stage
+        could treat SIG-015 as ordinary evidence.
+    classification: {type: schema_gap, scope: stage, severity: medium}
+    immediate_run_fix: >
+      interpretation set to null, confidence 'unknown', and limitations opens with
+      "NO FINDING IS CLAIMED". The landscape repeats it in section 2 and again in open questions.
+    reusable_change:
+      target: schemas/stage1_signals.schema.yaml#signal_record
+      description: >
+        Add `retrieval_status: retrieved | paywalled | robots_blocked | http_error |
+        not_attempted` to the signal record, required. A signal whose retrieval_status is not
+        `retrieved` may not carry a non-null interpretation.
+    regression_test: "not yet written — depends on the schema change"
+    status: proposed_not_applied
+
+  - id: LRN-011
+    stage: 1
+    observed_problem:
+      owner_input: "(n/a)"
+      agent_output: "Nine signals carried in from preparatory work done before the run existed"
+      failure: >
+        SIG-001..003, 006, 008..013 and 019 were observed 2026-08-06/07 during preparatory work
+        that predates the frame. They are real, dated and sourced, but the schema cannot
+        distinguish evidence gathered under this run's frame from evidence carried in. Carried
+        evidence was not constrained by the frame's exclusions when it was collected.
+    classification: {type: schema_gap, scope: stage, severity: low}
+    immediate_run_fix: "Declared explicitly in stage1_signals.yaml `deviations`."
+    reusable_change:
+      target: schemas/stage1_signals.schema.yaml#signal_record
+      description: "Add `collection_context: in_run | carried | owner_supplied`, required."
+    regression_test: "not yet written"
+    status: proposed_not_applied
+
+  - id: LRN-012
+    stage: 1
+    observed_problem:
+      owner_input: "(n/a — surfaced on the SIGNALS_READY transition attempt)"
+      agent_output: >
+        REFUSED: signals[5..12,17].source_date missing; signals[14].interpretation missing
+      failure: >
+        TWO VALIDATORS DISAGREE. The workflow spec's SIGNALS_READY prerequisite uses each_has,
+        which treats a null value as a missing field. The Stage 1 artifact schema explicitly
+        declares source_date nullable ("permitted ONLY when the source carries no date") and
+        interpretation nullable (SIG-015 carries null deliberately, because no finding may be
+        claimed). Both documents are correct about their own intent and the run cannot proceed.
+        The only ways past it without a fix are to invent source dates for undated sources, or
+        to delete the deliberate null on SIG-015 — both of which corrupt the evidence.
+    classification: {type: validator_gap, scope: system_wide, severity: high}
+    immediate_run_fix: >
+      NONE APPLIED. The run remains in RESEARCHING with both Stage 1 artifacts written,
+      registered and structurally valid under the Stage 1 artifact phase. The transition was not
+      forced and no evidence was altered to satisfy the gate.
+    reusable_change:
+      target: schemas/workflow_state.schema.yaml
+      description: >
+        Extend each_has with an optional third argument, nullable_fields, and pass
+        [source_date, interpretation] on the SIGNALS_READY prerequisite. This expresses the
+        prerequisite's ORIGINAL meaning correctly rather than changing it — 'every signal carries
+        these fields' was always the intent; the stage schema is the authority on which may be
+        null. REQUIRES OWNER APPROVAL: workflow_state.schema.yaml is outside the file scope of
+        the current change, and touching a state's entry prerequisites was explicitly excluded.
+    regression_test: >
+      "a nullable field declared by a stage schema satisfies each_has; a genuinely absent one
+       still refuses"
+    status: blocking_open
+
+  - id: LRN-013
+    stage: 1
+    observed_problem:
+      owner_input: "(n/a)"
+      agent_output: "evidence_families_covered lists all six; the scan holds 10 demand signals and 2 design signals"
+      failure: >
+        Family coverage is a declared list with no minimum per family, so a family represented by
+        two weak signals passes identically to one represented by ten strong ones. The gate says
+        'covered' where the honest word is 'touched'.
+    classification: {type: schema_gap, scope: stage, severity: medium}
+    immediate_run_fix: "Per-family counts are stated in the landscape section headings so the imbalance is visible."
+    reusable_change:
+      target: schemas/stage1_signals.schema.yaml#evidence_families
+      description: >
+        Add `minimum_signals_per_family: 2` and require the ledger to emit a per-family count,
+        so thin coverage is a warning rather than a silent pass.
+    regression_test: "not yet written"
+    status: proposed_not_applied

@@ -1,0 +1,18 @@
+run_id: cmp_01KZBYH64JZ7F5VNSN7GEWK3AS
+campaign_id: seasonal-turn-2026
+source_engine: shopya-collection-curation
+note: >
+  Collections are EXISTING FROZEN collections from the sibling curation engine, reused rather
+  than re-curated (charter constraint_repo_005 permits reuse; revisions would be v2 folders).
+  eligible_count is TOTAL rows in the engine's products.csv. AVAILABILITY COULD NOT BE DERIVED:
+  the engine's collection CSVs carry no stock_status column; availability lives in
+  product_results_log.jsonl and joining it was out of scope for this run. Recorded as friction.
+collections:
+- {collection_id: B6, name: "Perfume Wardrobe", sub_group: beauty, source_folder: B6_perfume-wardrobe}
+- {collection_id: X1, name: "The Summer Bag",  sub_group: fashion, source_folder: X1_the-summer-bag}
+rails:
+- {rail_id: rail-b6, collection_id: B6, rail_position: 0, name: "The Scent You Keep", sub_group: beauty}
+- {rail_id: rail-x1, collection_id: X1, rail_position: 1, name: "The Bag That Survives The Turn", sub_group: fashion}
+entities:
+- {entity_id: B6, entity_type: products, eligible_count: 29}
+- {entity_id: X1, entity_type: products, eligible_count: 28}

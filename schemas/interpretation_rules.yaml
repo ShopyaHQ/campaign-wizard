@@ -1,0 +1,82 @@
+# INTERPRETATION RULES
+# Governs how owner input may be normalized and interpreted across every human-input stage.
+# The agent does not get to decide what the owner "meant". It records what they said, labels
+# every departure from it, and never promotes a departure into an owner decision.
+
+schema:
+  name: interpretation_rules
+  version: 1.0.0
+  applies_to_stages: [0]          # extended as later human-input stages are built
+  charter_min_version: 0.2.0
+
+interpretation_status:
+  - direct
+  - normalized
+  - inferred
+  - proposed
+  - not_supplied
+
+definitions:
+  direct:       "The stored value is materially identical to the owner's answer."
+  normalized:   "Formatting or structural conversion only. No new meaning added."
+  inferred:     "An agent conclusion not directly supplied by the owner."
+  proposed:     "An agent recommendation requiring owner confirmation."
+  not_supplied: "The owner did not provide the value."
+
+confirmation_policy:
+  direct:       {needs_confirmation: false}
+  normalized:   {needs_confirmation: false}
+  inferred:     {needs_confirmation: false, condition: "only while clearly labelled as an inference"}
+  proposed:     {needs_confirmation: true}
+  not_supplied: {needs_confirmation: false, note: "Absence is a fact. It is not a gap to be filled."}
+
+rules:
+
+  - id: preserve_raw_owner_input
+    rule: >
+      Every normalized owner-input field must retain the raw answer or a reference to the
+      decision record containing it.
+
+  - id: label_interpretation
+    rule: >
+      Every normalized, inferred, proposed, or not-supplied value must declare its
+      interpretation_status.
+
+  - id: no_silent_promotion
+    rule: >
+      An inferred or proposed value may not be represented as an owner decision until
+      explicitly confirmed through the run interface.
+
+  - id: no_added_restrictions
+    rule: >
+      The agent may not add avoid terms, prohibited language, or strategic restrictions that
+      were not supplied by the owner unless they are recorded separately as proposed and
+      confirmed.
+
+  - id: timing_concepts_are_distinct
+    rule: >
+      Requested launch date, planning horizon, campaign window, desired end date, and earliest
+      feasible launch are distinct concepts and may not be derived from one another without an
+      explicit labeled inference or proposal.
+
+  - id: objective_is_not_measurement_claim
+    rule: >
+      A behavioral objective may not assert causal lift, baseline-relative improvement, or
+      measurable incrementality unless the required baseline, retrieval, and attribution
+      capabilities are established.
+
+  - id: exclusions_are_scoped
+    rule: >
+      Prohibited campaign framing does not prohibit accurate internal research, source
+      quotations, competitor descriptions, or analysis of the prohibited pattern. It prohibits
+      adopting that pattern in campaign strategy or campaign-facing expression.
+
+  - id: capability_is_not_selection
+    rule: >
+      A seam or surface being technically available for consideration does not mean it has been
+      selected for the campaign.
+
+  - id: measurement_limit_does_not_force_proxy
+    rule: >
+      Missing direct measurement access must be disclosed but does not automatically authorize
+      selection of a proxy metric.
