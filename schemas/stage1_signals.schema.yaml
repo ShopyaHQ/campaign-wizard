@@ -7,7 +7,7 @@
 
 schema:
   name: stage1_signals
-  version: 1.0.0
+  version: 1.1.0
   artifact_keys: [stage1_signals, stage1_landscape]
   paths:
     stage1_signals:   "campaigns/<run_id>/stage1_signals.yaml"
@@ -63,7 +63,11 @@ signals_document:
     evidence_families_covered: {type: list, required: true, item_enum_from: evidence_families.values}
     stop_condition_met:       {type: boolean, required: true}
     stop_condition_basis:     {type: string, required: true}
-    deviations:               {type: list, required: true, allows_empty: true}
+    deviations:               {type: list, required: true, allows_empty: true,
+                               note: "U3 (demonstrated): signals carried from a prior scan are
+                                      declared here WITH their ids; the landscape states fresh
+                                      vs carried counts. U2 (demonstrated): a post-premise-lock
+                                      extension pass is declared here when it grows this ledger."}
     unavailable_data:         {type: list, required: true, allows_empty: true,
                                note: "Named as unavailable, never estimated. Charter: search
                                       volume, keyword difficulty, trend direction, social

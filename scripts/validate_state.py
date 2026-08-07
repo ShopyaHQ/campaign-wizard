@@ -85,6 +85,16 @@ class Validator:
     def artifact_record(self, key):
         return (self.state.get("artifacts") or {}).get(key)
 
+    def _artifact_path(self, p):
+        """Resolve a registered artifact path. Absolute: as-is. Relative: run-root first
+        (current convention, NAMING_CONVENTIONS.md), repo-root second (legacy layout)."""
+        if os.path.isabs(p):
+            return p
+        rr = os.path.join(self.run_dir, p)
+        if os.path.exists(rr):
+            return rr
+        return os.path.join(ROOT, p)
+
     def artifact_doc(self, key):
         """Load an artifact's YAML. Returns MISSING if absent, superseded or unreadable."""
         if key in self._artifact_cache:
@@ -95,8 +105,7 @@ class Validator:
             if rec.get("status", "current") != "current":
                 doc = MISSING
             else:
-                p = rec.get("path", "")
-                p = p if os.path.isabs(p) else os.path.join(ROOT, p)
+                p = self._artifact_path(rec.get("path", ""))
                 if os.path.exists(p) and p.endswith((".yaml", ".yml")):
                     try:
                         with open(p, encoding="utf-8") as f:
@@ -228,7 +237,7 @@ class Validator:
                       "artifacts.%s.status" % key, "current", rec.get("status"))
             return False
         p = rec.get("path", "")
-        full = p if os.path.isabs(p) else os.path.join(ROOT, p)
+        full = self._artifact_path(p)
         if not os.path.exists(full):
             self.fail("artifact_deleted", "%s: artifact %r missing on disk (%s)" % (ctx, key, p),
                       "artifacts.%s.path" % key, "<exists>", p)
@@ -504,8 +513,22 @@ class Validator:
         out = []
         if not os.path.isdir(self.runs_dir):
             return out
+        cand = []
         for d in sorted(os.listdir(self.runs_dir)):
-            p = os.path.join(self.runs_dir, d, "state.yaml")
+            if d == "_to_delete":
+                continue
+            base = os.path.join(self.runs_dir, d)
+            if not os.path.isdir(base):
+                continue
+            if d == "_drafts":
+                cand += [(x, os.path.join(base, x)) for x in sorted(os.listdir(base))]
+            elif os.path.isdir(os.path.join(base, "runs")):
+                rb = os.path.join(base, "runs")
+                cand += [(x, os.path.join(rb, x)) for x in sorted(os.listdir(rb))]
+            else:
+                cand.append((d, base))
+        for d, dirp in cand:
+            p = os.path.join(dirp, "state.yaml")
             # A run is never its own sibling. Compare DIRECTORIES, not file paths — during an
             # atomic transition the file under validation is <run_dir>/.state.proposed.yaml,
             # which would otherwise match its own canonical state.yaml as a different run.
@@ -574,7 +597,7 @@ class Validator:
 
         for key, rec in (self.state.get("artifacts") or {}).items():
             p = rec.get("path", "")
-            full = p if os.path.isabs(p) else os.path.join(ROOT, p)
+            full = self._artifact_path(p)
             if not os.path.exists(full):
                 self.fail("artifact_deleted",
                           "artifact %r is registered but missing on disk" % key,

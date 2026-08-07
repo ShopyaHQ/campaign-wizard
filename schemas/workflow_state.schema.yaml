@@ -12,7 +12,7 @@
 
 schema:
   name: workflow_state
-  version: 1.4.0
+  version: 1.4.1
   charter_min_version: 0.2.0
   state_file_path: "campaigns/<run_id>/state.yaml"
   notes: >
@@ -324,6 +324,15 @@ states:
       - {p: artifact_exists, args: [stage4_brief]}
     self_loop: true
     self_loop_note: "Revision rounds are unbounded and require no decision to re-enter."
+    notes: >
+      U1 (demonstrated 2026-08-07, cmp_01KZCD765E6NNW2TZR1AFHQMWG): the workshop decomposes into
+      NAMED owner decisions - premise lock, architecture rulings, sourcing approvals - each
+      recorded via record-decision with its basis at the moment the owner rules. brief_approved
+      consolidates them; it is not the only decision. Trivial wording tweaks need no decision.
+      U2 (demonstrated, same run): after the premise lock, direction-specific research EXTENDS
+      stage1_signals (append + re-register + artifact re-validation), scoped to testing
+      collection roles and premise assumptions - never a re-run of the broad scan. A premise
+      change is a reopen, not an append.
 
   - name: BRIEF_APPROVED
     stage: 4

@@ -26,7 +26,7 @@ ATOMIC TRANSITION
   5. on non-zero: print the validator's own output, delete the proposal, leave state.yaml
      byte-identical, and exit non-zero
 """
-import argparse, copy, datetime, hashlib, json, os, shutil, subprocess, sys, tempfile
+import argparse, copy, datetime, glob, hashlib, json, os, shutil, subprocess, sys, tempfile
 import yaml
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -38,6 +38,7 @@ VALIDATOR = os.path.join(HERE, "validate_state.py")
 
 CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 QUARANTINE = "_to_delete"     # never a run, never an artifact source
+DRAFTS = "_drafts"            # unnamed runs live here until campaign_id is locked (promote)
 
 
 def now():
@@ -74,7 +75,41 @@ def atomic_write(path, doc):
 
 
 def run_dir(run_id):
-    return os.path.join(RUNS, run_id)
+    """Resolve a run directory across the supported layouts (NAMING_CONVENTIONS.md):
+       campaigns/<campaign_id>/runs/<run_id>   named, post-promotion
+       campaigns/_drafts/<run_id>              unnamed, pre-promotion
+       campaigns/<run_id>                      legacy flat layout
+    """
+    cands = [os.path.join(RUNS, run_id), os.path.join(RUNS, DRAFTS, run_id)]
+    cands += sorted(glob.glob(os.path.join(RUNS, "*", "runs", run_id)))
+    for c in cands:
+        rel = os.path.relpath(c, RUNS)
+        if QUARANTINE in rel.split(os.sep):
+            continue
+        if os.path.isdir(c):
+            return c
+    return os.path.join(RUNS, DRAFTS, run_id)
+
+
+def all_run_dirs():
+    """Every run directory across all layouts, quarantine excluded."""
+    out = []
+    if not os.path.isdir(RUNS):
+        return out
+    for r in sorted(os.listdir(RUNS)):
+        if r == QUARANTINE:
+            continue
+        base = os.path.join(RUNS, r)
+        if not os.path.isdir(base):
+            continue
+        if r == DRAFTS:
+            out += [os.path.join(base, x) for x in sorted(os.listdir(base))]
+        elif os.path.isdir(os.path.join(base, "runs")):
+            rb = os.path.join(base, "runs")
+            out += [os.path.join(rb, x) for x in sorted(os.listdir(rb))]
+        else:
+            out.append(base)
+    return [d for d in out if os.path.exists(os.path.join(d, "state.yaml"))]
 
 
 def state_path(run_id):
@@ -107,7 +142,7 @@ def cmd_new(a):
     schema = load(SCHEMA)
     charter = load(CHARTER)
     rid = "cmp_" + ulid()
-    d = run_dir(rid)
+    d = os.path.join(RUNS, DRAFTS, rid)   # unnamed at NEW; promoted when campaign_id locks
     os.makedirs(d, exist_ok=False)
     spec_v = schema["schema"]["version"]
     chart_v = charter["charter"]["version"]
@@ -144,22 +179,17 @@ def cmd_new(a):
     print("run_id        %s" % rid)
     print("spec_version  %s   (pinned)" % spec_v)
     print("charter_ver   %s   (pinned, status %s)" % (chart_v, charter["charter"]["status"]))
-    print("state file    campaigns/%s/state.yaml" % rid)
+    print("state file    %s" % os.path.relpath(state_path(rid), ROOT))
     sys.exit(rc)
 
 
 def cmd_list(a):
-    if not os.path.isdir(RUNS):
-        print("no runs"); return
     rows = []
-    for r in sorted(os.listdir(RUNS)):
-        if r == QUARANTINE:
-            continue
-        p = state_path(r)
-        if os.path.exists(p):
-            s = load(p)
-            rows.append((r, s.get("workflow", {}).get("state"),
-                         (s.get("identity", {}).get("campaign_id") or {}).get("value") or "-"))
+    for d in all_run_dirs():
+        s = load(os.path.join(d, "state.yaml"))
+        rows.append((s.get("run", {}).get("run_id") or os.path.basename(d),
+                     s.get("workflow", {}).get("state"),
+                     (s.get("identity", {}).get("campaign_id") or {}).get("value") or "-"))
     if not rows:
         print("no runs"); return
     print("%-34s %-22s %s" % ("RUN_ID", "STATE", "CAMPAIGN_ID"))
@@ -219,7 +249,11 @@ def cmd_register_artifact(a):
     if (os.path.sep + QUARANTINE + os.path.sep) in (os.path.abspath(p) + os.path.sep):
         sys.exit("FATAL: %s/ is quarantined. Files there are pending deletion and can never\n"
                  "       satisfy an artifact prerequisite: %s" % (QUARANTINE, p))
-    rel = os.path.relpath(p, ROOT)
+    rd = os.path.abspath(run_dir(a.run))
+    ap = os.path.abspath(p)
+    # Convention (NAMING_CONVENTIONS.md): paths inside the run are stored RUN-ROOT-relative
+    # so promotion/moves never invalidate references; anything else stays repo-relative.
+    rel = os.path.relpath(ap, rd) if (ap + os.sep).startswith(rd + os.sep) else os.path.relpath(ap, ROOT)
     sha = hashlib.sha256(open(p, "rb").read()).hexdigest()
     s.setdefault("artifacts", {})[a.key] = {
         "path": rel, "written_at": now(), "sha256": sha, "status": "current",
@@ -227,6 +261,56 @@ def cmd_register_artifact(a):
     atomic_write(state_path(a.run), s)
     print("registered artifact %-20s %s" % (a.key, rel))
     print("  sha256 %s" % sha)
+
+
+def cmd_promote(a):
+    """Controlled lifecycle operation (NAMING_CONVENTIONS.md): move a run whose campaign_id
+    is owner-confirmed into campaigns/<campaign_id>/runs/<run_id>, rewrite legacy artifact
+    paths to run-root-relative, and maintain campaigns/<campaign_id>/campaign.yaml."""
+    s = require_run(a.run)
+    old_dir = os.path.abspath(run_dir(a.run))
+    ident = (s.get("identity") or {}).get("campaign_id") or {}
+    cid = ident.get("value")
+    if not cid:
+        sys.exit("FATAL: campaign_id is not set — promotion requires a locked campaign_id")
+    if ident.get("status") != "confirmed":
+        sys.exit("FATAL: campaign_id status is %r, not 'confirmed'" % ident.get("status"))
+    new_parent = os.path.join(RUNS, cid, "runs")
+    new_dir = os.path.abspath(os.path.join(new_parent, a.run))
+    if old_dir == new_dir:
+        print("already promoted: %s" % os.path.relpath(new_dir, ROOT)); return
+    if os.path.exists(new_dir):
+        sys.exit("FATAL: target already exists: %s" % new_dir)
+    orig = copy.deepcopy(s)
+    os.makedirs(new_parent, exist_ok=True)
+    os.rename(old_dir, new_dir)
+    legacy_prefix = os.path.join("campaigns", a.run) + os.sep
+    rewritten = 0
+    for key, rec in (s.get("artifacts") or {}).items():
+        pth = rec.get("path") or ""
+        if pth.startswith(legacy_prefix):
+            rec["path"] = pth[len(legacy_prefix):]
+            rewritten += 1
+    atomic_write(os.path.join(new_dir, "state.yaml"), s)
+    rc, out, err = call_validator(os.path.join(new_dir, "state.yaml"), run_dir=new_dir)
+    if rc != 0:
+        atomic_write(os.path.join(new_dir, "state.yaml"), orig)
+        os.rename(new_dir, old_dir)
+        print(out or err)
+        sys.exit("PROMOTION ROLLED BACK — validator refused the promoted state; nothing changed.")
+    cy_path = os.path.join(RUNS, cid, "campaign.yaml")
+    cy = load(cy_path) if os.path.exists(cy_path) else {
+        "campaign_id": cid, "display_name": None,
+        "created_at": (s.get("run") or {}).get("created_at"), "runs": []}
+    cy["display_name"] = (s.get("identity") or {}).get("display_name")
+    cy["current_run_id"] = a.run
+    cy["status"] = ((s.get("workflow") or {}).get("state") or "").lower()
+    if not any(r.get("run_id") == a.run for r in (cy.get("runs") or [])):
+        cy.setdefault("runs", []).append({"run_id": a.run, "purpose": a.purpose})
+    atomic_write(cy_path, cy)
+    print(out or err)
+    print("PROMOTED  %s -> %s" % (os.path.relpath(old_dir, ROOT), os.path.relpath(new_dir, ROOT)))
+    print("  %d artifact path(s) rewritten run-root-relative; campaign.yaml updated" % rewritten)
 
 
 def _coerce(raw):
@@ -451,6 +535,11 @@ def main():
     p.add_argument("--run", required=True); p.add_argument("--id", required=True)
     p.add_argument("--by", required=True); p.add_argument("--value-json"); p.add_argument("--note")
     p.set_defaults(f=cmd_record_decision)
+
+    p = sub.add_parser("promote")
+    p.add_argument("--run", required=True)
+    p.add_argument("--purpose", default="original")
+    p.set_defaults(f=cmd_promote)
 
     p = sub.add_parser("register-artifact")
     p.add_argument("--run", required=True); p.add_argument("--key", required=True)

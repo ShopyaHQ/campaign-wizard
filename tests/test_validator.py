@@ -243,7 +243,8 @@ def main():
         r = subprocess.run([sys.executable, RUNNER, "new"], capture_output=True, text=True, env=env)
         rid = next((l.split()[1] for l in r.stdout.splitlines() if l.startswith("run_id")), None)
         ok("run.py new mints a run", bool(rid), r.stdout + r.stderr)
-        sp = os.path.join(runs, rid, "state.yaml")
+        # NAMING_CONVENTIONS.md: unnamed runs are created under _drafts/ until promotion
+        sp = os.path.join(runs, "_drafts", rid, "state.yaml")
         before = open(sp, "rb").read()
         r = subprocess.run([sys.executable, RUNNER, "transition", "--run", rid, "--to", "FRAME_READY"],
                            capture_output=True, text=True, env=env)
@@ -251,10 +252,10 @@ def main():
         ok("transition without a frame is refused", r.returncode != 0)
         ok("state.yaml byte-identical after refusal", before == after)
         ok("no proposal file left behind",
-           not os.path.exists(os.path.join(runs, rid, ".state.proposed.yaml")))
+           not os.path.exists(os.path.join(runs, "_drafts", rid, ".state.proposed.yaml")))
         ok("run dir holds only real artifacts after a refusal",
-           sorted(os.listdir(os.path.join(runs, rid))) == ["state.yaml"],
-           str(sorted(os.listdir(os.path.join(runs, rid)))))
+           sorted(os.listdir(os.path.join(runs, "_drafts", rid))) == ["state.yaml"],
+           str(sorted(os.listdir(os.path.join(runs, "_drafts", rid)))))
 
         r = subprocess.run([sys.executable, RUNNER, "register-artifact", "--run", rid,
                             "--key", "frame", "--path", frame_p], capture_output=True, text=True, env=env)
@@ -290,8 +291,8 @@ def main():
         ok("history records the transition type",
            committed["workflow"]["history"][-1]["transition_type"] == "forward")
         ok("a committed transition exits 0 and leaves no scratch in the run dir",
-           r2.returncode == 0 and sorted(os.listdir(os.path.join(runs, rid))) == ["state.yaml"],
-           str(sorted(os.listdir(os.path.join(runs, rid)))))
+           r2.returncode == 0 and sorted(os.listdir(os.path.join(runs, "_drafts", rid))) == ["state.yaml"],
+           str(sorted(os.listdir(os.path.join(runs, "_drafts", rid)))))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
