@@ -1,0 +1,8 @@
+campaign_id: seasonal-turn-2026
+display_name: The Keeping
+created_at: '2026-08-06T15:32:26Z'
+runs:
+- run_id: cmp_01KZBV8MQ6NYNAKX94TGSJ9V21
+  purpose: original
+current_run_id: cmp_01KZBV8MQ6NYNAKX94TGSJ9V21
+status: campaign_approved
