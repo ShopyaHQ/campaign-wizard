@@ -1,0 +1,41 @@
+run_id: cmp_01KZCD765E6NNW2TZR1AFHQMWG
+selected_opportunity: "OPP-01 (owner-reshaped premise; see owner_decisions.opportunity_selected)"
+audience: platform_users
+current_behavior: "Beginning to want fall while unable to wear it; browsing fall editorial in summer heat."
+desired_behavior: "increase save.created activity"
+delivery_intent: "launch_window — ASAP, target 2026-08-10 to 2026-08-16"
+campaign_window:
+  value: "start ~2026-08-12; end not supplied"
+  interpretation_status: normalized
+avoid_terms: [back-to-school framing, cliched cosy or pumpkin autumn framing, discount-led or sale-led framing]
+avoid_terms_confirmed: true
+first_party_evidence: "none available (charter user_behavior_004)"
+competitor_claims: "none supplied"
+success_condition: >
+  Disclosed as unmeasurable this run: no time-windowed first-party save measure exists
+  (charter measurement_003). No proxy selected.
+execution_constraints:
+  - "S6 executable only; one-week window makes handoff seams unlikely to land — campaign must read inside default page dressing."
+  - "Live catalog probe requires human-run curl (charter constraints_006)."
+  - "OWNER INSTRUCTION: do not predetermine the 'wait for it vs wear it now' collection architecture; investigate it as one hypothesis among others in the deeper research pass."
+  - "OWNER TONAL BOUNDS: no unsupported weather/duration claims; not an anti-retail or anti-urgency manifesto; saving/desire/discovery is the campaign, not not-buying."
+raw_user_responses:
+  - source: "kickoff questions 2026-08-06"
+    text: "More saves / Seasonal turn (summer->fall) / ASAP - next week or so / Same three exclusions (superset of dual selection)"
+  - source: "owner reshape message 2026-08-06"
+    text: |
+      Premise locked verbatim: "Fashion has moved into fall before the weather has. That creates
+      a gap between what shoppers are beginning to want and what they can realistically wear now.
+      Shopya turns that gap into a useful discovery behavior: save what belongs to the season
+      ahead, while finding the signals of that season that already work now. The campaign is
+      about wanting ahead without having to resolve that desire immediately."
+      Arguable claim: "You can want fall before you need to buy or wear it. Saving gives that
+      desire somewhere to go."
+      Rejected: six-week precision; 'most of what's worth wanting is unwearable'; 'you don't
+      need to buy fall in August'; anti-urgency as the campaign; predetermined wait/wear split.
+normalized:
+  selected_opportunity: OPP-01
+  desired_behavior: save.created
+  audience: platform_users
+  delivery_intent: launch_window
+  interpretation_status: direct

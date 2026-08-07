@@ -1,0 +1,112 @@
+# STAGE 4 · CAMPAIGN PLATFORM BRIEF — DRAFT for owner workshop
+run_id: cmp_01KZCD765E6NNW2TZR1AFHQMWG
+selected_opportunity: "OPP-01, owner-reshaped"
+
+campaign_problem: "Fashion has moved into fall before the weather has; shoppers are beginning to want a season they cannot realistically wear yet."
+audience: platform_users
+current_behavior: "Browsing fall editorial and arrivals in summer heat; outerwear searched with year tags; fall-at-home searched with year tags and near-me intent."
+desired_behavior: "increase save.created activity"
+cultural_tension: "Wanting ahead of wearing — desire for the season has arrived before the season has."
+campaign_proposition: >
+  OWNER-LOCKED VERBATIM: "Fashion has moved into fall before the weather has. That creates a
+  gap between what shoppers are beginning to want and what they can realistically wear now.
+  Shopya turns that gap into a useful discovery behavior: save what belongs to the season
+  ahead, while finding the signals of that season that already work now. The campaign is about
+  wanting ahead without having to resolve that desire immediately."
+arguable_claim: "You can want fall before you need to buy or wear it. Saving gives that desire somewhere to go."
+shopya_role: "The save gives fall desire somewhere to go before purchase or wear is possible."
+participation_mechanism: "Save into collections during the gap; return as the season arrives."
+reason_to_believe: "Save action, user collections and price_when_saved are verified capabilities (charter product_truth_001/002/003)."
+why_now: "SIG-004, SIG-006, SIG-013, SIG-017, SIG-018, SIG-019 — merchandising and editorial have fully turned while heat persists; the gap is at its annual maximum."
+delivery_intent: "launch_window, target 2026-08-10 to 2026-08-16"
+tonal_bounds_owner:
+  - "No unsupported weather or duration claims."
+  - "Not an anti-retail or anti-urgency manifesto; saving/desire/discovery is the campaign, not not-buying."
+  - "Three excluded framings per frame.avoidance."
+relevant_seams: [S6]
+surface_roles:
+  explore: "product rails carrying the campaign's collection roles — SEAM 6, executable"
+  collection_pages: "durable destinations each making one sub-argument"
+  note: "One-week window: handoff seams (skin, editorial) assumed NOT to land; campaign must read inside default dressing."
+success_signals: ["save.created — disclosed unmeasurable this run (charter measurement_003)"]
+measurement:
+  intended_event: save.created
+  retrieval_status: unknown
+  causal_incrementality_measurable: false
+  proxy: null
+assumptions:
+  - "That fall-desire browsing converts to saves — reasoned from capability, not first-party evidence."
+  - "Wait-vs-wear architecture NOT assumed (owner instruction). Evidence suggests a SPECTRUM of how much desire each territory resolves now."
+risks:
+  - "Engine inventory is summer-built; fall-desire territories likely need fresh scraping — tested next step."
+  - "Creator-signal class is thin (stalest source in the ledger)."
+ownability:
+  level: L3-by-capability
+  rationale: "The save-then-return loop is the mechanism itself; transplanted to a retailer it becomes 'shop the preview' and loses its function."
+
+# ── OWNER ARCHITECTURE RULING 2026-08-07 (decision: collection_architecture_workshopped) ──
+# Working trio: CR-A (wait) + CR-B (bridge) + CR-D (transform) — three MECHANISMS, not three
+# product categories. CR-C preserved as rejected-for-this-premise, high-value alternate: it
+# breaks the locked premise (home has no weather problem) and would silently broaden the
+# campaign. Possible future campaign: "The season arrives at home before it arrives outside."
+# CR-E cut. D is NOT merged into B unless product reality forces it — availability testing
+# decides, not tidiness.
+# ── PROPOSED collection roles — post-ruling status below ──
+# Each makes a DIFFERENT sub-argument of the premise, positioned on the resolution spectrum:
+# how much of the fall desire it lets a shopper resolve today.
+proposed_collection_roles:
+
+- role_id: CR-A
+  owner_status: kept_wait_mechanism
+  sub_argument: "The fall you are already wanting and cannot wear at all — outerwear and statement pieces."
+  resolution_position: "resolves nothing now; the purest save-for-later material"
+  evidence: [SIG-007, SIG-006, SIG-017, SIG-022]
+  evidence_note: "The one category searched with year tags; sell-outs reported; capes/rain/oversized on both runway syntheses; toggle corroborated (weakly) by creator class."
+  availability_reality: "Engine is summer-stocked; almost certainly needs a fresh scrape. Highest curation cost."
+  status: proposed
+
+- role_id: CR-B
+  owner_status: kept_bridge_mechanism
+  sub_argument: "The fall signals that already work in the heat — texture and print you can wear today: leopard, sheer/lace, retro denim, suede accessories."
+  resolution_position: "resolves part of the desire immediately"
+  evidence: [SIG-001, SIG-004, SIG-018, SIG-020]
+  evidence_note: "Leopard product-level search; Zara actively stocking lace/texture for the in-between; suede product+care intent."
+  availability_reality: "Partial engine coverage plausible (summer collections hold sheer, sandals, denim); needs checking, moderate scrape."
+  status: proposed
+
+- role_id: CR-C
+  owner_status: alternate_rejected_for_this_premise
+  sub_argument: "The fall you can fully have today — at home. Indoors has no weather gate."
+  resolution_position: "resolves the desire completely, in a different vertical"
+  evidence: [SIG-021, SIG-001]
+  evidence_note: "'fall decor 2026' live with near-me and named-retailer intent; leopard crosses to rug/wallpaper. home_interior sub_group exists (charter surface_006)."
+  availability_reality: "Engine is fashion/beauty-weighted; home likely needs fresh sourcing. Unknown cost."
+  status: proposed
+
+- role_id: CR-D
+  owner_status: kept_transform_mechanism_separate_from_B
+  sub_argument: "The small pieces that turn summer into fall — belts, brooches, shrugs, cardigans: additive, wearable now, transforms what is owned."
+  resolution_position: "resolves desire at small scale by transforming, not replacing"
+  evidence: [SIG-005, SIG-017, SIG-022]
+  evidence_note: "Loose belts on both runway lists; shrugs 'about to be everywhere'; brooches-on-tanks; stacked layering in creator class."
+  availability_reality: "Accessories partially present in engine; needs checking."
+  status: proposed
+
+- role_id: CR-E
+  owner_status: cut
+  sub_argument: "The turn at its smallest scale — beauty. Nails change before wardrobes."
+  resolution_position: "lowest-commitment adoption, immediate"
+  evidence: [SIG-002]
+  evidence_note: "'late summer nails' year-tagged current; beauty sub_group live; engine holds beauty collections."
+  availability_reality: "Best engine coverage of the five (beauty collections exist); lowest cost."
+  status: proposed
+
+tests:
+  truth: "Premise is owner-authored; every research clause cites a signal id. PASS."
+  behavior: "save.created named. PASS."
+  mechanism: "Save-then-return; verified capabilities. PASS."
+  surface: "Each proposed role makes a distinct sub-argument at a distinct resolution position. PENDING owner reaction."
+  ownability: "L3-by-capability declared with rationale. PASS."
+  theme: "Strip the seasonal theme: 'want ahead, save now, return later' still stands. PASS."
+  feasibility: "S6-only inside the window; availability per role untested. PARTIAL — next step."
+  competitor: "A retailer can run a fall preview; it cannot run save-instead-of-resolve, and a single-vertical player cannot run CR-C alongside CR-A. PARTIAL."

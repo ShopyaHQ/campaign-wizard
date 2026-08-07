@@ -1,0 +1,92 @@
+run_id: cmp_01KZCD765E6NNW2TZR1AFHQMWG
+produced_at: 2026-08-06T20:55:00Z
+
+opportunities:
+
+- opportunity_id: OPP-01
+  territory: "Fall you cannot wear yet — the save as the waiting room"
+  observation: "Retail and editorial have fully turned to fall while the heat makes none of it wearable; early fall pieces are already selling out."
+  cultural_tension: "The trade says decide now; the weather says not for six weeks. The shopper is asked to commit to clothes she cannot put on."
+  audience_behavior: "Browsing fall content in summer heat with no immediate wear occasion; outerwear is the one category searched with a year tag."
+  why_now: "The gap between what is sold and what is wearable is at its annual maximum this exact week (SIG-004, SIG-006, SIG-007, SIG-014)."
+  shopya_role: "Saving is the honest verb for wanting something you cannot wear yet. The platform's core gesture is the correct response to the moment; no retailer can say 'don't buy it yet' — a discovery platform can."
+  desired_user_action: "Save fall pieces now; return when the weather turns."
+  instrumentation_mapping: save.created
+  supporting_signal_ids: [SIG-004, SIG-006, SIG-007, SIG-013, SIG-014]
+  contradicting_signal_ids: [SIG-011]
+  relevant_seams: [S6, S5]
+  surface_potential: [explore, collection_pages]
+  ownability:
+    level: L3-by-capability
+    rationale: "The mechanism IS the save-then-return loop. Transplanted to a retailer it becomes 'shop the preview', which is a different and weaker thing; a retailer's incentive is to sell now, not to hold."
+    dependency: "charter product_truth_001, product_truth_002"
+  expiration: "Decays as real fall weather arrives (mid-late September); natural 4-6 week arc into Labor Day and NYFW."
+  confidence: strong
+  assumptions: ["That browsing fall content in August is widespread enough to convert into saves — inferred from editorial volume, not measured."]
+  operational_risks: ["Tight window means S6-only execution; the idea must read inside default page dressing."]
+
+- opportunity_id: OPP-02
+  territory: "Restyle, not repurchase — the layering turn"
+  observation: "Current editor forecasts centre on restyling summer pieces into fall reads: tunics over denim, shrugs, silk with shorts, brooches on tanks."
+  cultural_tension: "Wanting to look like the new season without buying the new season — thrift posture meets trend appetite."
+  audience_behavior: "Styling-led browsing; layering constructions dominate the predictions; underconsumption mood persists."
+  why_now: "The styling story of this exact fortnight (SIG-005), aligned with the value-conscious outlook (SIG-011, SIG-012)."
+  shopya_role: "Cross-brand styling assemblies are discovery work — a single retailer shows its own racks; a platform can show the construction."
+  desired_user_action: "Save the pieces that convert a summer wardrobe — shrugs, layers, the one bag."
+  instrumentation_mapping: save.created
+  supporting_signal_ids: [SIG-005, SIG-011, SIG-012]
+  contradicting_signal_ids: [SIG-007]
+  relevant_seams: [S6, S5]
+  surface_potential: [explore, collection_pages]
+  ownability:
+    level: L2
+    rationale: "Cross-brand assembly fits the platform, but any styling publisher can run 'restyle your summer clothes'. Not mechanism-dependent."
+    dependency: none
+  expiration: "4-6 weeks; dies when real layering weather arrives and the construction becomes ordinary."
+  confidence: moderate
+  assumptions: ["That editor styling predictions reflect real audience appetite rather than one editor's taste."]
+  operational_risks: ["Styling content leans on the editorial seam (S5), which is handoff and may not land inside the window."]
+
+- opportunity_id: OPP-03
+  territory: "Leopard as the bridge print"
+  observation: "Leopard carries live product-level search intent across categories including named products, appears on the pre-fall runway at three houses, and crosses into home."
+  cultural_tension: "One print reads summer on sandals and fall on coats — it is the rare thing wearable on both sides of the turn."
+  audience_behavior: "Product-level leopard searches (birkenstocks, adidas, jeans, dress) plus home (rug, wallpaper)."
+  why_now: "Live in search tonight (SIG-001) and on the pre-fall runway (SIG-004); wearable immediately unlike most fall trends."
+  shopya_role: "A cross-category, cross-vertical print collection (fashion + home) is something a multi-vertical discovery platform assembles better than any retailer."
+  desired_user_action: "Save leopard pieces across categories; collect the print."
+  instrumentation_mapping: save.created
+  supporting_signal_ids: [SIG-001, SIG-004]
+  contradicting_signal_ids: [SIG-016]
+  relevant_seams: [S6]
+  surface_potential: [explore, collection_pages]
+  ownability:
+    level: L2
+    rationale: "Cross-vertical assembly leans on the platform's breadth, but 'leopard edit' is runnable by anyone. Perennial print risks reading generic."
+    dependency: none
+  expiration: "Print trends run months; the bridge framing dies when the season fully turns."
+  confidence: moderate
+  assumptions: ["That tonight's autocomplete reflects a current spike rather than leopard's permanent baseline — unknowable without volume data."]
+  operational_risks: ["Single-object campaigns are thin as a campaign; strongest as a collection inside a larger idea."]
+
+- opportunity_id: OPP-04
+  territory: "The turn starts small — beauty first"
+  observation: "'Late summer' search intent is beauty-led (nails, with a 2026-tagged completion); the wardrobe follows later."
+  cultural_tension: "Wanting the new season now, when the only parts of it you can actually adopt are the smallest ones."
+  audience_behavior: "Dated, current beauty searches; seasonal colour changes at nail scale before clothing scale."
+  why_now: "The one 'late summer' commerce intent that is year-tagged current (SIG-002); actionable in days, not weeks."
+  shopya_role: "Beauty is a live sub_group; small-scale seasonal adoption is browse-and-save behaviour."
+  desired_user_action: "Save the transition at small scale — beauty, accessories."
+  instrumentation_mapping: save.created
+  supporting_signal_ids: [SIG-002, SIG-010]
+  contradicting_signal_ids: [SIG-016]
+  relevant_seams: [S6]
+  surface_potential: [explore, collection_pages]
+  ownability:
+    level: L2
+    rationale: "Beauty-vertical presence helps, but 'fall nails' content is everywhere every August."
+    dependency: none
+  expiration: "Short; peaks late August."
+  confidence: weak
+  assumptions: ["That nail-scale intent generalises to a saveable product set on the platform."]
+  operational_risks: ["Likely a collection, not a campaign — thin as the whole idea."]

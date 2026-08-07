@@ -1,0 +1,17 @@
+run_id: cmp_01KZCD765E6NNW2TZR1AFHQMWG
+campaign_id: almost-fall-2026
+source_engine: shopya-collection-curation
+note: "eligible_count is AVAILABLE products joined from product_results_log.jsonl at build
+  time; unknown is never counted as available. Counts below confirmed by dry build 2026-08-07."
+collections:
+- {collection_id: AF-A, name: First Coats of Fall, sub_group: fashion}
+- {collection_id: AF-B, name: "Suede, Sheer & Denim", sub_group: fashion}
+- {collection_id: AF-D, name: Fall Accents, sub_group: fashion}
+rails:
+- {rail_id: rail-af-a, collection_id: AF-A, rail_position: 0, name: "Coats you can't wear yet", sub_group: fashion}
+- {rail_id: rail-af-b, collection_id: AF-B, rail_position: 1, name: "Fall you can wear today", sub_group: fashion}
+- {rail_id: rail-af-d, collection_id: AF-D, rail_position: 2, name: "Add one thing", sub_group: fashion}
+entities:
+- {entity_id: AF-A, entity_type: products, eligible_count: 12, total_rows: 12, unknown_count: 0, unavailable_count: 0}
+- {entity_id: AF-B, entity_type: products, eligible_count: 12, total_rows: 12, unknown_count: 0, unavailable_count: 0}
+- {entity_id: AF-D, entity_type: products, eligible_count: 12, total_rows: 12, unknown_count: 0, unavailable_count: 0}

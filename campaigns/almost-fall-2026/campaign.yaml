@@ -1,0 +1,8 @@
+campaign_id: almost-fall-2026
+display_name: Almost Fall
+created_at: '2026-08-06T20:46:13Z'
+runs:
+- run_id: cmp_01KZCD765E6NNW2TZR1AFHQMWG
+  purpose: original
+current_run_id: cmp_01KZCD765E6NNW2TZR1AFHQMWG
+status: campaign_approved

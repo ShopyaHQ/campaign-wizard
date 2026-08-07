@@ -1,0 +1,27 @@
+campaign_id: almost-fall-2026
+display_name: Almost Fall
+run_id: cmp_01KZCD765E6NNW2TZR1AFHQMWG
+build_id: b002
+built_at: 2026-08-07T12:40:04Z
+supersedes: b001
+reason: >
+  Three owner-approved pin substitutions after launch-cycle re-verification (Mango Suede
+  Jacket -> Sezane Suede Harvey Teddy; Toteme Classic Cut Jeans -> Agolde 90's Pinch Waist;
+  AGS Ikesia -> A.Emery Jalen Liquorice) plus corrected Adidas annotation. b001 remains
+  immutable historical evidence.
+products_file: almost-fall-2026__products__b002__20260807T124004Z.csv
+products_sha256: 5573b58d6a3e1e6ba7c60df7d6f21f22c4d5f9fd585e67e508d498671ad38c71
+curated_file: almost-fall-2026__curated__b002__20260807T124004Z.json
+curated_sha256: 50f8c1817c70cefca1b0c70a377946414bdd97ff74d865c061896bca57c252dd
+collection_bodies_file: almost-fall-2026__collection-handoff__b002__20260807T124004Z.csv
+collection_bodies_sha256: e6418defc1159e23d2241992be42a840e964d243c641dec4a9a983a80a4da46a
+rails: 3
+pinned_products: 36
+collection_body_products: 36
+live_launch_set_per_collection: 24
+total_manual_products_to_add: 72
+validation: passed
+ingest_path: "owner manual add (execution_truth_resolved 2026-08-07); duplicates auto-identified"
+execution:
+  status: pending_admin_import
+  executed_build: null

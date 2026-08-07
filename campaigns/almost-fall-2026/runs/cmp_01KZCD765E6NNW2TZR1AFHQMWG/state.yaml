@@ -1,0 +1,625 @@
+run:
+  run_id: cmp_01KZCD765E6NNW2TZR1AFHQMWG
+  spec_version: 1.4.0
+  charter_version: 0.3.0
+  created_at: '2026-08-06T20:46:13Z'
+  note: Acceptance run — v1 definition of done test.
+identity:
+  campaign_id:
+    value: almost-fall-2026
+    status: confirmed
+    confirmed_by_owner: true
+    externally_referenced: false
+    first_external_reference: null
+  display_name: Almost Fall
+workflow:
+  state: CAMPAIGN_APPROVED
+  entered_at: '2026-08-07T09:18:01Z'
+  history:
+  - from: null
+    to: NEW
+    at: '2026-08-06T20:46:13Z'
+    transition_type: forward
+    pinned_spec_version: 1.4.0
+    pinned_charter_version: 0.3.0
+    decision_ref: null
+  - from: NEW
+    to: FRAME_READY
+    at: '2026-08-06T20:49:08Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: FRAME_READY
+    to: RESEARCHING
+    at: '2026-08-06T20:49:08Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: RESEARCHING
+    to: SIGNALS_READY
+    at: '2026-08-06T20:51:53Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: SIGNALS_READY
+    to: OPPORTUNITIES_READY
+    at: '2026-08-06T20:52:41Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: OPPORTUNITIES_READY
+    to: OPPORTUNITY_SELECTED
+    at: '2026-08-07T07:40:52Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: OPPORTUNITY_SELECTED
+    to: INTERVIEW_COMPLETE
+    at: '2026-08-07T07:40:53Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: INTERVIEW_COMPLETE
+    to: BRIEF_DRAFT
+    at: '2026-08-07T07:43:44Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: null
+  - from: BRIEF_DRAFT
+    to: BRIEF_APPROVED
+    at: '2026-08-07T09:12:31Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: almost-fall-2026
+  - from: BRIEF_APPROVED
+    to: ROUTES_READY
+    at: '2026-08-07T09:17:34Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: almost-fall-2026
+  - from: ROUTES_READY
+    to: ROUTE_SELECTED
+    at: '2026-08-07T09:17:34Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: almost-fall-2026
+  - from: ROUTE_SELECTED
+    to: ACTIVATION_READY
+    at: '2026-08-07T09:17:43Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: almost-fall-2026
+  - from: ACTIVATION_READY
+    to: SEAM6_READY
+    at: '2026-08-07T09:17:43Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: almost-fall-2026
+  - from: SEAM6_READY
+    to: VALIDATED
+    at: '2026-08-07T09:17:53Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: almost-fall-2026
+  - from: VALIDATED
+    to: CAMPAIGN_APPROVED
+    at: '2026-08-07T09:18:01Z'
+    transition_type: forward
+    decision_ref: null
+    campaign_id_at_transition: almost-fall-2026
+owner_decisions:
+  frame_accepted:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-06T20:49:08Z'
+    note: 'Basis: all frame inputs supplied explicitly by owner via kickoff questions
+      this session (objective=more saves; territory=seasonal turn; timing=ASAP next
+      week; exclusions=three, superset reading of dual selection, flagged in chat).
+      Frame transcribes those answers. Agent-labeled: launch-window normalization,
+      US market carried as proposal pending confirmation.'
+  opportunity_selected:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T07:40:52Z'
+    value:
+      opportunity_id: OPP-01
+      reshaped: true
+      premise: 'Fashion has moved into fall before the weather has. That creates a
+        gap between what shoppers are beginning to want and what they can realistically
+        wear now. Shopya turns that gap into a useful discovery behavior: save what
+        belongs to the season ahead, while finding the signals of that season that
+        already work now. The campaign is about wanting ahead without having to resolve
+        that desire immediately.'
+      arguable_claim: You can want fall before you need to buy or wear it. Saving
+        gives that desire somewhere to go.
+    note: 'Basis: owner''s written reshape 2026-08-06, verbatim. Owner rejected: six-week
+      precision, ''most of what is worth wanting'' breadth, anti-commerce/anti-urgency
+      as the campaign stance, and predetermining the wait-vs-wear collection split
+      — that split is a hypothesis for the deeper research pass, not architecture.'
+  collection_architecture_workshopped:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T07:58:45Z'
+    value:
+      keep:
+      - CR-A
+      - CR-B
+      - CR-D
+      mechanisms: wait -> bridge -> transform
+      alternate_preserved: 'CR-C rejected-for-this-premise, high-value; possible future
+        campaign: the season arrives at home before it arrives outside'
+      cut:
+      - CR-E
+      constraints:
+      - do not merge D into B unless product reality forces it
+      - next step is availability testing of A/B/D only
+      - no naming or copy yet
+    note: 'Basis: owner''s written architecture ruling 2026-08-07. Causal correction
+      recorded: CR-C breaks the locked premise (home has no weather problem) and would
+      silently broaden a fashion/weather campaign into general early-fall experience.'
+  curation_pass_approved:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T08:02:22Z'
+    value:
+      scope:
+      - 'A top-up: trenches, toggles, capes/ponchos, statement coats — current, weather-gated'
+      - 'D fill: belts, brooches, shrugs, cardigans — genuinely transform-supporting'
+      - 'B: leopard thread check only'
+      success: 12+ verified-available, editorially defensible per A and D; relevance
+        first, count second
+      hard_rules:
+      - one pass only
+      - no D rescue round — failure means merge into B
+      - no naming or copy
+      - no premise or role changes mid-scrape
+      - no workflow/schema work from sourcing results
+    note: 'Basis: owner''s written approval with stopping criteria, 2026-08-07.'
+  collection_architecture_approved:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T08:19:51Z'
+    value:
+      architecture:
+      - A desire-deferred/save
+      - B seasonal-bridge/wear-now
+      - D transform/small-additions
+      assembly_flags:
+      - A mid-tier price gap
+      - D cardigan thinness
+      - Rixo leopard coat A-vs-B editorial placement
+      constraint: internal role labels are strategic scaffolding, NOT naming directions
+    note: 'Basis: owner written approval 2026-08-07 — ''D survived on relevance, not
+      padding.'' Flags carried, not solved by architecture change. Proceed to naming
+      and frontend copy; stop before assembly/CSV.'
+  naming_provisional_locks:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T08:26:07Z'
+    value:
+      locked_provisional:
+        collection_B: Leopard, Suede & Sheer
+        rail_A: Coats you cant wear yet
+        rail_D: Add one thing
+      working:
+        collection_A: First Coats of Fall (working title; assembly may expose sharper
+          subject)
+      rework:
+      - 'campaign name (one round: editorial issue/theme feel; no abstract-noun, no
+        wordplay, no descriptive headline)'
+      - collection D (legible durable subject)
+      - rail B (shorter alternatives)
+      - collection A description (describe collection, not premise)
+    note: 'Basis: owner naming ruling 2026-08-07. Process freeze: no further schema/process
+      changes until U1-U4 hood-lift reviewed; U5 lesson captured as PROPOSED only.'
+  naming_locked:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T08:32:11Z'
+    value:
+      campaign: Almost Fall
+      dek: Fall's in every window, not yet in the forecast. Save what you want for
+        when the weather catches up.
+      collection_A: First Coats of Fall (working through assembly)
+      collection_B: Leopard, Suede & Sheer
+      collection_D: Fall Accents
+      rail_A: Coats you can't wear yet
+      rail_B: Fall you can wear today
+      rail_D: Add one thing
+      notes:
+      - A/B rail parallelism intentional - no SSOT rule yet
+      - U5 approved
+      - the-turn ban approved as demonstrated content rule
+    note: 'Basis: owner lock message 2026-08-07, dek corrected by owner to remove
+      banned phrase.'
+  assembly_reactions:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T08:40:49Z'
+    value:
+      B_rename: Suede, Sheer & Denim
+      leopard: ambient only; NO sourcing pass — name-as-promise rule working
+      rixo: locked into A
+      sets: approved as editorial candidates; A/D not final until verification clears
+      substitution_rule: substitute from approved candidate logic first; owner decision
+        only if subject/quality materially changes
+      dek: Fall's in every window, not yet in the forecast. Save what you want for
+        cooler days.
+      campaign_id: almost-fall-2026 subject to uniqueness validation
+      U6a: approved
+      U6b: approved
+      annotations: NOT locked — editorial-language review required before lock
+    note: 'Basis: owner assembly-reaction message 2026-08-07.'
+  verification_path:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T08:45:32Z'
+    value:
+      path: human checklist
+      U7a: approved
+      U7b: HELD — reported only
+      presentation_rule: approved
+    note: 'Basis: owner checkpoint answers 2026-08-07.'
+  agent_first_verification_rule_approved:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T09:04:19Z'
+    note: 'Owner 2026-08-07: approved AND applied to SSOT (CLAUDE.md): automated verification
+      and search recovery are exhausted before availability checks escalate to the
+      owner; owner verification is the fallback for irreducible ambiguity, not the
+      default operating path. Charter formalization queued for next charter revision
+      in NEXT_PASS_SCOPE.'
+  final_assembly_provisional:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T09:04:19Z'
+    note: 'Owner 2026-08-07: assembly and substitutions provisionally approved; Rixo
+      stays in A; annotation revisions approved incl. Ancient Greek Sandals line.
+      D NOT final until 12 verified. Owner human-verification priority: 1 FV Turtle
+      Pin, 2 Anne Klein Orchid, 3 2028 Cameo, 4 ASOS Moon (backup). Stopping rule:
+      3 brooches verify -> use them, stop; only 2 brooches verify -> UO Jennie Western
+      Belt is the twelfth, stop. No further sourcing rounds. Optional Reformation
+      A/B items NOT to be verified (collections clear; stopping rule applies). Callery
+      size-S-only: prefer an already-verified comparable A candidate with broader
+      sizing IF one exists; do not source to replace.'
+  d_human_verification_and_product_lock:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T09:10:12Z'
+    note: 'Owner 2026-08-07: human verification complete — FV Turtle Pin $90, Anne
+      Klein Crystal Orchid Pin $32, 2028 Carnelian Cameo Pin $68 all live/purchasable.
+      Per locked stopping rule verification stopped (ASOS unchecked, UO belt not added).
+      D clears 12/12 with 3 verified brooches. Owner directed: log results, lock final
+      A/B/D sets, present compact acceptance card. No CSV until final acceptance.'
+  final_campaign_assembly_approved:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T09:12:08Z'
+    note: 'Owner 2026-08-07: PUBLISH. Explicit approval of the final Almost Fall campaign
+      assembly — A First Coats of Fall 12/12, B Suede Sheer & Denim 12/12, D Fall
+      Accents 12/12 incl. 3 verified brooches. Three caveats (Callery S-only, Gaspard
+      per-size soft flag, Sandy Liang low stock) accepted, no changes required. Directed:
+      advance approved states, run final execution validation, build CSV from locked
+      sets, stop after execution package.'
+  brief_approved:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T09:12:31Z'
+    note: 'Owner 2026-08-07 ''Publish'' directive: explicit approval of final campaign
+      assembly (A/B/D 12/12 each, 3 caveats accepted) with instruction to advance
+      the approved states through the existing workflow. Brief content unchanged since
+      stage4_brief; final assembly recorded in naming_and_assembly.yaml locked_final_sets.'
+  route_selected:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T09:17:34Z'
+    note: Owner selected RTE-1 (Almost Fall gap architecture) by reshaping Direction
+      1 verbatim on 2026-08-07 (opportunity_selected) and rejecting the C-forward
+      alternative at the collection-role ruling; ratified by the 2026-08-07 Publish
+      directive. RTE-2 preserved as rejected-for-this-premise.
+  campaign_approved:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T09:18:01Z'
+    note: 'Owner 2026-08-07 Publish directive: final campaign assembly explicitly
+      approved (three caveats accepted, no changes); directed advance through approved
+      states, final execution validation, CSV build, stop after execution package.
+      Handoff authored: S1 campaign header (name+dek+rail order) — handoff-only per
+      scope; not implemented.'
+  naming_conventions_locked:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T09:35:32Z'
+    note: 'Owner 2026-08-07: full naming convention locked as SSOT (docs/NAMING_CONVENTIONS.md)
+      — campaign_id/run_id/build_id separation, portable-asset pattern, immutable
+      builds, controlled asset vocabulary, campaign/runs directory model. Scope ruling
+      via AskUserQuestion: apply execution-asset naming NOW (Almost Fall CSV stamped
+      b001 + manifest, pre-convention products.csv retained byte-identical for in-flight
+      import); directory restructure locked but implemented next pass, first item.'
+  naming_restructure_executed:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T09:41:45Z'
+    note: 'Owner 2026-08-07 ''yes make changes now'': directory restructure executed
+      ahead of go-live rather than next pass. campaigns/<campaign_id>/runs/<run_id>/
+      layout live; _drafts/ for unnamed kickoffs; run.py promote command added (controlled
+      promotion, validator-gated with rollback); artifact paths now stored run-root-relative
+      (validator resolves run-root first, repo-root legacy fallback); campaign.yaml
+      per campaign. All four runs migrated and validated PASS; test suite updated
+      for _drafts and passing 92/92.'
+  inventory_depth_model_approved:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T09:56:19Z'
+    note: 'Owner 2026-08-07: rail display capacity was wrongly treated as collection
+      quality threshold. New layered model — rail pins 12 (display cap); collection
+      hard floor 2x rail capacity (24 today); launch target >50 qualifying available
+      per collection (AskUserQuestion: ''Floor 24, target >50''); technical floor
+      1 stays system-fact only. Readiness terminology split rail/collection/execution.
+      Launch freshness: pins re-verified this launch cycle, low-stock pins rechecked
+      immediately pre-execution. Low-stock: max 3/12 pins without owner ack, never
+      counted as reserve. Mechanism representation = editorial QA rule. Not adopted:
+      max cap, numeric diversity floors, sellout threshold (next-pass). Almost Fall
+      consequence: A/B/D are rail-ready NOT collection-ready; CollectionCuration deepens
+      each to >50 without changing approved pins or architecture; no padding. Codified
+      in content charter 0.7.0-proposed.'
+  summer_skip_and_reuse_first:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T10:07:50Z'
+    note: 'Owner 2026-08-07: skip summer launch; mine High Summer Edit + The Keeping
+      + existing engine observations as reserve feedstock for Almost Fall depth; everything
+      behind next-week launch. Sequencing: Steps 0-2 only (mine read-only, thesis-first;
+      reverify only genuine qualifiers; capture ingest-ready catalog records in same
+      engine-side operation), then STOP for reuse/depth acceptance card (per collection:
+      pins, recovered in-stock, low-stock separate, dependable depth, gaps to 24 floor
+      and >50 target, ingest-ready count, price/category/mechanism gaps, borderline-excluded
+      count, reuse yield). >50 is target not hard gate: 35-45 strong products beats
+      padding to 51. Floor counts dependable in-stock only; low-stock augments, never
+      satisfies floor, never treated as nonexistent. No broad fresh sourcing until
+      card reviewed; Step 3 will be targeted per demonstrated gap. Boundary re-affirmed:
+      engine owns product truth incl. catalog capture; wizard owns campaign membership;
+      no scraping/catalog behavior added to wizard.'
+  targeted_topup_authorized:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T10:55:30Z'
+    note: 'Owner 2026-08-07: targeted top-up authorized A/B/D with collection-specific
+      scope; architecture NOT reconsidered; boots stay excluded, recorded as reusable
+      fall inventory. Pre-topup: re-verify 12 B pins + 3 low-stock A pins now (approved
+      substitution logic on failure; owner decision only if thesis/quality materially
+      altered); catalog/ingest readiness is a parallel pre-launch requirement — verify
+      whether catalog->feed->upsert is required, run engine-side catalog capture for
+      36 pins, track editorially-qualified / availability-verified / catalog-ready
+      separately; any pin that cannot become ingest-ready = concrete launch blocker.
+      A: coats thesis only, $300-600 priority, clear 24 comfortably, ~30-36 preferred,
+      >50 while quality holds, report natural ceiling. B: NO more denim — suede/sheer/thesis
+      breadth only. D: brooches/belts/scarves/comparable accents, clear 24, ~30-36,
+      >50 while strong. Floor counts in-stock only; low-stock reported separately.
+      Stop at depth/readiness checkpoint before changing execution build. SSOT proposal
+      requested if ingestion is real prerequisite (smallest form, no new workflow
+      state unless QA cannot represent it).'
+  depth_accepted_and_subs_approved:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T12:01:38Z'
+    note: 'Owner 2026-08-07: depth ACCEPTED for launch — A 27 / B 28 / D 25 dependable,
+      all clear 24 floor; >50 stays mature-collection target, no further Almost Fall
+      sourcing (no-padding/natural-ceiling wins). B substitutions APPROVED: Mango
+      Suede->Sezane Harvey Teddy $490; Toteme jeans->Agolde 90s Pinch $238. AGS Ikesia:
+      no micro-sourcing for a shoe slot — promote best verified suede reserve preserving
+      type/price balance without jacket redundancy; agent selected A.Emery Jalen Liquorice
+      $250 (re-verified all sizes 8/7), reported not gated. Adidas annotation updated
+      to verified Core Black article. SSOT APPROVED AND APPLIED (content charter 0.7.1):
+      availability verification and catalog-ingest readiness are separate execution
+      requirements; neither implies the other. Catalog capture STOPPED pending execution
+      truth — 8 dev questions issued (handoffs/EXECUTION_TRUTH_dev_questions.md);
+      27 products are POTENTIAL ingest blockers, not confirmed. Next checkpoint: execution-path
+      truth report. No execution build change yet — b002 pending truth report.'
+  execution_truth_resolved:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T12:25:14Z'
+    note: 'Owner 2026-08-07: execution-path truth — products enter Shopya via MANUAL
+      ADD by owner, outside this tool and other repos, for now; ingest process to
+      be built later. Duplicate adds are identified by the system, so pre-existence
+      is not a concern. Classification: SUPPORTED INGEST PATH EXISTS (manual admin
+      add). The 27 ''potential ingest blockers'' are RECLASSIFIED as not blockers;
+      catalog->feed->upsert pipeline NOT required for this launch; catalog capture
+      stays stopped; dev questionnaire retired. Product ingestion is a handoff seam
+      owned by the owner; the CSV is the manual-add worklist.'
+  launch_membership_and_b002:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T12:46:23Z'
+    note: 'Owner 2026-08-07: (1) Launch collection bodies to the 24 floor — 12 pins
+      + 12 selected body products per collection, 72 total live; remaining reserves
+      stay engine-side as substitution/replenishment; body selection by thesis/range/redundancy
+      rules, not next-by-rank. (2) b002 built with approved substitutions + corrected
+      annotations; b001 immutable. Import-day pin replacement -> b003, never mutate
+      b002. Target remains Aug 10 unless owner explicitly changes. SSOT question captured
+      for review (rail readiness vs collection launch depth) — checked current rules:
+      NOT clearly implied, captured as proposed, not applied. No further campaign
+      development.'
+  master_execution_csv_contract:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T12:57:37Z'
+    note: 'Owner 2026-08-07: single MASTER execution CSV is the canonical deliverable
+      — one row per product x collection membership; is_rail_item flag; rail fields
+      required iff TRUE; collection_position 1..24 (replaces deprecated collection_rank);
+      QA enforces 24+ members, exactly 12 rail, positions 1..12, no dupes. Terminology
+      standardized: RAIL ITEMS (live+pinned) / COLLECTION BODY (live, unpinned) /
+      RESERVE POOL (engine-side, NOT in CSV). collection-handoff file retired; curated.json
+      stays internal. Asset label ''execution''. Applied as b003 (format change only;
+      product set = b002; b001/b002 immutable). Implemented in scripts/build_execution_csv.py;
+      collection_description omitted (no approved collection-level copy exists — not
+      invented); external_id column present, blank until identifiers exist.'
+  launch_paused_pdp_resolution:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T13:22:53Z'
+    note: 'Owner 2026-08-07: WORK PAUSED — b003 judged low value: 30/72 rows carry
+      category-index/domain-root URLs in product_url (audit: 26 index, 3 root, 5 URL-collision
+      groups incl. 3 Mango belts on one page, 7 rows on one Sezane listing). Violates
+      the recorded product_url-means-PDP ruling; QA gate absent; URL-shape defects
+      were machine-detectable. Scraping improvement spun out to a NEW session with
+      PDP resolution as primary objective — classified as CollectionCuration work
+      (engine owns product truth; no scraping added to wizard). Kickoff brief: shopya-collection-curation/SCRAPER_TOOL_KICKOFF.md.
+      Almost Fall import PAUSED pending re-resolution of the 30 rows -> b004. b003
+      remains immutable evidence.'
+artifacts:
+  frame:
+    path: frame.yaml
+    written_at: '2026-08-06T20:49:08Z'
+    sha256: bff28714dead34206ad607003ae22eec897513082f8337c57f313f45bf5ca9e8
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage1_signals:
+    path: stage1_signals.yaml
+    written_at: '2026-08-07T07:43:00Z'
+    sha256: a189a7ec5da23e0c7c3ace88c57ae88d332f7a893bd5e677afafd46c13028fc3
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage1_landscape:
+    path: stage1_landscape.md
+    written_at: '2026-08-06T20:51:52Z'
+    sha256: 9f4bb7ff0b3be6414e2222bed3fd4f62a323e25111dcbdcd0225e3ea136fe954
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage2_opportunities:
+    path: stage2_opportunities.yaml
+    written_at: '2026-08-06T20:52:40Z'
+    sha256: fc26e2c8396e6b3071c8f967ca610488fbcaf8be18cf18b436861e98b817060f
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage2_comparison:
+    path: stage2_comparison.md
+    written_at: '2026-08-06T20:52:40Z'
+    sha256: 360bee76ad6e2b2744abba2b2b8442cb82d31860c6c7828f8a475124b409f1cf
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage3_interview:
+    path: stage3_interview.yaml
+    written_at: '2026-08-07T07:40:52Z'
+    sha256: 216fde934f4619ceeb6c72f10f6c3aa64432d30cf7dc4f0d1d4555700bfb1665
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage4_brief:
+    path: stage4_brief.yaml
+    written_at: '2026-08-07T07:58:45Z'
+    sha256: 1643158bd2cd778dfd0eed8390a8512f1c6bbd77a1550f12c53373a7badaf15e
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  naming_assembly:
+    path: naming_and_assembly.yaml
+    written_at: '2026-08-07T08:55:41Z'
+    sha256: 3d4d896c7c8c3cd926dc3d07703347050f43df37de744e0b9b4aaff3d8dac44b
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  verification_checklist:
+    path: verification_checklist.md
+    written_at: '2026-08-07T08:45:32Z'
+    sha256: ef9f8b35108e9a58707ac742fea9715ac7ef94273f14009c070126a971d9d692
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  naming_and_assembly:
+    path: naming_and_assembly.yaml
+    written_at: '2026-08-07T12:02:09Z'
+    sha256: fb2377e8f3516b85a14194ed38595763cf3eaec2e761686988971cd786e0831c
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage5_routes:
+    path: stage5_routes.yaml
+    written_at: '2026-08-07T09:17:34Z'
+    sha256: b374664d3cab4f19c342eb03134e4eda3959478d4b5b5aa0c4ace79c691c79c1
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage6_activation:
+    path: stage6_activation.yaml
+    written_at: '2026-08-07T09:17:43Z'
+    sha256: 03756dbadd0d8912eb1cdce5ca084e46ed4d1afd575c835e2c0d99ac110a669f
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  stage7_seam6:
+    path: stage7_seam6.yaml
+    written_at: '2026-08-07T09:17:43Z'
+    sha256: 9f1efb4e2b117e0ce716bf93243d32e4fdb5424d94d1ccdce3091d8259c0ee6a
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  products_csv:
+    path: execution/almost-fall-2026__execution__b003__20260807T125705Z.csv
+    written_at: '2026-08-07T12:57:37Z'
+    sha256: 3a55ff3a2886fc2bec345e97c928e206b9045a1d779feeb6a5f0e8264a762793
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  execution_manifest:
+    path: execution/almost-fall-2026__execution-manifest__b003__20260807T125705Z.yaml
+    written_at: '2026-08-07T12:57:37Z'
+    sha256: bdf3dd85b0ba8434ec8ec114f667d25993987972e3c32d08f87d79b4e1d27459
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+invalidated: []
+execution_tracking:
+  activation_architecture_status: approved
+  seam6_execution_status: validated
+  external_handoffs_status: authored
+  external_handoffs_implemented: unknown
+capability_claims: []
+validation_attempts:
+- attempted_at: '2026-08-07T09:17:53Z'
+  result: passed
+  failures: []
+  report_path: execution/almost-fall-2026__products__b001__20260807T091753Z.csv
+  invalidated_at: null
+  invalidated_by_decision: null
+  notes: b001
+- attempted_at: '2026-08-07T12:46:23Z'
+  result: passed
+  failures: []
+  report_path: execution/almost-fall-2026__products__b002__20260807T124004Z.csv
+  invalidated_at: null
+  invalidated_by_decision: null
+  notes: b002
+- attempted_at: '2026-08-07T12:57:36Z'
+  result: passed
+  failures: []
+  report_path: execution/almost-fall-2026__execution__b003__20260807T125705Z.csv
+  invalidated_at: null
+  invalidated_by_decision: null
+  notes: 'b003 master execution CSV: 72 rows, 24/24/24 members, 12 rail each, full
+    QA pass; format change only, product set = b002'
+collection_freeze:
+  snapshot: []
+  exceptions: []
+abandonment: null

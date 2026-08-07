@@ -1,0 +1,123 @@
+# STAGE 0 · CAMPAIGN FRAME — acceptance run
+# schema: schemas/stage0_frame.schema.yaml v1.1.0
+schema_version: 1.1.0
+interpretation_rules_version: 1.0.0
+
+owner_inputs:
+  objective:
+    raw: "More saves"
+    normalized:
+      desired_behavior: increase save.created activity
+      audience: platform_users
+    interpretation_status: normalized
+  requested_launch:
+    raw: "ASAP — next week or so"
+    normalized_date: 2026-08-12
+    interpretation_status: normalized
+  planning_horizon:
+    raw: "ASAP — next week or so"
+    minimum_weeks: 1
+    maximum_weeks: 2
+    interpretation_status: normalized
+  starting_territory:
+    raw: "Seasonal turn (summer->fall)"
+    normalized: late-summer-to-autumn seasonal transition
+    interpretation_status: normalized
+  exclusions:
+    raw:
+      - "Same three as before"
+      - "No discount/sale language only"
+    normalized_frames:
+      - back-to-school framing
+      - cliched cosy or pumpkin autumn framing
+      - discount-led or sale-led framing
+    interpretation_status: normalized
+    note: >
+      Owner selected two overlapping options. Superset reading applied — all three exclusions
+      hold. Flagged to owner in conversation 2026-08-06.
+
+timing:
+  requested_launch_date: 2026-08-12
+  operational_interpretation:
+    value: "target go-live in the window 2026-08-10 to 2026-08-16; workshop moves fast"
+    interpretation_status: inferred
+  earliest_actual_campaign_launch:
+    value: null
+    interpretation_status: not_supplied
+  desired_campaign_end:
+    value: null
+    interpretation_status: not_supplied
+
+objective:
+  desired_behavior: increase save.created activity
+  audience: platform_users
+  event_mapping: save.created
+  interpretation_status: normalized
+
+measurement:
+  intended_event: save.created
+  audience_segment: platform_users
+  retrieval_status: unknown
+  baseline_available: unknown
+  causal_incrementality_measurable: false
+  proxy:
+    value: null
+    interpretation_status: not_supplied
+
+avoidance:
+  prohibited_campaign_frames:
+    - back-to-school framing
+    - cliched cosy or pumpkin autumn framing
+    - discount-led or sale-led framing
+  evidence_may_describe_prohibited_frames: true
+  prohibited_frames_may_not_be_adopted_as_recommendations: true
+  additional_restrictions:
+    value: []
+    interpretation_status: not_supplied
+
+scope:
+  live_surfaces: [explore, collection_pages]
+  seams_available_for_consideration: [S1, S2, S3, S4, S5, S6]
+  selected_seams: []
+  executable_seams: [S6]
+  handoff_seams: [S1, S2, S3, S4, S5]
+  market:
+    value: United States
+    interpretation_status: proposed
+    basis: "Carried from prior run where owner confirmed US. Fresh confirmation not yet given."
+    needs_confirmation: true
+  derivation:
+    source: SHOPYA_CAMPAIGN_CHARTER.yaml
+    claims: [surface_001, surface_002, surface_003, surface_004, scope_001]
+    interpretation_status: inferred
+
+planning_horizon: "ASAP — next week or so"
+market: "United States"
+eligible_seams: [S1, S2, S3, S4, S5, S6]
+eligible_surfaces: [explore, collection_pages]
+hard_constraints:
+  - "No back-to-school framing"
+  - "No cosy/pumpkin autumn cliches"
+  - "No discount or sale language"
+
+known_unknowns:
+  - id: market_unconfirmed
+    question: "US market is a carried proposal, not confirmed for this run."
+    interpretation_status: proposed
+    consequence: "Research geography assumes US; owner can correct in conversation."
+  - id: tight_window
+    question: "ASAP launch means S6 only realistically executes; handoff seams (skin, editorial) may not land in a week."
+    interpretation_status: inferred
+    consequence: "Campaign must read well inside default page dressing."
+  - id: measurement
+    question: "No time-windowed first-party save measure exists (charter measurement_003)."
+    interpretation_status: inferred
+    consequence: "Success condition will be disclosed as unmeasurable or GA4-external."
+  - id: probe_access
+    question: "Staging API 403s this environment (charter constraints_006)."
+    interpretation_status: inferred
+    consequence: "Live catalog probe requires a human-run curl before execution."
+
+campaign_id:
+  value: null
+  status: null

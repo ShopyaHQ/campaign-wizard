@@ -1,0 +1,329 @@
+run_id: cmp_01KZCD765E6NNW2TZR1AFHQMWG
+produced_at: 2026-08-06T20:50:00Z
+
+evidence_families_covered:
+  - cultural_or_editorial
+  - demand_or_behavioral
+  - commercial_or_category
+  - visual_or_design
+  - counter_trend_or_fatigue
+  - temporal_catalyst
+
+stop_condition_met: true
+stop_condition_basis: >
+  Fresh scan focused on the immediate window (owner wants launch inside ~1 week). Six new
+  signals gathered tonight; ten stable signals carried from this morning's scan of the same
+  territory, re-labelled. Enough to form four sharp direction candidates; the constraint is the
+  launch window, not signal volume.
+
+deviations:
+  - "Ten signals (SIG-007..SIG-016) are CARRIED from the 2026-08-06 morning scan (run
+     cmp_01KZBV8MQ6NYNAKX94TGSJ9V21). They are calendar facts, runway coverage and search
+     patterns that do not move in hours. Fresh signals are SIG-001..SIG-006, gathered tonight.
+     The schema has no collection_context field (LRN-011); declared here instead."
+  - "Scan weighted toward what can be acted on inside one week, per the frame's launch window."
+
+unavailable_data:
+  - "Search volume, keyword difficulty, trend direction — never estimated."
+  - "First-party Shopya behaviour (charter user_behavior_004, measurement_003)."
+  - "Sell-through data behind editorial sell-out language."
+
+signals:
+
+- signal_id: SIG-001
+  claim: "Leopard print carries live product-level search intent across categories, including named products, and crosses into home."
+  evidence_type: demand_or_behavioral
+  source: "Google public autocomplete"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Completions: dress, vs cheetah, backpack, shoes, rug, wallpaper, jeans, birkenstocks, adidas. Named-product completions (birkenstocks, adidas) and two home completions (rug, wallpaper)."
+  interpretation: "Named-product completions indicate purchase-adjacent demand, not just aesthetic browsing. The home crossover suits a multi-vertical platform."
+  confidence: moderate
+  limitations: "Ordering only, no volume. Leopard is perennial; cannot distinguish seasonal spike from baseline."
+  autocomplete_signal:
+    query: "leopard print"
+    returned_terms: [dress, vs cheetah print, backpack, shoes, rug, wallpaper, jeans, birkenstocks, adidas]
+    provider: "Google suggestqueries, client=firefox"
+    geography: US
+    language: en
+    session_conditions: "Server-side fetch, no session, no personalisation."
+    observed_at: 2026-08-06T20:48:00Z
+    reproducibility_notes: "Unstable over time; re-probe before reuse."
+    interpretation_limitations: "No volume, difficulty or direction."
+
+- signal_id: SIG-002
+  claim: "'Late summer' as a search phrase belongs to beauty and the garden, not fashion — and the beauty intent is year-tagged current."
+  evidence_type: demand_or_behavioral
+  source: "Google public autocomplete"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Completions: nails, flowers, nail colors, (bare), zucchini sausage soup, blooming perennials, nail designs, recipes, crops, nail colors 2026. Three of ten are nails; one carries the 2026 tag."
+  interpretation: "The season's turn is being searched at the smallest scale first — nails change before wardrobes do. Beauty is the live 'late summer' commerce intent."
+  confidence: moderate
+  limitations: "Ordering only. Fashion absence in completions is not proof of absent fashion demand."
+
+- signal_id: SIG-003
+  claim: "'What to wear in august' is a travel-packing query, consistent with the September finding."
+  evidence_type: demand_or_behavioral
+  source: "Google public autocomplete"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Nine of ten completions are destinations (alaska, london, scotland, italy, ireland, japan, nyc, paris, england)."
+  interpretation: "Month-based dressing phrases are owned by travel across the whole season boundary. Naming must avoid them."
+  confidence: strong
+  limitations: "Ordering only."
+
+- signal_id: SIG-004
+  claim: "Pre-fall editorial (published 2026-07-30) names six trends explicitly framed as transitional: sheer separates, sportif, retro slim denim, bubblegum pink, funnel-neck jackets, animal prints."
+  evidence_type: visual_or_design
+  source: "Marie Claire, 'Pre-Fall Trends 2026'"
+  source_date: 2026-07-30
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Named houses per trend: Chloe/Chanel/Herrera (sheer), Lippes/Balenciaga/Staud (sportif), Chloe/Margiela/Beckham (retro denim), Khaite/Herrera/Valentino (pink), Marant/Kallmeyer/Khaite (funnel), Chanel/Ganni/Gucci (animal). Framing: 'summer is swiftly winding down'."
+  interpretation: "Sheer, animal print and retro denim are wearable in current heat; funnel necks are not. The wearable half of pre-fall is the actionable half for an immediate launch."
+  confidence: strong
+  limitations: "One outlet's synthesis; design signal, not demand."
+
+- signal_id: SIG-005
+  claim: "Current editor forecast (published 2026-08-01) makes item-level immediacy claims: shrugs 'about to be everywhere', The Row Alma 'replacing the Peggy as the must-have everyday bag', kitten-heel thongs continuing, tunics over denim, brooches on tanks, sarongs restyled."
+  evidence_type: cultural_or_editorial
+  source: "Who What Wear, 'The 45 Items It Girls Will Buy and Wear in August 2026'"
+  source_date: 2026-08-01
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Named items with prices from $20 to $2,950; royal purple and navy named as directional colours; layering constructions (tunic over denim, silk blouse with bermudas) dominate the styling predictions."
+  interpretation: "The styling story of the moment is LAYERING summer pieces into fall reads — restyling what is owned or buyable now, not heavy new-season purchases."
+  confidence: moderate
+  limitations: "Single editor's forecast; promotional context; 'about to be everywhere' is a prediction, not a measurement."
+
+- signal_id: SIG-006
+  claim: "August editorial across outlets is explicitly transitional and urgent — 'summer swiftly winding down', sell-out warnings on early fall outerwear."
+  evidence_type: temporal_catalyst
+  source: "Marie Claire 2026-07-30; Who What Wear August buy list 2026-08"
+  source_date: 2026-08-01
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Both current pieces frame the moment as the turn itself; the buy list reports toggle-jacket sell-outs already happening."
+  interpretation: "The trade treats RIGHT NOW as the decision window for fall pieces — which for a shopper in 90-degree heat is a save moment, not a wear moment."
+  confidence: moderate
+  limitations: "Editorial urgency is partly promotional convention."
+
+# ── carried from the 2026-08-06 morning scan ──
+
+- signal_id: SIG-007
+  claim: "Product-level search modifiers are transactional not seasonal; outerwear is the exception carrying 'fall jackets 2026'."
+  evidence_type: demand_or_behavioral
+  source: "Google public autocomplete (morning scan)"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Fit, colour, audience, near-me modifiers across boots, denim, jackets, bags; year tags nearly absent except outerwear."
+  interpretation: "Seasonal language sits above the product layer."
+  confidence: strong
+  limitations: "Carried; four categories sampled."
+
+- signal_id: SIG-008
+  claim: "People search for permission to wear things at the season boundary."
+  evidence_type: demand_or_behavioral
+  source: "Google public autocomplete (morning scan)"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "'when can you start wearing white again', 'white after labor day', 'suede boots in summer', 'when can you start wearing linen'."
+  interpretation: "Timing uncertainty, not product uncertainty."
+  confidence: moderate
+  limitations: "Carried; ordering only."
+
+- signal_id: SIG-009
+  claim: "'End of summer 2026' outranks the bare phrase; 'decluttering' ranks sixth beneath it."
+  evidence_type: demand_or_behavioral
+  source: "Google public autocomplete (morning scan)"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Year-tagged completion above the bare term; tidy/reset intent visible."
+  interpretation: "The phrase is live and dated; a keeping/reset instinct sits inside it."
+  confidence: moderate
+  limitations: "Carried."
+
+- signal_id: SIG-010
+  claim: "The year's largest trend-report figure is a collecting verb: 'niche perfume collection' +500% (Pinterest Predicts 2026)."
+  evidence_type: cultural_or_editorial
+  source: "Pinterest Predicts 2026 (vendor report)"
+  source_date: 2025-12
+  observed_date: 2026-08-06
+  geography: global
+  direct_observation: "+500% on a collection noun; report themes include 'curating not copying'."
+  interpretation: "Collecting/saving posture is culturally current."
+  confidence: moderate
+  limitations: "Carried; vendor data, no absolute base."
+
+- signal_id: SIG-011
+  claim: "Industry outlook is low-growth and value-conscious; resale forecast to grow 2-3x faster than firsthand."
+  evidence_type: commercial_or_category
+  source: "McKinsey x BoF, State of Fashion 2026"
+  source_date: 2025-11-17
+  observed_date: 2026-08-06
+  geography: global
+  direct_observation: "Low single-digit growth projection; 46% of executives expect worsening."
+  interpretation: "Considered acquisition suits save-then-decide behaviour."
+  confidence: strong
+  limitations: "Carried; global, not US-August specific."
+
+- signal_id: SIG-012
+  claim: "Underconsumption-core persists as a multi-year position; displaying abundance carries social risk."
+  evidence_type: counter_trend_or_fatigue
+  source: "Pajiba 2026; Creative Salon 2024"
+  source_date: 2026-01-01
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Sustained commentary; visible audience condemnation of haul content; deinfluencing numerically small but loud."
+  interpretation: "Curation displays taste without displaying purchase."
+  confidence: moderate
+  limitations: "Carried; commentary, not measurement."
+
+- signal_id: SIG-013
+  claim: "Labor Day is 2026-09-07; NYFW opens 2026-09-10; both sit roughly four weeks after the requested launch."
+  evidence_type: temporal_catalyst
+  source: "US federal calendar; CFDA schedule"
+  source_date: 2026-07-01
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Dates computed and published."
+  interpretation: "A campaign launching next week has a natural four-week arc into these hinges."
+  confidence: strong
+  limitations: "Carried; NYFW schedule preliminary."
+
+- signal_id: SIG-014
+  claim: "The traditional East Asian calendar marks autumn's start on 2026-08-07 (Risshu); Japanese has a dedicated word (zansho) for heat persisting after autumn formally begins."
+  evidence_type: temporal_catalyst
+  source: "Japan's 72 microseasons (TokyoPony; Nippon.com)"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: Japan
+  direct_observation: "Risshu falls tomorrow relative to the scan date."
+  interpretation: "The formal-vs-felt season gap is a durable cross-cultural observation; register material only."
+  confidence: strong
+  limitations: "Carried; cultural reference, no US demand relevance."
+
+- signal_id: SIG-015
+  claim: "Colour terms are contaminated in search: royal purple returns motor oil; chocolate brown returns hair dye."
+  evidence_type: demand_or_behavioral
+  source: "Google public autocomplete (morning scan)"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Fashion absent from royal purple's ten completions despite editorial push."
+  interpretation: "Editorial colour consensus and search behaviour are independent; qualify colours onto objects."
+  confidence: strong
+  limitations: "Carried; two colours tested. Note SIG-005 pushes royal purple editorially — the contamination finding still holds."
+
+- signal_id: SIG-016
+  claim: "Evocative seasonal language is search-dead: golden hour belongs to a song, indian summer to a film."
+  evidence_type: demand_or_behavioral
+  source: "Google public autocomplete (morning scan)"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Non-fashion completions dominate both phrases."
+  interpretation: "Campaign-level language and findable language are different layers."
+  confidence: strong
+  limitations: "Carried."
+
+# ── deeper pass, 2026-08-06 evening (post-direction-lock, collection-role research) ──
+
+- signal_id: SIG-017
+  claim: "A second independent runway synthesis names ten fall 2026 directions: loose belts, capes/ponchos, grandpa knits (Fair Isle, cable), tuxedo dressing, statement footwear, polka dots, functional rain outerwear, translucent layers, oversized silhouettes, tomato red."
+  evidence_type: visual_or_design
+  source: "FASHION Magazine, 'Top 10 Trends From the Fall 2026 Runways'"
+  source_date: 2026-07-23
+  observed_date: 2026-08-06
+  geography: "international runways, Canadian publication"
+  direct_observation: "Named houses per trend, e.g. capes at Chloe/Alaia/Max Mara; rain trenches at Dries/LV/Prada; belts at Valentino/Off-White."
+  interpretation: "Cross-checks the Marie Claire list from a second publisher: overlap on knits, translucency, animal-adjacent drama; adds belts, capes and functional rain outerwear. Belts and small additive pieces are wearable now; capes and coats are not."
+  confidence: strong
+  limitations: "Design signal, not demand."
+
+- signal_id: SIG-018
+  claim: "Zara's August push (published 2026-08-03) is explicitly aimed at the 'in-between stretch from late summer into early fall': lace, linen, texture, ballet flats, kitten heels, mostly under $70, with inventory-urgency framing."
+  evidence_type: commercial_or_category
+  source: "Who What Wear, '30 New Zara Items Everyone Cool Will Buy in August 2026'"
+  source_date: 2026-08-03
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "30 items $26-$179; categories: blazers, slip/polka-dot dresses, lace tops, balloon pants, mesh ballet flats, denim kitten heels."
+  interpretation: "Mass-retail merchandising is targeting the gap itself with wearable-now texture pieces — evidence the bridge territory is being stocked, not just written about."
+  confidence: moderate
+  limitations: "Single retailer via an affiliate-driven outlet; urgency framing is promotional convention."
+
+- signal_id: SIG-019
+  claim: "Fall arrivals are being pushed by major US retail in the first week of August (Nordstrom promoting 'new fall arrivals' through Aug 9)."
+  evidence_type: commercial_or_category
+  source: "PIX11 / Nordstrom Anniversary Sale coverage"
+  source_date: 2026-08-01
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Retail event headlined 'Shop New Fall Arrivals' running to 2026-08-09."
+  interpretation: "The merchandising calendar has fully turned; fall inventory is in market now. (Used ONLY as a merchandising-timing fact — the discount context is excluded territory for framing.)"
+  confidence: moderate
+  limitations: "Sponsored coverage of a sale event."
+
+- signal_id: SIG-020
+  claim: "Suede carries product-level search intent (loafers, jacket, shoes) plus CARE intent (cleaner, eraser, brush), partially contaminated by a creator's name."
+  evidence_type: demand_or_behavioral
+  source: "Google public autocomplete"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Completions: suede, suede brooks, calabasas confidential, cleaner, loafers, jacket, brooks age, eraser, brush, shoes."
+  interpretation: "Product and maintenance intent both live — people buying suede AND tending suede they own. Term needs qualification onto objects (creator contamination)."
+  confidence: moderate
+  limitations: "Ordering only; three of ten completions are a person."
+  autocomplete_signal:
+    query: "suede"
+    returned_terms: [suede, suede brooks, suede calabasas confidential, suede cleaner, suede loafers, suede jacket, suede brooks age, suede eraser, suede brush, suede shoes]
+    provider: "Google suggestqueries, client=firefox"
+    geography: US
+    language: en
+    session_conditions: "Server-side fetch, no session."
+    observed_at: 2026-08-06T21:05:00Z
+    reproducibility_notes: "Re-probe before reuse."
+    interpretation_limitations: "No volume."
+
+- signal_id: SIG-021
+  claim: "Fall-at-home demand is live, dated and transactional RIGHT NOW: 'fall decor 2026' ranks third, with retailer-specific and near-me completions."
+  evidence_type: demand_or_behavioral
+  source: "Google public autocomplete"
+  source_date: null
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Completions: fall decor, ideas, 2026, hobby lobby, clearance, at walmart, near me, sale, decorations for home, outdoor."
+  interpretation: "The home is the one place fall can be fully adopted in August — no weather gate. Year tag + near-me + named retailers indicate current purchase behaviour, not aspiration. Directly relevant to the home_interior vertical."
+  confidence: strong
+  limitations: "Ordering only. Clearance/sale completions show discount intent in the territory — excluded from framing, noted for honesty."
+  autocomplete_signal:
+    query: "fall decor"
+    returned_terms: [fall decor, fall decor ideas, fall decor 2026, fall decor hobby lobby, fall decor clearance, fall decor at walmart, fall decor near me, fall decor sale, fall decorations for home, fall decor outdoor]
+    provider: "Google suggestqueries, client=firefox"
+    geography: US
+    language: en
+    session_conditions: "Server-side fetch, no session."
+    observed_at: 2026-08-06T21:05:00Z
+    reproducibility_notes: "Re-probe before reuse."
+    interpretation_limitations: "No volume."
+
+- signal_id: SIG-022
+  claim: "Creator-platform trend coverage names toggled jackets, military jackets, multi-layered tops, culottes and cargo belt bags under an indie/grunge hardware aesthetic."
+  evidence_type: cultural_or_editorial
+  source: "Who What Wear, 'The 7 Biggest TikTok Fashion Trends of 2026'"
+  source_date: 2025-12-11
+  observed_date: 2026-08-06
+  geography: US
+  direct_observation: "Seven trends incl. toggled jackets (Rohe Mandarin named as sought-after) and stacked layering."
+  interpretation: "Independently corroborates toggle outerwear demand and the layering construction from the creator class — but this source is EIGHT MONTHS OLD; treated as weak corroboration, not current creator signal."
+  confidence: weak
+  limitations: "Stale for 'this week' purposes; the accessible creator-signal class remains thin without platform APIs."

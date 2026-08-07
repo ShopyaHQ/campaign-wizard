@@ -1,0 +1,30 @@
+# STAGE 5 · CONCEPT ROUTES — Almost Fall
+# Recorded from the run's actual workshop history (owner messages 2026-08-06/07).
+# The route decision was made conversationally at the collection-architecture gate;
+# this artifact documents the real selected route and the real rejected alternative.
+run_id: cmp_01KZCD765E6NNW2TZR1AFHQMWG
+routes:
+- route_id: RTE-1
+  strategic_expression: "The gap — fashion has moved into fall before the weather has. Want ahead without resolving the desire."
+  user_mechanism: "Save what belongs to the season ahead while finding the signals of it that already work now."
+  shopya_mechanism: "save.created across three rails with distinct time-relationships to the season (wait / bridge / transform)."
+  tone: "Plain, observational, weather-literal. No cosy-autumn cliches, no urgency, no discount language."
+  visual_logic: "Late-summer light on fall objects; store windows vs forecast. Not orange, not foliage."
+  surface_expression: {explore: "three rails — coats you can't wear yet / fall you can wear today / add one thing", collection_pages: "the three shelves themselves", campaign_header: "Almost Fall + dek (handoff to code)"}
+  advantages: ["Premise and save mechanism are the same gesture — wanting ahead IS saving.", "Three time-relationships cover the whole early-fall shopper without overlap."]
+  risks: ["Weather-gap framing dates quickly once real fall arrives.", "The wait rail pins products nobody can wear yet — depends on save, not purchase, intent."]
+  name_candidates: ["Almost Fall (selected)", "Fall, On Hold (rejected: copywriter-clever)", "Ahead of the Weather (rejected: descriptive)"]
+- route_id: RTE-2
+  strategic_expression: "Taste-display variant — lead with public curation of fall wardrobes (the rejected C collection concept)."
+  user_mechanism: "Assemble and browse curated fall boards; saving follows browsing."
+  shopya_mechanism: "collection-entity rails; public collection flags."
+  tone: "Cool, editorial, curator-led."
+  visual_logic: "Grid-led, collection-first, product secondary."
+  surface_expression: {explore: "collection-entity rails", collection_pages: "the unit of display"}
+  advantages: ["Rides the durable curation-culture position."]
+  risks: ["C does not follow from the Almost Fall premise (owner ruling 2026-08-07) — the gap is temporal, not curatorial.", "Desired action weakly instrumented."]
+  name_candidates: ["rejected-for-this-premise; preserved as high-value for a future premise"]
+selection_note: >
+  Owner selected RTE-1 by reshaping Direction 1 verbatim (opportunity_selected) and rejecting
+  the C-forward architecture at the collection-role ruling (collection_architecture_workshopped).
+  RTE-2 is preserved as rejected-for-this-premise, not discarded.

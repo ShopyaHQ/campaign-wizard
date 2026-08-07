@@ -1,0 +1,19 @@
+campaign_id: almost-fall-2026
+display_name: Almost Fall
+run_id: cmp_01KZCD765E6NNW2TZR1AFHQMWG
+build_id: b001
+built_at: 2026-08-07T09:17:53Z
+products_file: almost-fall-2026__products__b001__20260807T091753Z.csv
+products_sha256: b3afee896e36aedaffc4e30ac0ade8b3fd81ad34ec7dab403a28e907ba7b00b1
+curated_file: almost-fall-2026__curated__b001__20260807T091753Z.json
+curated_sha256: 44f59244db3449153bb1f5393787590ec7e4212b1a6e61d932711ec3d8900dad
+rails: 3
+products: 36
+validation: passed
+note: >
+  b001 is byte-identical to the pre-convention execution/products.csv delivered for the
+  admin import on 2026-08-07 (same sha256). The pre-convention file is retained untouched
+  because it may be the exact file the admin imports; both names refer to one build.
+execution:
+  status: pending_admin_import
+  executed_build: null

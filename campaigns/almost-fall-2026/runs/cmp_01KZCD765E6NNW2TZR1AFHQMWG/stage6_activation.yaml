@@ -1,0 +1,47 @@
+run_id: cmp_01KZCD765E6NNW2TZR1AFHQMWG
+campaign_id: almost-fall-2026
+delivery:
+  intent:
+    mode: launch_window
+    desired_start: 2026-08-10   # owner: ASAP next week
+    desired_end: null
+go_live:
+  target_time: null
+  expected_visibility:
+    earliest: +300s (feed contents cache)
+    latest: +600s (catalog cache)
+  cache_assumptions: charter scheduling_003
+activations:
+- seam_id: S6
+  surface: explore
+  role: "The three Almost Fall rails — the campaign's executable core."
+  user_action: save.created
+  execution_mode: executable
+  owner: campaign_tool
+  activation_authority: feed_activation_fields
+  scheduling:
+    semantic_status: partially_verified
+    evaluation_mode: query_time
+    cache_latency_seconds: {minimum: 300, maximum: 600}
+    precision: cache-bounded
+  artifact: execution/products.csv
+  implementation_status: pending
+  explore_feeds: 3
+- seam_id: S1
+  surface: explore
+  role: "Campaign header — name + dek so the rails land in a framed surface, not a default skin."
+  user_action: none
+  execution_mode: handoff
+  owner: code
+  activation_authority: package_window
+  scheduling:
+    semantic_status: verified
+    evaluation_mode: request_time
+    cache_latency_seconds: {minimum: 0, maximum: 600}
+    precision: request-level
+  artifact: handoffs/S1_campaign_header.md
+  implementation_status: not_implemented
+  explore_feeds: 0
+note: "Every activation declares explore_feeds; handoff seams declare 0 (charter explore_002).
+  No capability claims are made: s6 window scheduling and rail view-all destination remain
+  unverified pending validations and nothing here depends on them."

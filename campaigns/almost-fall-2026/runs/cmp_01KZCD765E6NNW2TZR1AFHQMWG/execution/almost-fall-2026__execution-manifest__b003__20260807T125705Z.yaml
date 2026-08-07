@@ -1,0 +1,25 @@
+campaign_id: almost-fall-2026
+display_name: Almost Fall
+run_id: cmp_01KZCD765E6NNW2TZR1AFHQMWG
+build_id: b003
+built_at: 2026-08-07T12:57:05Z
+supersedes: b002
+reason: >
+  Deliverable-format change only (owner ruling 2026-08-07): single MASTER execution CSV —
+  one row per product x collection membership (72 rows), rail items flagged inside it.
+  Product set identical to b002; the import-day low-stock recheck (all six pins alive) is
+  reflected in joined stock_status/observed_at. Retires the two-file rails+bodies handoff.
+execution_file: almost-fall-2026__execution__b003__20260807T125705Z.csv
+execution_sha256: 3a55ff3a2886fc2bec345e97c928e206b9045a1d779feeb6a5f0e8264a762793
+rows: 72
+collections: 3
+per_collection: {members: 24, rail_items: 12, collection_body: 12}
+validation: passed (build QA — rail/body integrity, membership >=24, positions 1..12, no duplicates)
+known_price_drift: "NH Quinn authored $1,105, observed $884 on 2026-08-07 (further retailer markdown) — availability unaffected"
+populations_note: >
+  This file = live collection membership (rail items + collection body). The engine-side
+  reserve pool (A:6, B:10, D:1 additional qualifying products) is deliberately NOT in this
+  file — it remains CollectionCuration substitution/replenishment inventory.
+execution:
+  status: pending_admin_import
+  executed_build: null

@@ -1,0 +1,237 @@
+# NAMING SYSTEM (locked 2026-08-07) + PRODUCT ASSEMBLY (for owner reaction — pre-CSV)
+run_id: cmp_01KZCD765E6NNW2TZR1AFHQMWG
+campaign:
+  display_name: "Almost Fall"
+  dek: "Fall's in every window, not yet in the forecast. Save what you want for cooler days."
+  dek_length: "84 chars — within the 90-char manifest cap (owner-corrected; no override needed)"
+  campaign_id: {value: almost-fall-2026, status: confirmed_by_owner, uniqueness: "no other run claims it (scan 2026-08-07); formal check fires at ROUTE_SELECTED"}
+collections:
+- id_provisional: FW26-A
+  name: "First Coats of Fall"
+  name_status: working_through_assembly
+  rail: "Coats you can't wear yet"
+  rail_subtitle: "Save them for the first cold morning."
+  description: "Gabardine and leather trenches, toggle coats and statement wool — the first serious outerwear of fall 2026."
+  products:  # status v=verified-available, p=pending verification
+  - {pin: 1,  v: true,  brand: Rixo, name: Milly Leopard Coat, price: 795, why: "statement anchor; behavior-consistent with rail promise (a coat you cannot wear yet)", annotation: "Already sold out once this season — the leopard statement, back in all sizes."}
+  - {pin: 2,  v: false, brand: Toteme, name: Cotton Trench Coat, price: 1360, why: "the purist trench, editorially cited 8/1", annotation: "Organic cotton gabardine, cut long and unlined — Toteme's version of the classic."}
+  - {pin: 3,  v: false, brand: Aligne, name: Anouk Jacket, price: 295, why: "mid-tier entry; Aug buy-list", annotation: "Grey marl wool blend at $295 — the set's lowest price."}
+  - {pin: 4,  v: false, brand: DUCIE, name: Corrin Suede Trench, price: 1098, why: "fall's texture on the classic shape", annotation: "A full suede trench: this fall's texture on its most classic silhouette."}
+  - {pin: 5,  v: false, brand: Rohe, name: Mandarin Toggle Jacket, price: null, why: "the toggle demand object", annotation: "Toggle fastenings, collarless cut — Rohe's take on the duffle detail."}
+  - {pin: 6,  v: false, brand: Woolrich, name: Belted Virgin Wool Coat, price: 569, why: "first wool; sub-$600", annotation: "Belted virgin wool, unstructured — lighter than a winter coat."}
+  - {pin: 7,  v: false, brand: Sandro, name: Check-Patterned Trench, price: 644, why: "bold-check runway thread", annotation: "Check gabardine — fall's plaid, in trench form."}
+  - {pin: 8,  v: false, brand: Max Mara, name: Gabardine Cropped Trench, price: 620, why: "shrunken silhouette", annotation: "Cropped to jacket length — for the wardrobe that owns the long one already."}
+  - {pin: 9,  v: false, brand: Reformation, name: Owen Plaid Jacket, price: 348, why: "plaid thread, mid-tier", annotation: "Loud plaid on a shortened jacket — Reformation's check for fall."}
+  - {pin: 10, v: false, brand: Nour Hammour, name: Claudia Belted Leather Trench, price: 1479, why: "90s leather revival", annotation: "Textured leather in the trench cut — the '90s version. Paris-made."}
+  - {pin: 11, v: false, brand: Polo Ralph Lauren, name: Belted Cotton-Gabardine Trench, price: 800, why: "the textbook classic", annotation: "Cotton gabardine with storm flap and gun patch — the classic spec."}
+  - {pin: 12, v: false, brand: Burberry, name: Ellingham Car Coat, price: 3150, why: "reference/anchor tier", annotation: "A gabardine car coat from the house that invented the trench."}
+  spread: {price: "295-3150, five under $700", verified_available: 1, pending: 11}
+- id_provisional: FW26-B
+  name: "Suede, Sheer & Denim"
+  name_status: "RENAMED by owner 2026-08-07 — name-as-promise rule (U6b) working; leopard stays ambient, no sourcing pass"
+  rail: "Fall you can wear today"
+  rail_subtitle: "Wear the season early — no coat required."
+  description: "Suede, sheer layers and raw denim — the fall textures that already work in August heat."
+  name_contents_audit: >
+    FLAG: the assembled set is suede (5), sheer/lace (3), denim (4), leopard (1, pending).
+    The locked name promises leopard the shelf barely holds. Options for owner: rename to match
+    contents; approve a scoped leopard sourcing decision; or accept leopard as ambient thread.
+  products:
+  - {pin: 1,  v: true,  brand: Sezane, name: Will Jacket, price: 315, why: "verified camel suede jacket — evening-wearable now", annotation: "Camel suede, unlined — the jacket for the first cool evening."}
+  - {pin: 2,  v: true,  brand: A.Emery, name: The Jalen Sandal, price: 250, why: "suede at sandal weight = the thesis in one object", annotation: "Walnut suede between the toes — fall's texture at sandal weight."}
+  - {pin: 3,  v: true,  brand: Faithfull the Brand, name: Marisol Top, price: 190, why: "fall's color in summer's fabric", annotation: "Chocolate lace — the season's colour in summer's fabric."}
+  - {pin: 4,  v: true,  brand: Mango, name: Mid-Rise Barrel Jeans, price: 53.99, why: "chocolate denim, entry price", annotation: "Chocolate-brown denim in a barrel cut, $54."}
+  - {pin: 5,  v: true,  brand: Adidas, name: Gazelle Indoor, price: 120, why: "suede sneaker, verified", annotation: "The suede sneaker that never left — chalk and brown for September."}
+  - {pin: 6,  v: true,  brand: Ganni, name: Broderie Anglaise Top, price: 187.5, why: "sheer by construction", annotation: "Cotton broderie — sheer by construction, fall by styling."}
+  - {pin: 7,  v: true,  brand: COS, name: Raw Denim Cropped Barrel-Leg Trousers, price: 129, why: "raw indigo mid-price", annotation: "Raw indigo, cropped barrel — dark denim with no season attached."}
+  - {pin: 8,  v: true,  brand: Ancient Greek Sandals, name: Ikesia Suede Slingback, price: 272, why: "closed-toe suede bridge shoe", annotation: "Brown suede slingbacks — closed enough for September, open enough for now."}
+  - {pin: 9,  v: true,  brand: Mango, name: Suede Leather Jacket, price: 257.99, why: "suede jacket, accessible tier", annotation: "Medium-brown suede, $258 — half the price of the Sézane."}
+  - {pin: 10, v: true,  brand: Toteme, name: Classic Cut High-Rise Jeans, price: 245, why: "rigid straight, serious wash", annotation: "Rigid mid-wash denim, high and straight — September jeans, wearable now."}
+  - {pin: 11, v: true,  brand: Ganni, name: Broderie Anglaise Dress, price: 545, why: "white broderie styled forward", annotation: "White broderie now; add the belt and boots in October."}
+  - {pin: 12, v: true,  brand: Khaite, name: Callum Jean, price: 680, why: "top of the denim ladder", annotation: "The $680 jean — Khaite's loose straight in a wash called Dumas."}
+  - {pin: 13, v: false, brand: Reformation, name: Elena Tote, price: 598, why: "the leopard thread's only current carrier", annotation: "The leopard tote — the print does the work, canvas keeps it light."}
+  spread: {price: "54-680 ladder", verified_available: 12, pending: 1}
+- id_provisional: FW26-D
+  name: "Fall Accents"
+  rail: "Add one thing"
+  rail_subtitle: "A brooch or a belt turns the outfit."
+  description: "Belts, brooches, shrugs and light layers — small pieces that read fall on a summer outfit."
+  products:
+  - {pin: 1,  v: false, brand: Kallmeyer, name: Yara Cardigan, price: 680, why: "THE shrug — 'about to be everywhere' (8/1)", annotation: "A cropped wool shrug — the half-cardigan that changes a tank outfit."}
+  - {pin: 2,  v: true,  brand: COS, name: Knitted Linen Cardigan, price: 139, why: "verified light layer", annotation: "Knitted linen — a cardigan that works before cardigan weather."}
+  - {pin: 3,  v: false, brand: Frances Valentine, name: Turtle Pin, price: 90, why: "heirloom-read brooch, mid-tier", annotation: "A $90 turtle that reads heirloom on a linen shirt."}
+  - {pin: 4,  v: false, brand: COS, name: Classic Leather Belt, price: 99, why: "the plainest transform tool", annotation: "Plain black leather, $99 — the belt that re-cuts a summer dress."}
+  - {pin: 5,  v: true,  brand: Mango, name: Satin Check-Print Scarf, price: 17.99, why: "cheapest entry, check thread", annotation: "Satin check, $18 — tie it anywhere the outfit needs autumn."}
+  - {pin: 6,  v: false, brand: Swarovski, name: Ariana Grande Dragonfly Brooch, price: 189, why: "the collab/celebrity tier", annotation: "The collab piece — Ariana Grande's dragonfly in Swarovski crystal."}
+  - {pin: 7,  v: true,  brand: Sandy Liang, name: Wing Bag Charm, price: 98, why: "accent for a bag already owned", annotation: "A wing for the bag you already carry."}
+  - {pin: 8,  v: false, brand: Monet, name: Vintage Sun Face Brooch, price: 23.99, why: "vintage tier; era reference", annotation: "Vintage Monet — made the last time brooches were everywhere."}
+  - {pin: 9,  v: true,  brand: COS, name: Tailored Vest, price: 90.3, why: "verified third piece", annotation: "A third piece over anything sleeveless — instantly less summer."}
+  - {pin: 10, v: false, brand: Frame, name: Double Wrap Belt, price: null, why: "the doubled-belt runway call", annotation: "Wraps twice at the waist — the doubled-belt look, minimal buckle."}
+  - {pin: 11, v: true,  brand: COS, name: Embroidered Silk Scarf, price: 69, why: "verified silk accent", annotation: "Embroidered silk at the neck or the bag handle — the smallest possible layer."}
+  - {pin: 12, v: false, brand: "2028", name: Carnelian Cameo Oval Pin, price: 68, why: "baroque/cameo runway note", annotation: "A carnelian cameo — the baroque detail from the fall runways."}
+  - {pin: 13, v: false, brand: ASOS Design, name: Moon Brooch, price: 12.99, why: "entry price point", annotation: "Brushed gold, $13 — a first brooch."}
+  - {pin: 14, v: false, brand: Anne Klein, name: Gold-Tone Crystal Orchid Pin, price: 32, why: "florals-in-crystal, low tier", annotation: "A crystal orchid — for a lapel or a tank strap."}
+  - {pin: 15, v: false, brand: Urban Outfitters, name: Jennie Western Belt, price: null, why: "western thread from belts editorial", annotation: "Embossed western buckle — the cowboy-boot detail as a belt."}
+  spread: {price: "13-680", verified_available: 6, pending: 9}
+verification_pass_2026_08_07:
+  method: "direct PDP fetch from the cloud pass; six slug guesses attempted"
+  result: "ALL SIX 404 — slug churn, exactly as the engine config warns ('discover current
+           /products/ slugs via web search each run'). Luxury retailers (Farfetch, NAP,
+           Harrods, Macy's) are browser-gated from this environment."
+  status_after:
+    B: "12 of 12 pins VERIFIED-AVAILABLE (engine observations) — executable now; Elena tote stays pending and B does not need it"
+    A: "1 of 12 verified — NOT executable; 11 items need browser-agent or human verification"
+    D: "6 of 15 verified — NOT executable; 9 pending"
+  no_product_has_failed: "pending means unverified, not unavailable — nothing has failed verification"
+
+excluded_editorially:
+- {items: "Dolce Vita Jody/Romie/Virona boots; Steve Madden Dusty bootie (ALL VERIFIED-AVAILABLE)", reason: "Boots are not coats (A subject purity) and cannot be worn today (breaks B's rail promise). Strongest candidate for a FUTURE fourth rail."}
+- {items: "& Other Stories leather jackets x2 (verified)", reason: "Leather is not in B's named textures; jacket dilutes A's coat subject."}
+- {items: "Eberjey lace cami set (verified)", reason: "Sleepwear in a wear-today fashion rail dilutes the subject."}
+- {items: "Lululemon Pack It Down Vest (verified)", reason: "A puffer vest cannot be worn now; contradicts D's wear-now mechanism."}
+- {items: "Theory Vented Vest (verified)", reason: "Second vest; COS holds the slot at a third of the price."}
+- {items: "Baggu / Clare V / Senreve belt bags (verified)", reason: "Bags are not accents; they replace rather than transform."}
+- {items: "Khaite Finley Jean (low stock)", reason: "Second Khaite jean; redundancy cap."}
+- {items: "Madewell Studded Western Belt (SOLD OUT)", reason: "Cited as demand proof for D's western-belt thread; unpinnable."}
+
+# ═══ FINAL ASSEMBLY after agent-first verification, 2026-08-07 ═══
+# Supersedes the candidate product lists above where they differ.
+final_assembly:
+  A_first_coats_of_fall:
+    verified_available: 12
+    set:
+      - "Rixo Milly Leopard Coat $795 (all sizes) — pin 1"
+      - "Aligne Anouk Wool Blend Jacket £219 (all sizes)"
+      - "Woolrich Double-Breasted Trench $414 (XS-XL) [SUB for ambiguous wool coat]"
+      - "Rohe Pankou Closure Jacket €675 (32-44) [the 'Mandarin' resolved to real name]"
+      - "Woolrich Callery Belted Coat $708 (SIZE S ONLY — thin flag)"
+      - "Rixo — no second; Toteme Washed Cotton Trench $1,368 (extensive)"
+      - "Polo RL Double-Breasted Belted Trench $861 (S/L/XL) [SUB for $800 gabardine]"
+      - "Nour Hammour Quinn Leather Coat $1,105 (S/L) [SUB for Claudia]"
+      - "DUCIE Corrin Suede Trench $1,476 / £1,200 (all sizes)"
+      - "Toteme Drop-Shoulder Trench $1,580 (XXXS-XXL) [backup promoted]"
+      - "Burberry Fitzrovia Short Gabardine $2,695 (XS/S) [SUB for Max Mara cropped]"
+      - "Burberry Ellingham Car Coat $3,150 (S/M/L)"
+    unresolved_optional: ["Reformation Owen Plaid $348 (robots-gated; would strengthen mid-tier)", "Sandro check trench (Farfetch designer slug 404)"]
+  B_suede_sheer_denim:
+    verified_available: 12
+    note: "Unchanged — executable since assembly. Elena tote optional human check."
+  D_fall_accents:
+    verified_available: 9
+    set:
+      - "Kallmeyer Yara SHRUG $680 black in stock — pin 1 (name corrected: shrug)"
+      - "Sezane Gaspard Cardigan $120 (soft flag: per-size stock not explicit)"
+      - "COS Knitted Linen Cardigan $139"
+      - "Mango Cowhide Belt chocolate $45.99 [SUB for Frame OOS]"
+      - "Mango Buckle Belt black $49.99 [SUB for COS belt OOS]"
+      - "COS Embroidered Silk Scarf $69"
+      - "Mango Satin Check Scarf $17.99"
+      - "COS Tailored Vest $90.30"
+      - "Sandy Liang Wing Bag Charm $98 (low)"
+    gap: >
+      3 SHORT of 12, and ZERO verified brooches — D's headline mechanism. All brooch routes are
+      cloud-gated: Frances Valentine (robots), Macy's x2 (bot-gated), ASOS (bot-gated), Monet
+      (Etsy one-off listings — needs human pick), UO (JS). Swarovski confirmed unavailable.
+    human_needed: "any 3 of the 6 below clear the count; at least 1-2 brooches needed for coherence"
+  human_checklist_residual:
+    D_required:
+      - "Frances Valentine Turtle Pin $90 — francesvalentine.com"
+      - "2028 Carnelian Cameo Pin $68 — Macy's"
+      - "Anne Klein Crystal Orchid Pin $32 — Macy's"
+      - "ASOS Moon Brooch $13 — asos.com"
+      - "Monet Vintage Sun Face Brooch ~$24 — Etsy (pick any live listing)"
+      - "UO Jennie Western Belt — urbanoutfitters.com"
+    optional:
+      - "Reformation Owen Plaid Jacket $348 (A mid-tier)"
+      - "Reformation Elena Tote $598 (B leopard thread)"
+  substitutions_all_within_approved_logic: true
+  subject_or_quality_change_requiring_owner: "NONE for A/B. D: the brooch gap is a coherence question put to owner."
+
+# ═══ FINAL ANNOTATIONS — editorial pass 2026-08-07 (owner-directed fixes + substitute products) ═══
+# Only changed or new annotations listed; all others stand as written above.
+final_annotations:
+  owner_directed_rewrites:
+    - {product: "Rixo Milly Leopard Coat", was: "Already sold out once this season — the leopard statement, back in all sizes.", now: "Full-length leopard in brown — the one print in a set of solids.", reason: "scarcity claim neutralized per owner"}
+    - {product: "Burberry Ellingham Car Coat", was: "A gabardine car coat from the house that invented the trench.", now: "Cotton gabardine car coat, made in England — the anchor of the set.", reason: "'invented the trench' removed per owner"}
+    - {product: "Ganni Broderie Anglaise Top", was: "Cotton broderie — sheer by construction, fall by styling.", now: "Cotton broderie anglaise in light blue — wear it open now, layer it later.", reason: "X-by-Y compressed construction rewritten per owner"}
+  substitute_product_annotations:
+    - {product: "Woolrich Double-Breasted Trench $414", annotation: "A double-breasted cotton trench under $450 — the set's entry classic."}
+    - {product: "Rohe Pankou Closure Jacket", annotation: "Knotted closures, collarless cut — Rohe's version of the fall jacket."}
+    - {product: "Toteme Washed Cotton Trench", annotation: "Washed cotton, cut long and unlined — Toteme's version of the classic."}
+    - {product: "Toteme Drop-Shoulder Trench", annotation: "Drop shoulders and a fuller cut — the trench, relaxed."}
+    - {product: "Polo RL Double-Breasted Belted Trench", annotation: "Cotton gabardine, storm flap, gun patch — the textbook spec."}
+    - {product: "Nour Hammour Quinn Leather Coat", annotation: "Paris-made leather in a long cut — the '90s revival."}
+    - {product: "Burberry Fitzrovia Short Gabardine", annotation: "Gabardine cut short — for the wardrobe that already owns the long one."}
+    - {product: "Mango Cowhide Belt (chocolate)", annotation: "Chocolate cowhide, $46 — one dark belt to shift a summer outfit."}
+    - {product: "Mango Buckle Belt (black)", annotation: "Plain black leather, $50 — the belt that re-cuts a summer dress."}
+  corrections:
+    - {product: "Aligne Anouk Jacket", was: "Grey marl wool blend at $295 — the set's lowest price.", now: "Grey marl wool blend — the set's lowest price.", reason: "verified price is £219, not $295; number dropped rather than converted"}
+    - {product: "Woolrich Callery Belted Coat", annotation: "Belted virgin wool, unstructured — lighter than a winter coat.", note: "carried from original wool-coat slot; product resolved to Callery"}
+  semantic_pass_rest: "Remaining annotations pass the editorial test as written. One judgment call retained: Ancient Greek Sandals 'closed enough for September, open enough for now' is a parallel construction but concrete on both sides — kept."
+
+# ═══ D COMPLETION PROTOCOL — owner-directed 2026-08-07 (decision: final_assembly_provisional) ═══
+d_completion_protocol:
+  status: awaiting_owner_verification_results
+  owner_priority_order:
+    - "1. Frances Valentine Turtle Pin $90 — francesvalentine.com"
+    - "2. Anne Klein Crystal Orchid Pin $32 — Macy's"
+    - "3. 2028 Carnelian Cameo Pin $68 — Macy's"
+    - "4. ASOS Moon Brooch $13 — backup"
+  stopping_rule: >
+    If any three brooches verify: use them, stop. If only two brooches verify: UO Jennie
+    Western Belt is the twelfth product, stop. No further sourcing rounds. Optional
+    Reformation items (Owen, Elena) are NOT verified — A and B already clear.
+  callery_ruling: >
+    Owner prefers replacing size-S-only Woolrich Callery with an already-verified comparable
+    A candidate with broader sizing IF one exists; no sourcing solely to replace it.
+    AGENT CHECK: no such candidate exists — all 12 verified A products are in the set and the
+    only verified-out-of-set A item (Toteme via Nordstrom) is sold out. Callery stays.
+
+# ═══ LOCKED FINAL PRODUCT SETS — 2026-08-07, after owner human verification ═══
+# This section is authoritative. D completed per d_completion_protocol stopping rule:
+# 3 brooches verified by owner -> used, verification stopped. ASOS not checked, UO belt not added.
+locked_final_sets:
+  status: LOCKED (pending final owner acceptance card)
+  A_first_coats_of_fall: 12  # per final_assembly.A set; Callery stays (no verified broader-sizing swap exists)
+  B_suede_sheer_denim: 12    # unchanged since assembly
+  D_fall_accents:
+    count: 12
+    completed_by:
+      - "Frances Valentine Turtle Pin $90 — OWNER VERIFIED live/purchasable (brooch)"
+      - "Anne Klein Gold-Tone Colored Crystal Orchid Pin $32 — OWNER VERIFIED at Macy's (brooch)"
+      - "2028 14K Gold-tone Carnelian Cameo Oval Pin $68 — OWNER VERIFIED at Macy's (brooch)"
+    mechanism_note: "Three verified brooches — D's headline mechanism is represented in the executable set."
+  new_annotations_D_brooches:
+    - {product: "Frances Valentine Turtle Pin", annotation: "A $90 turtle that reads heirloom on a linen shirt."}
+    - {product: "Anne Klein Crystal Orchid Pin", annotation: "A crystal orchid at $32 — the cheapest way into the brooch revival."}
+    - {product: "2028 Carnelian Cameo Oval Pin", annotation: "A carnelian cameo in gold tone — vintage grammar, current stock."}
+  remaining_material_caveats:
+    - "Woolrich Callery (A): verified available in size S only."
+    - "Sezane Gaspard (D): in stock, but per-size availability not explicit on PDP (soft flag)."
+    - "Sandy Liang Wing Bag Charm (D): low stock at verification."
+
+# ═══ B PIN SUBSTITUTIONS — owner-approved 2026-08-07 (launch-cycle re-verification failures) ═══
+b_pin_substitutions:
+  - out: "Mango Suede Leather Jacket $258 (DEAD all sizes)"
+    in_product: "Sézane Suede Harvey Teddy $490 [OWNER APPROVED]"
+    annotation: "Suede in teddy form, $490 — the softest version of the season's texture."
+    note: "Accessible-suede rung ($258) lost — accepted by owner. Now 2 Sézane suede outerwear pieces (Will + Harvey), at the PS-4 cap exactly."
+  - out: "Toteme Classic Cut Jeans $245 (one unit left)"
+    in_product: "Agolde 90's Pinch Waist High Rise Straight, Pendulum $238 [OWNER APPROVED]"
+    annotation: "High rise, pinched waist, dark Pendulum wash — September jeans, wearable now."
+  - out: "AGS Ikesia Suede Slingback $272 (SOLD OUT at NAP)"
+    in_product: "A.Emery The Jalen Sandal, Liquorice Suede $250 [promoted per owner substitution logic]"
+    annotation: "Black suede at sandal weight — the Jalen in its darker colorway."
+    basis: >
+      Best verified suede reserve preserving type (footwear) and price ($250 vs $272) balance
+      without adding a third suede jacket. Judgment: two colorways of one product (walnut +
+      liquorice Jalen) sit exactly at the PS-4 two-per-brand-and-type cap; positioned apart in
+      rail order. Re-verified all sizes in stock 8/7. NOT material to thesis — reported, not gated.
+adidas_annotation_update:
+  product: "Adidas Gazelle Indoor JI2060"
+  was: "The suede sneaker that never left — chalk and brown for September."
+  now: "The suede sneaker that never left — black with a gum sole for September."
+  basis: "verified article renders Core Black/Gum; owner: match the verified article, do not chase SKUs to preserve copy"
+b_low_stock_pins_after_subs:
+  pins: ["Mango Barrel (2 sizes)", "Ganni Broderie Top (final sale 50%)", "COS Raw Denim (2 mid sizes gone)"]
+  cap_status: "exactly 3 of 12 low-stock — at the <=3 cap, no ack required"
