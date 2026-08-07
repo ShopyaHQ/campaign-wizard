@@ -1,0 +1,100 @@
+# SCRAPE-OUTPUT CONTRACT
+# What the curation scrape captures for the LATER inventory-sync effort, in the same pass.
+#
+# BOUNDARY, stated once and not blurred:
+#   CAPTURE is in scope for the scrape happening now.
+#   ONGOING SYNCHRONISATION — refresh, diffing, alerting, reconciliation — belongs to the later
+#   inventory effort and is not built, planned or partially implemented here.
+#
+# These fields DO NOT go into the campaign execution CSV. products.csv is a human execution
+# worklist and its column set is deliberately fixed; a CSV drifting toward a full product
+# enrichment payload has absorbed scope that is not the campaign tool's.
+
+contract:
+  name: scrape_output
+  version: 1.0.0
+  status: preserved_requirement
+  origin:
+    file: docs/archive/2026-08-06_skill-v1/CLAUDE.md
+    section: "Deliverable 2, Group C — inventory-sync seed"
+    preserved_on: 2026-08-06
+    reason: >
+      Recorded during the reconciliation audit as the single documented bridge between the
+      campaign effort and the later inventory effort. Without it, that effort would have to
+      re-fetch every product page it had already visited.
+
+capture:
+  when: "during the curation scrape, in the same pass as campaign product capture"
+  responsibility: "the curation engine (shopya-collection-curation), at fetch time"
+  destination: "the engine's own product record — NOT campaigns/<run_id>/execution/products.csv"
+  population_rule: >
+    Populate where the source exposes the field. LEAVE BLANK rather than invent, infer or
+    reconstruct. A blank field is a fact about the source; a fabricated one is a defect that
+    surfaces months later in the inventory effort.
+
+fields:
+
+  external_id:
+    type: string
+    purpose: "Stable parent key for the product across runs and over time."
+    derivation: "slug(brand):slug(title)"
+    note: >
+      Relates to but is not identical to the canonical curation UID
+      slug(brand):slug(product_name):slug(colorway), which identifies a VARIANT. See campaign
+      charter constraint_repo_004.
+
+  source_platform:
+    type: enum
+    values: [shopify, sfcc, next, custom, retailer]
+    purpose: "Which commerce platform served the page. Determines how a later refresh must fetch."
+
+  variants_json:
+    type: json
+    purpose: "The full size x colour matrix."
+    contents: [per_variant_price, compare_at, availability, sku, store_variant_id]
+    note: "The single most expensive field to re-acquire later, and the reason this contract exists."
+
+  variant_count_total:
+    type: integer
+    purpose: "The TRUE total number of variants, not the number sampled."
+    note: "Recorded separately so a partial capture is visible as partial rather than complete."
+
+  options_json:
+    type: json
+    purpose: "The store's own option axes, in the store's own order."
+    note: "Order is meaningful. Do not normalise or sort it."
+
+  all_image_urls:
+    type: list
+    purpose: "Every image the page exposes, not only the primary."
+
+  description_text:
+    type: string
+    purpose: "Plain text description as published."
+    note: "Plain text. Not HTML, not summarised, not rewritten."
+
+  tags:
+    type: list
+    purpose: "The store's own tags, verbatim."
+
+boundary:
+  in_scope:
+    - "capturing these fields during the current scrape"
+    - "storing them on the engine's product record"
+    - "leaving a field blank when the source does not expose it"
+  out_of_scope:
+    - "refresh scheduling"
+    - "change detection or diffing"
+    - "alerting on availability or price movement"
+    - "reconciliation against the product library"
+    - "any surfacing of these fields in campaign artifacts"
+  guard: >
+    Capturing this data is in scope. MAINTAINING it is the later inventory effort. Do not build
+    refresh, diffing or alerting here, and do not add these columns to products.csv.
+
+not_yet_implemented:
+  status: requirement_recorded_only
+  note: >
+    This contract records a requirement. It does not assert that the curation engine currently
+    captures these fields. Whether it does is unverified and should be established before the
+    inventory effort plans around it.
