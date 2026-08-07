@@ -14,7 +14,7 @@
 
 charter:
   name: shopya_content_charter
-  version: 0.1.0-proposed
+  version: 0.7.3-proposed
   status: proposed
   companion_to: {file: SHOPYA_CAMPAIGN_CHARTER.yaml, version: 0.2.0}
   interpretation_vocabulary: schemas/interpretation_rules.yaml   # reuse, do not invent a second one
@@ -272,6 +272,126 @@ hierarchy:
     relation_to_parent: "evidence for the collection's argument"
     differentiation: "no two annotations in one collection may share a syntactic template"
 
+# ═══════════════════════════════════════════════════════════════════
+# 2b · THREE-LAYER NAMING MODEL
+# Preserved from docs/archive/2026-08-06_skill-v1/skills/new-campaign/references/naming_and_seo.md
+# during the 2026-08-06 reconciliation. EDITORIAL RULES ONLY. The SEO and routing rationale
+# that originally accompanied this model is recorded separately under
+# pending_technical_verification and is NOT asserted here as fact.
+# ═══════════════════════════════════════════════════════════════════
+
+naming_model:
+  principle: >
+    Three names, three different jobs. Trying to make one string do two of them is what produces
+    a name that is either invisible or unreadable.
+
+  layers:
+
+    campaign:
+      carries: "the cultural or emotional frame"
+      job: "state what moment this is and what our position on it is"
+      is_not: "a description of what is being sold"
+      register: "editorial; the frame a reader recognises before they see a product"
+      evidence: [BRAND, P1]
+
+    collection:
+      carries: "the durable and legible subject"
+      job: >
+        Name the thing itself, in terms that stay true after the campaign ends and that a
+        reader understands without the campaign around it.
+      is_not: "the campaign frame with a category noun attached"
+      register: "plain and durable; it outlives the campaign"
+      test: >
+        Read the collection name with the campaign name removed. If it no longer describes
+        anything, it was never a subject — it was the frame wearing a noun.
+      evidence: [P1]
+      p1_basis: "'The Scent You Keep' and 'The Bag That Survives The Turn' both fail this"
+
+    rail:
+      carries: "the immediate browse hook"
+      job: "earn the click from a page of competing headings"
+      is_not: "a second campaign headline, and not the collection name repeated"
+      register: "short, concrete, oriented to what the shopper is about to see"
+      evidence: [FE, P1]
+      fe_basis: "feed.name renders verbatim on /explore (campaign charter surface_001)"
+
+  ambiguity_tolerance:
+    status: demonstrated
+    evidence: "2026-08-07: owner rejected 'Small Change' (collection) as too ambiguous while
+               locking 'Add one thing' (rail) in the same round (U5)."
+    rule: >
+      Wit and ambiguity tolerance varies by level. Rails may lean on the surrounding page for
+      legibility; collection names must be independently legible with no campaign around them
+      (they are durable subjects, page titles and metadata); campaign names sit between.
+    limit: "Context-reliance is not license for cryptic — a rail still orients."
+
+  cross_layer_rules:
+    - id: NM-1
+      rule: "A collection name may not contain the campaign name or its head noun."
+      mechanical: true
+      detection: "token overlap on head nouns after stopword removal"
+    - id: NM-2
+      rule: >
+        A collection name may not be the campaign frame with a product-category noun
+        substituted. Substitute three other catalogue categories; if all four read as equally
+        plausible, it is a template.
+      mechanical: partially
+      detection: "requires catalogue substitution — review rubric first, validator later"
+      evidence: P1
+    - id: NM-3
+      rule: "A rail name may not equal, contain, or be contained by its collection name."
+      mechanical: true
+      detection: "normalised substring comparison in both directions"
+    - id: NM-4
+      rule: "No two names at the same level may share an opening construction beyond a 40% share."
+      mechanical: true
+      evidence: P1
+      p1_basis: "5 of 11 names in the control run began with 'The'"
+    - id: NM-5
+      rule: >
+        A name at any level may not restate the level above it. Detection: the child's head
+        noun or premise verb appearing in the parent.
+      mechanical: true
+
+# ═══════════════════════════════════════════════════════════════════
+# 2c · PENDING TECHNICAL VERIFICATION
+# Claims about search, ranking and routing that INFORM the naming model but are NOT established.
+# None of these may be stated as fact, used to justify a decision as though settled, or promoted
+# without the named verification.
+# ═══════════════════════════════════════════════════════════════════
+
+pending_technical_verification:
+
+- id: PTV-1
+  claim_under_test: "The collection page is the campaign's rankable asset and the rail heading is not."
+  status: unverified_inference
+  what_is_established: >
+    Collection pages are public and indexable at /collections/[id] with per-collection title
+    tags and descriptions (campaign charter surface_004, status implemented).
+  what_is_not: >
+    That this makes the collection the rankable asset, or that a rail heading on /explore will
+    not rank. Both are inferences about search behaviour with no measurement behind them. No
+    Search Console connection is established (charter measurement_004, status unknown).
+  verification: "first-party search data, or an index-coverage check on both surfaces"
+  may_not: "be used to justify keyword weighting as though settled"
+
+- id: PTV-2
+  claim_under_test: "Keyword strategy on collection names is supported by an internal link path."
+  status: contradicted
+  what_is_established: >
+    Rail view-all resolves to /feeds/{feedId}, not to the collection page (charter
+    surface_004b, status implemented). The indexable collection asset receives no internal link
+    from its own rail.
+  verification: "charter pending_validation rail_view_all_destination"
+  may_not: "be assumed resolved when writing collection names"
+
+- id: PTV-3
+  claim_under_test: "No sitemap lists collection pages."
+  status: established_but_unaddressed
+  what_is_established: "No app/sitemap.* exists (charter surface_004). Pages are crawlable but not listed."
+  verification: "a frontend decision, not a content one"
+  may_not: "be presented as an SEO advantage of the collection page"
+
 anti_restatement_rules:
   - id: AR-1
     rule: "A collection name may not contain the campaign display_name or its head noun."
@@ -415,6 +535,19 @@ merchandising:
       What is deliberately kept out, and why. A collection with no exclusion rule is a
       category, not a collection.
 
+  inventory_reality_test:
+    status: demonstrated
+    evidence: "run cmp_01KZCD765E6NNW2TZR1AFHQMWG, 2026-08-07 (U4)"
+    rules:
+      - "Proposed roles meet actual inventory BEFORE naming or copy. Match relevance-first,
+         exclude false positives by review, represent availability honestly (verified vs
+         pending), and never let existing inventory dictate architecture."
+      - "A conceptually strong but inventory-thin role earns exactly ONE scoped curation pass.
+         Before sourcing, lock in a recorded owner decision: exact purpose, success threshold,
+         one-pass stopping rule, and the categories under test. Afterwards the role survives or
+         merges. No rescue rounds."
+    limit: "One-pass applies per role per campaign; a later campaign may re-source the concept."
+
   engine_collection_disposition:
     rule: "An existing engine collection is a CANDIDATE, never a default."
     decisions:
@@ -469,6 +602,32 @@ product_rules:
     - id: PS-6
       rule: "Every product carries a one-line defensible relationship to the collection thesis."
       evidence: P1
+
+  assembly_status:
+    status: demonstrated
+    evidence: "2026-08-07 (U7a, owner-approved): A and D held coherent candidate sets while
+               unverifiable from the environment; B was fully verified."
+    rule: >
+      Editorial assembly and executable assembly are different statuses. A collection may be
+      editorially assembled before every candidate is availability-verified, but it is not
+      final or executable until verification clears the required available threshold. Pending
+      means unverified, not unavailable — substitution from approved candidate logic comes
+      before any architecture change.
+
+  assembly_outputs:
+    status: demonstrated
+    evidence: "2026-08-07 almost-fall assembly (U6a/U6b, owner-approved)"
+    rules:
+      - id: U6a
+        rule: >
+          Assembly produces an excluded-with-reasons list alongside the included set — items
+          that technically qualify but are excluded to protect a collection's subject or its
+          rail's promise. Subject purity outranks availability.
+      - id: U6b
+        rule: >
+          A locked name is a promise assembly must audit. At assembly, check each collection's
+          contents against what its name promises; surface gaps as owner decisions — never
+          silently restock and never silently rename.
 
   annotation:
     grounding_required: true
@@ -592,6 +751,24 @@ quality_rules:
       - "Does it avoid both sterile taxonomy and trend-report breathlessness?"
       - "Is it useful to a shopper while still carrying taste?"
       - "Is there any fake familiarity or simulated friendship?"
+
+  banned_abstractions:
+    status: demonstrated
+    evidence: >
+      2026-08-07: 'the turn' reappeared repeatedly in consumer-facing copy across this campaign
+      despite never coming from owner language — a recurring model-generated abstraction.
+    rules:
+      - id: BAN-the-turn
+        rule: >
+          Do not use 'the turn' as noun shorthand for a seasonal, cultural, fashion, or
+          behavioral transition. Prefer the concrete thing actually meant: fall arriving, the
+          weather changing, the season changing, what people are wearing now. (Ordinary verb
+          uses — 'a belt turns the outfit' — are normal language and unaffected.)
+      - id: BAN-compressed-abstractions
+        rule: >
+          Avoid compressed editorial abstractions that require the reader to infer a meaning
+          ordinary language could state directly. A phrase sounding literary or concise is not
+          a virtue if a normal shopper would not naturally understand or use it.
 
   slop_patterns:
     evidence: [P1, BRAND]
@@ -827,3 +1004,103 @@ implementation:
     re-run the campaign. Stage 7 editorial fields and the linguistic validators come after,
     once we have seen whether better inputs alone fix the output. Implementing all of it at
     once repeats the mistake this whole project has been correcting.
+
+# ═══════════════════════════════════════════════════════════════════
+# 10 · INVENTORY DEPTH AND READINESS MODEL (owner ruling, 2026-08-07)
+# Corrects the conflation of rail display capacity with collection health.
+# ═══════════════════════════════════════════════════════════════════
+
+inventory_depth:
+  version_note: "added in 0.7.0-proposed; owner-approved 2026-08-07 (AskUserQuestion: floor 2x, target >50)"
+  principle: >
+    A rail showing 12 products does NOT imply that a collection containing 12 available
+    products is healthy. At 12/12 every product does double duty as displayed inventory and
+    total inventory; one sellout immediately degrades the collection.
+  layers:
+    rail_pins: {standard: 12, meaning: "visible curated set / current display cap"}
+    collection_hard_floor:
+      standard: "2x rail capacity (24 at today's 12-pin rail)"
+      meaning: "pins plus at least an equal count of viable reserves; scales if rail capacity changes"
+    collection_launch_target:
+      standard: ">50 qualifying available products"
+      meaning: "owner-set launch target for every campaign collection; depth to browse and absorb churn"
+    technical_floor:
+      standard: 1
+      meaning: "rendering/system fact ONLY (render_001); never an editorial definition of readiness"
+  no_padding_rule: >
+    Never weaken the reserve products to satisfy the number. If a collection genuinely cannot
+    support its floor with defensible products, that is information about the collection scope
+    — not a license for 12 great products plus vaguely related filler.
+  division_of_labor: >
+    The wizard defines what the collection means and which 12 products best express it.
+    CollectionCuration supplies enough additional qualifying inventory to make it durable.
+
+readiness_model:
+  note: "splits the jobs render_002 was doing; charter-claim formalization queued for next campaign-charter revision"
+  rail_readiness:
+    - "12 verified pinned products"
+    - "subject/coherence checks pass"
+    - "pin ordering passes (PS-3)"
+  collection_readiness:
+    - "available inventory >= collection hard floor (2x rail); launch target >50"
+    - "pinned 12 are contained in that pool"
+    - "reserve products still satisfy the collection thesis (no_padding_rule)"
+  execution_readiness:
+    - "product facts fresh enough (see launch_freshness)"
+    - "URLs usable; required execution fields resolvable"
+    - "CSV/admin contract passes"
+    - "OWNER-APPROVED RULE (2026-08-07): availability verification and catalog-ingest readiness
+       are separate execution requirements; neither implies the other"
+
+launch_membership_rule:
+  status: proposed_for_owner_review   # demonstrated 2026-08-07 (Almost Fall b002); NOT yet approved
+  check_against_existing: >
+    Reviewed 2026-08-07: readiness_model and inventory_depth measure INVENTORY existence,
+    not live launch membership — this rule is not clearly implied by them, so it is captured
+    rather than treated as duplicate.
+  rule: >
+    Rail readiness and collection launch depth are separate. The pinned rail may contain 12
+    products, while the LIVE collection body must meet the approved collection-depth floor
+    (pins + selected qualifying body products). Remaining reserves stay engine-side as
+    substitution/replenishment inventory.
+
+launch_freshness:
+  rule: >
+    Before execution, every PINNED product must have a current verification from this launch
+    cycle. Low-stock pins get rechecked again immediately before admin execution. The larger
+    collection body tolerates older observations than the pins. No TTL engine yet — this is
+    the deliberate simple rule.
+
+low_stock_policy:
+  rules:
+    - "low_stock counts as available for rendering"
+    - "soft cap: no more than 3 of 12 pins low_stock without explicit owner acknowledgement"
+    - "low_stock products are NEVER counted as dependable reserve inventory toward the collection floor"
+
+mechanism_representation:
+  status: editorial_qa_rule   # NOT a numeric validator
+  rule: >
+    If a collection's name or thesis states a core mechanism, the pinned set must materially
+    demonstrate that promise (extends U6b name-as-promise). Fall Accents with zero brooches
+    would fail this test regardless of count compliance.
+
+explicitly_not_adopted:
+  - {item: "maximum collection size cap", reason: "no demonstrated failure from depth"}
+  - {item: "numeric diversity floors", reason: "hard minimums produce artificial curation; redundancy cap + range review (PS-4/PS-5) remain the guardrail until runs show a recurring problem"}
+  - {item: "live sellout rebuild threshold", reason: "needs observed live behavior first; next-pass"}
+
+execution_deliverable:
+  status: owner_approved_2026-08-07
+  contract: >
+    ONE master execution CSV per build: one row per product x collection membership,
+    containing rail items + collection body, NEVER the reserve pool. is_rail_item TRUE
+    requires rail_name and rail_position (1..12); FALSE requires both blank. Campaign QA:
+    >=24 members and exactly 12 rail items per collection; rail_position exactly 1..12;
+    no duplicate product x collection rows. collection_position gives a deterministic
+    1..24 worklist order. Everything else (curated.json, ledgers, observations, reserve
+    pool, schemas) is under-the-hood; the operator executes from this file + manifest only.
+  population_vocabulary:
+    rail_items: "live collection members pinned on /explore"
+    collection_body: "live collection members not pinned"
+    reserve_pool: "qualified CollectionCuration inventory not currently launched — never in the CSV"
+  implemented_by: scripts/build_execution_csv.py

@@ -16,11 +16,16 @@
 # Proposed and inferred claims are NEVER silently promoted to product truth.
 
 charter:
-  version: 0.2.0
+  version: 0.3.0
   status: approved
   approved_by: product_owner
   approved_at: 2026-08-06T15:00:27Z
-  supersedes: 0.1.0
+  supersedes: 0.2.0
+  changelog:
+    0.3.0: >
+      Preserved requirements from the 2026-08-06 reconciliation audit: CSV execution facts
+      (constraints_007, rail_006, rail_007) and one new pending validation
+      (include_ids_order_survives). No workflow state, schema or builder behaviour changed.
 
   approval:
     rationale: >
@@ -113,7 +118,22 @@ charter:
       test_matrix:
         - "predicate present at lib/sanity/composed-assets.ts:40-44"
         - "production asset-loading path demonstrably uses that query"
-      notes: "Requires shopya-frontend to be reachable. See scheduling_002." 
+      notes: "Requires shopya-frontend to be reachable. See scheduling_002."
+    - id: include_ids_order_survives
+      blocking_for:
+        - claiming_verified_displayed_rail_order
+        - claiming_deterministic_rendered_ordering
+      blocking_for_charter_approval: false
+      test_matrix:
+        - "create a feed with a known include_ids array order"
+        - "observe the rendered rail after the catalog cache window"
+        - "confirm the displayed order matches the array order"
+        - "re-query the feed and confirm the order survives storage and retrieval"
+      notes: >
+        Asserted by two documents that both trace to a single admin-develop client comment
+        ('build_order_by floats these ... CASE on the array index'). No backend source has been
+        read by any party, including the original frontend audit. Until this passes, the system
+        may claim INTENDED rail order but not VERIFIED displayed order.
 
   unresolved_claims: []   # none block charter approval
 
@@ -834,6 +854,59 @@ claims:
       This is a wizard-side lifecycle rule, NOT an existing API invariant. The API does not
       enforce it and must never be described as doing so. Enforcement is the validator's job.
       Supersedes the v0.1.0/v0.2.0-draft absolute immutability claim.
+
+  - id: constraints_007
+    category: constraints
+    claim: "No programmatic admin importer exists in the reachable system. products.csv is a human execution worklist; nothing consumes it programmatically. Admin execution order is create collection -> add products -> create feed."
+    status: implemented
+    approved_in_version: 0.3.0
+    sources:
+      - {path: "scripts/, schemas/", reference: "no reader of products.csv exists in any script, schema or contract — only existence checks"}
+      - {path: .claude/rules/prod-safety.md, reference: "no write path from the frontend (constraints_003)"}
+      - {path: docs/archive/2026-08-06_skill-v1/skills/new-campaign/references/csv_contract.md, reference: "admin endpoints and execution order"}
+    basis: []
+    requires_owner_confirmation: false
+    notes: >
+      REACHABILITY CAVEAT: admin-develop, api-develop and shopya-frontend are not mounted in the
+      wizard's session. 'No importer exists' is established for the reachable system and from the
+      absence of any write path; it is not established by reading the admin codebase.
+
+  - id: rail_006
+    category: rail_contract
+    claim: "rail_position defines the intended sequence for entering pinned products into feed.rules.include_ids. collection_rank is diagnostic source ordering only and has no persistence mechanism. Availability filtering means the two values legitimately diverge."
+    status: approved_rule
+    approved_in_version: 0.3.0
+    sources:
+      - {path: scripts/build_csv.py, reference: "rail_position assigned 1..N over AVAILABLE products in collection-rank order"}
+      - {path: agent_knowledge/api/openapi.json, reference: "no position field, no sort param, no reorder endpoint (constraints_005)"}
+      - {path: "campaigns/cmp_01KZBYX2QF7102EC7VP4J221HE/execution/products.csv", reference: "empirical divergence observed 2026-08-06"}
+    basis:
+      - "Control run: Perfume Wardrobe pinned collection_ranks [2,3,4,6,7,11,12,13,14,15,18,19]
+         against rail_positions [1..12]. Seven ranks inside the pinned window are unpinned
+         because those products are sold out or of unknown availability."
+    requires_owner_confirmation: false
+    notes: >
+      NOT a contradiction with the archived csv_contract.md, which recorded collection_rank as
+      the pin-order driver. That was accurate for the builder as it stood — the top N by
+      collection_rank WERE the pins. Availability filtering separated the two concepts. The
+      archived document is stale, not wrong.
+
+  - id: rail_007
+    category: rail_contract
+    claim: "Whether include_ids array order survives persistence and backend rendering is empirically unverified."
+    status: unknown
+    approved_in_version: 0.3.0
+    sources:
+      - {path: admin-develop/lib/feeds.ts, reference: "include_ids order comment — a sibling-repo client, not backend code"}
+    basis:
+      - "Two documents assert it; both trace to the same admin-develop comment."
+      - "api-develop source is unreadable to every party who has looked."
+    requires_owner_confirmation: true
+    notes: >
+      Until pending_validation include_ids_order_survives passes, the system may claim INTENDED
+      rail order but NOT verified displayed order. Deterministic rendered rail ordering must not
+      be described as implemented anywhere.
+
   - id: explore_001
     category: explore_limits
     claim: "The proportional page-share rule is DEFERRED, not rejected. The current Explore denominator is untrustworthy: QA-named feeds remain live, sort collisions exist, tagging is incomplete, documentation and live state disagree, and the intended default vertical set is unresolved."
