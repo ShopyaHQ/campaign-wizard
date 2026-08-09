@@ -50,5 +50,15 @@ almost-fall-2026__campaign-header__b001.md.
 ## Controlled asset vocabulary (agents never invent labels)
 execution (the master worklist — canonical since b003) · products (retired at b003) ·
 curated (internal) · execution-manifest · campaign-header · activation-brief ·
-collection-handoff (retired at b003 — folded into execution) · verification-report
+collection-handoff (retired at b003 — folded into execution) · verification-report ·
+review-book (the per-campaign line-by-line review document)
 Banned label words: final, latest, new, revised, use-this.
+
+## Review book (added 2026-08-09 — owner catch: recurring deliverable, needs identity)
+Every campaign has one review book. Two forms, per the working-vs-portable rule:
+- WORKING copy: runs/<run_id>/review_book.md — boring canonical name, always the current state.
+- REVIEW ROUNDS: immutable snapshots per round in runs/<run_id>/review/ named
+  <campaign_id>__review-book__r001__<UTC ts>.md — r-series is the REVIEW revision counter
+  (parallel to but distinct from b-series execution builds: r = what the owner reviewed,
+  b = what execution built). A round snapshot is cut when the book goes to the owner; the
+  owner's annotated copy joins the same round. Never overwrite a round; next review = r002.

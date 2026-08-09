@@ -1011,19 +1011,26 @@ implementation:
 # ═══════════════════════════════════════════════════════════════════
 
 inventory_depth:
-  version_note: "added in 0.7.0-proposed; owner-approved 2026-08-07 (AskUserQuestion: floor 2x, target >50)"
+  version_note: "0.7.0-proposed introduced a 24 (2x-rail) hard floor + >50 target; SUPERSEDED by
+                 owner ruling 2026-08-09 (charter render_003 v0.4.0): the collection-depth HARD
+                 FLOOR is >=50 dependable in_stock UNIQUE products. There is no separate lower
+                 hard floor; the 2x-rail figure is now only a trivially-subsumed sanity note."
   principle: >
     A rail showing 12 products does NOT imply that a collection containing 12 available
     products is healthy. At 12/12 every product does double duty as displayed inventory and
-    total inventory; one sellout immediately degrades the collection.
+    total inventory; one sellout immediately degrades the collection. A launched collection
+    must carry real browsable depth beyond its pins.
   layers:
     rail_pins: {standard: 12, meaning: "visible curated set / current display cap"}
     collection_hard_floor:
-      standard: "2x rail capacity (24 at today's 12-pin rail)"
-      meaning: "pins plus at least an equal count of viable reserves; scales if rail capacity changes"
-    collection_launch_target:
-      standard: ">50 qualifying available products"
-      meaning: "owner-set launch target for every campaign collection; depth to browse and absorb churn"
+      standard: ">=50 dependable in_stock UNIQUE products"
+      meaning: "HARD launch floor (charter render_003, owner 2026-08-09): 49 fails, 50 passes;
+                variants and duplicate identities never inflate; low_stock reported separately
+                and never satisfies; no padding. A collection that cannot reach 50 reports the
+                shortfall and proposes a scope/category change for owner approval."
+    reserve_sanity_note:
+      standard: "trivially satisfied by the >=50 floor (>= 2x a 12-pin rail)"
+      meaning: "the old 2x-rail reserve idea is subsumed: 50 unique already exceeds 24"
     technical_floor:
       standard: 1
       meaning: "rendering/system fact ONLY (render_001); never an editorial definition of readiness"
@@ -1033,7 +1040,8 @@ inventory_depth:
     — not a license for 12 great products plus vaguely related filler.
   division_of_labor: >
     The wizard defines what the collection means and which 12 products best express it.
-    CollectionCuration supplies enough additional qualifying inventory to make it durable.
+    CollectionCuration supplies enough additional qualifying inventory (>=50 dependable in_stock
+    unique) to make it durable, AFTER the owner has approved the campaign specification.
 
 readiness_model:
   note: "splits the jobs render_002 was doing; charter-claim formalization queued for next campaign-charter revision"
@@ -1042,7 +1050,7 @@ readiness_model:
     - "subject/coherence checks pass"
     - "pin ordering passes (PS-3)"
   collection_readiness:
-    - "available inventory >= collection hard floor (2x rail); launch target >50"
+    - "available inventory >= collection hard floor (>=50 dependable in_stock unique; render_003)"
     - "pinned 12 are contained in that pool"
     - "reserve products still satisfy the collection thesis (no_padding_rule)"
   execution_readiness:
@@ -1095,10 +1103,11 @@ execution_deliverable:
     ONE master execution CSV per build: one row per product x collection membership,
     containing rail items + collection body, NEVER the reserve pool. is_rail_item TRUE
     requires rail_name and rail_position (1..12); FALSE requires both blank. Campaign QA:
-    >=24 members and exactly 12 rail items per collection; rail_position exactly 1..12;
-    no duplicate product x collection rows. collection_position gives a deterministic
-    1..24 worklist order. Everything else (curated.json, ledgers, observations, reserve
-    pool, schemas) is under-the-hood; the operator executes from this file + manifest only.
+    >=50 launched members (the collection-depth hard floor, render_003) and exactly 12 rail
+    items per collection; rail_position exactly 1..12; no duplicate product x collection rows.
+    collection_position gives a deterministic 1..N worklist order (N = launched members, >=50).
+    Everything else (curated.json, ledgers, observations, reserve pool, schemas) is
+    under-the-hood; the operator executes from this file + manifest only.
   population_vocabulary:
     rail_items: "live collection members pinned on /explore"
     collection_body: "live collection members not pinned"

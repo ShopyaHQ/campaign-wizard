@@ -3,40 +3,6 @@
 Plans campaigns for Shopya and produces the Seam 6 execution package: source collections,
 product rails, and the CSV a human executes in admin. Everything else it authors is a handoff.
 
-## What this tool is / Definition of Done
-
-The product is seven steps:
-
-1. Start `/new-campaign`.
-2. Run fresh current-trend research and report what is happening.
-3. Work back and forth with the owner to refine and explicitly approve the campaign direction.
-4. Lock the campaign premise, collections/rails, tone/copy, and product-selection logic
-   through that conversation.
-5. Produce the frontend campaign content and execution artifacts.
-6. Run the existing CSV builder, and validate the resulting worklist for the concrete
-   execution requirements already implemented.
-7. Deliver the CSV/handoff. End.
-
-**Definition of done:** a fresh invocation can take a real campaign from zero context to final
-CSV through an interactive, human-approved campaign-development loop, without the owner
-needing to understand or manually repair the underlying workflow.
-
-**Acceptance test:** start a completely new campaign with only the normal information an owner
-would reasonably provide. Run fresh research. Work with the owner naturally until the campaign
-is something they would actually publish. Produce the campaign, collections, rails, frontend
-content and products, then generate the CSV. If that works end to end, v1 is done.
-
-**Operating constraint — any proposed work must answer: what failure in that end-to-end
-experience does this fix?** The states, validators and charters below are supporting machinery,
-judged only by whether they make those seven steps reliable. They are not the product.
-
-## Deferred / not required for v1 done
-
-README cleanup · duplicate `status:` key in the workflow schema · functional schema-version
-pinning · archive semantics · replay/supersede mechanics · additional schemas or workflow
-expansion not demonstrated necessary by the acceptance run. Parked, not lost. Do not work on
-these unless the acceptance run exposes one as a concrete blocker.
-
 Campaigns lead with discovery, taste, and cultural relevance rather than promotional sales
 language. Commercial usefulness should emerge through selection, context, and clear product
 pathways.
@@ -96,14 +62,28 @@ operating path. (Owner-approved rule, 2026-08-07, demonstrated on the Almost Fal
 human checklist reduced to 6 items, all hard-gated. Formalize as an approved_rule charter claim
 at the next charter revision — mid-run charter version changes are blocked by design.)
 
+## Phase 1 campaign output requirement (owner-locked, 2026-08-07)
+
+A completed campaign = four parallel outputs (strategy, merchandising, editorial/content,
+execution) across Default + six verticals — full definition and the permanent process model in
+docs/E2E_PROCESS.md (§CAMPAIGN OUTPUT REQUIREMENT, folded 2026-08-09; the earlier
+docs/archive/PHASE1_CAMPAIGN_OUTPUT_REQUIREMENT.md is history, not authoritative). Critical principle: within each vertical, product
+and editorial opportunities are developed IN PARALLEL from the same premise/evidence/tension —
+content is never appended after merchandising, and the owner architecture checkpoint receives
+both. Default/All composition is a deliberate editorial step, never automatic aggregation.
+Future campaigns carry this from kickoff; Almost Fall's Fashion work is the locked first
+vertical prototype and the remaining verticals + content layer are extension artifacts (a
+one-time migration exception). Phase 2 (social visual prompts preserving product truth)
+remains separately deferred.
+
 ## Naming conventions (owner-locked, 2026-08-07)
 
 Three separate identities, never conflated in one filename: campaign_id (human, kebab-case),
 run_id (immutable cmp_<ULID>), build_id (b001, b002 — immutable execution revisions, never
-overwritten). Full rules: docs/NAMING_CONVENTIONS.md. Both halves are live as of
-2026-08-07: execution-asset naming AND the campaigns/<campaign_id>/runs/<run_id>/ layout
-(_drafts/ for unnamed kickoffs; `run.py promote` performs the controlled promotion when
-campaign_id locks; artifact paths are stored run-root-relative).
+overwritten). Full rules: docs/NAMING_CONVENTIONS.md. Both halves are live as of 2026-08-07:
+execution-asset naming AND the campaigns/<campaign_id>/runs/<run_id>/ layout (_drafts/ for
+unnamed kickoffs; `run.py promote` performs the controlled promotion when campaign_id locks;
+artifact paths are stored run-root-relative).
 
 ## Engine/wizard boundary (owner ruling, 2026-08-07)
 
@@ -113,8 +93,24 @@ provenance). The Campaign Wizard owns campaign judgment: which products belong, 
 assignment, editorial ordering, annotations, copy, approvals, and the execution worklist. The
 wizard consumes product truth READ-ONLY; the builder's refusal to run without the engine log is
 deliberate boundary enforcement. The wizard does not append observations to the engine datastore
-— the Almost Fall run reached across this boundary as a demonstrated temporary fallback, and the
-formalized engine-owned verification interface is next-pass work (see docs/NEXT_PASS_SCOPE.md).
+— the Almost Fall run reached across this boundary as a demonstrated temporary fallback; the
+formalized engine-owned verification interface is now an ACTIVE separate workstream (see
+shopya-collection-curation/SCRAPER_TOOL_KICKOFF.md). Availability verification and
+catalog-ingest readiness are separate execution requirements; neither implies the other.
+
+## Documents: the locked set (owner, 2026-08-09)
+
+Top-level canon is SEVEN wizard docs: CLAUDE.md, SHOPYA_CAMPAIGN_CHARTER.yaml,
+SHOPYA_CONTENT_CHARTER.proposed.yaml, docs/E2E_PROCESS.md, docs/CATEGORY_TAXONOMY.md,
+docs/NAMING_CONVENTIONS.md, docs/NEXT_PASS_SCOPE.md. Creating any new top-level document
+requires explicit owner approval (this was an owner rule from day one — enforce it).
+Iteration output goes INTO the canonical doc as a version bump, or into the campaign's
+review book — never a sibling file. One-shot prompts/work orders are archived on completion.
+Per campaign run, the single living campaign document is review_book.md (r-series rounds);
+iteration artifacts are marked superseded via `run.py supersede-artifact` as they are absorbed.
+The /explore seams contract's source of truth is the FRONTEND repo
+(agent_knowledge/sanity/PRESENTABLE_ASSETS.md + agent_knowledge/campaigns/
+CAMPAIGN_AUTHORING_CONTRACT.md) — reference it; never duplicate it here.
 
 ## Scope
 

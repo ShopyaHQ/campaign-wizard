@@ -16,12 +16,25 @@
 # Proposed and inferred claims are NEVER silently promoted to product truth.
 
 charter:
-  version: 0.3.0
+  version: 0.4.0
   status: approved
   approved_by: product_owner
-  approved_at: 2026-08-06T15:00:27Z
-  supersedes: 0.2.0
+  approved_at: 2026-08-09T00:00:00Z
+  supersedes: 0.3.0
   changelog:
+    0.4.0: >
+      Owner rulings 2026-08-09. RULING 1 (collection depth): render_003 is REVERSED — every
+      launched durable category collection now carries a HARD >=50 dependable in_stock unique
+      product floor (49 fails, 50 passes; variants and duplicate identities never inflate;
+      low-stock reported separately and never satisfies the floor; no padding; a category that
+      cannot clear 50 reports the failure and proposes a scope/category change for owner
+      approval). This supersedes the 0.2.0 render_003 position that no >50 expectation exists
+      and the interim 24 (2x-rail) hard floor. RULING 2 (owner approval model): six progressive
+      approval gates; the final campaign-spec approval locks campaign judgment; compliant engine
+      fulfillment and agent recommendations are NOT owner decisions and never re-trigger owner
+      approval; only a material exception escalates. Decision-ledger status vocabulary added
+      (governance_003): provisional_recommendation | owner_confirmed | fulfilled | validated |
+      exception; decided_by product_owner is valid ONLY for owner_confirmed. See docs/E2E_PROCESS.md.
     0.3.0: >
       Preserved requirements from the 2026-08-06 reconciliation audit: CSV execution facts
       (constraints_007, rail_006, rail_007) and one new pending validation
@@ -687,14 +700,18 @@ claims:
 
   - id: render_003
     category: render_contract
-    claim: "There is NO universal >50-item collection expectation. Inventory buffer is campaign-dependent, defined by volatility, exclusions, campaign duration and feed behavior."
+    claim: "Every LAUNCHED durable category collection must contain at least 50 dependable in_stock UNIQUE products (the collection-depth hard floor). 49 fails, 50 passes. Variants of one product and duplicate product identities never inflate the count. Low-stock products are reported separately and NEVER satisfy the floor. No padding: a collection that cannot honestly reach 50 defensible products reports the shortfall and proposes a scope/category change for owner approval rather than filling off-thesis. This is a launch requirement (not a preferred target) enforced by the wizard's execution builder; render_001 (technical minimum 1) and render_002 (presentation quality 12) remain the separate rendering/first-paint contracts and are NOT collection-readiness floors."
     status: approved_rule
-    approved_in_version: 0.2.0
+    approved_in_version: 0.4.0
+    supersedes_claim: "0.2.0 render_003 ('There is NO universal >50-item collection expectation') and the interim 0.7.0-proposed content-charter 24 (2x-rail) hard floor."
     sources:
-      - {path: CLAUDE.md, reference: "line 264 'Collection sizing - target > 50 items' (SUPERSEDED)"}
-    basis: ["Owner ruling 2026-08-06"]
+      - {path: scripts/build_execution_csv.py, reference: "members < 50 hard failure"}
+      - {path: docs/E2E_PROCESS.md, reference: "FLOOR clarification; FLOOR FAILURE PROTOCOL"}
+    basis: ["Owner ruling 2026-08-09 (Ruling 1 — collection depth)"]
     requires_owner_confirmation: false
-    notes: "The >50 rule was derived from the false 12-floor. Both are corrected."
+    notes: "The earlier reversal (0.2.0) tied the floor to the false 12-floor and was itself
+            corrected by owner ruling 2026-08-09. The >=50 floor is a curation/readiness gate,
+            not a frontend rendering constraint — do not conflate with render_001/render_002."
 
   - id: constraint_repo_001
     category: render_contract
@@ -1051,13 +1068,16 @@ claims:
   # ═══ 15 · WORKFLOW GOVERNANCE ════════════════════════════════════
   - id: governance_001
     category: governance
-    claim: "Each run pins spec_version and charter_version at NEW for the life of the run. The validator refuses: changing spec version mid-run, changing charter version without explicit migration, loading a withdrawn version, entering a state with unmet prerequisites, and treating an expected closing sentence as proof of completion."
+    claim: "VERSION MODEL B (current-canon + explicit migration, owner 2026-08-09). The validator ALWAYS evaluates a run against the on-disk schema/charter (there are no historical versioned files; runtime rules are current canon). Each run RECORDS the spec_version and charter_version that CREATED it (provenance in workflow.history), and stamps run.spec_version/charter_version. When canon advances, a run whose pins differ from the loaded canon is STALE and CANNOT transition until `run.py migrate` records an explicit migration (run.migration: from/to versions, at, by, note) that bumps its pins to canon — the validator refuses run_canon_version_mismatch otherwise, so a run is never silently judged under rules it never adopted. The validator also refuses: a version drift to any value that is neither the NEW pin nor a recorded migration target, loading a withdrawn version, entering a state with unmet prerequisites, and treating an expected closing sentence as proof of completion."
     status: approved_rule
-    approved_in_version: 0.2.0
-    sources: []
-    basis: ["Owner ruling 2026-08-06"]
+    approved_in_version: 0.4.0
+    supersedes_claim: "0.2.0 governance_001, which implied historical runtime pinning ('pinned for the life of the run') while the validator in fact loaded current canon. Model B makes the real behavior explicit and adds the migration gate."
+    sources:
+      - {path: scripts/validate_state.py, reference: "p_canon_matches_or_migrated; p_versions_unchanged honours run.migration"}
+      - {path: scripts/run.py, reference: "cmd_migrate"}
+    basis: ["Owner ruling 2026-08-09 (version semantics)"]
     requires_owner_confirmation: false
-    notes: "A new charter does not auto-migrate an active run."
+    notes: "A new charter does not auto-migrate an active run; migration is an explicit, recorded operation. Creating-versions are preserved as provenance."
 
   - id: governance_002
     category: governance
@@ -1068,6 +1088,21 @@ claims:
     basis: ["Owner ruling 2026-08-06"]
     requires_owner_confirmation: false
     notes: ""
+
+  - id: governance_003
+    category: governance
+    claim: "The owner-decision ledger is BINARY: an entry is provisional_recommendation (agent proposal, owner approval pending) or owner_confirmed (genuinely explicit owner confirmation). decided_by: product_owner and decided: true are valid ONLY on an owner_confirmed entry. Engine fulfillment (product truth), validator passes (validation_attempts) and material exceptions (their own artifacts) are NOT owner decisions and are NEVER stored in owner_decisions. Owner approval is progressive across six gates (kickoff/frame, premise, vertical interpretations, collection+rail+content architecture, naming/voice/content direction, final campaign specification); at final-spec approval campaign judgment locks. Normal compliant fulfillment after that lock does NOT create a new owner-approval requirement — only a material exception escalates (collection cannot reach 50; category scope must change; approved rail cannot be fulfilled; price/brand/range substantially misses spec; product reality invalidates an approved content concept; a required seam is technically impossible; any change that materially alters what the owner approved)."
+    status: approved_rule
+    approved_in_version: 0.4.0
+    sources:
+      - {path: schemas/workflow_state.schema.yaml, reference: "owner_decisions.status enum; owner_decision_recorded predicate"}
+      - {path: scripts/validate_state.py, reference: "p_owner_decision_recorded requires status owner_confirmed"}
+      - {path: docs/E2E_PROCESS.md, reference: "owner approval model; material-exception escalation"}
+    basis: ["Owner ruling 2026-08-09 (Ruling 2 — owner approval model)"]
+    requires_owner_confirmation: false
+    notes: "The wizard CLI split (separate recommend/fulfill/exception writers) is a next-pass
+            item; this revision encodes the vocabulary and the product_owner-only-for-confirmed
+            rule in the schema and validator."
 
 unknowns:
   - question: "Does the public GET /feeds evaluate active_from/active_until, and in what timezone?"

@@ -125,3 +125,23 @@ products, preserving product truth and campaign visual direction.
 The product_url/verification_url separation and engine-owned verification interface items above
 are no longer next-pass: spun out into a dedicated CollectionCuration session (see
 shopya-collection-curation/SCRAPER_TOOL_KICKOFF.md). Almost Fall paused pending b004.
+
+## Proposed SSOT updates awaiting owner ruling (moved from PROPOSED_SSOT_UPDATES.md, 2026-08-09)
+1. Channel-failure vs thesis-failure classification as a formal rule (owner has applied it in
+   practice; formal SSOT wording awaits yes/no).
+2. Engine fetch-config guidance: root /products.json returns newest/bundles — hero staples
+   need collection-handle endpoints.
+3. Proposed-build mode semantics (PROPOSED status, QA-to-warnings, never import-ready).
+4. Single-source pin concentration soft cap (the 9/9 East Fork case).
+5. Doc-lint: mechanically flag any new top-level doc at validation time (enforces the
+   no-new-docs rule in code rather than agent judgment).
+
+## Freeze-integrity enforcement (owner ruling 2026-08-09 — POST-LIVE, deferred)
+`frozen_collection_modified` is classified as POST-LIVE operational integrity, NOT part of the
+initial LIVE gate (a collection is only modifiable after it is frozen at go-live). The former
+check read a phantom field (`modified_since_freeze`, never written) and was removed in the
+2026-08-09 hardening pass. Real enforcement requires an engine-side collection-diff: compare
+live collection contents against the freeze snapshot's per-collection sha256 and report drift,
+which a controlled writer records for the validator to consume (the pattern used by
+verify-live / validate-execution). Until that lands, freeze integrity is not machine-enforced;
+the refusal string is retained in the schema (status: not_yet_enforced) for when it does.
