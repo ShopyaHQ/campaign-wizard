@@ -27,9 +27,9 @@ within a pass — that is exactly what happened to the version now in `docs/arch
 5. **Stop at genuine owner-decision gates.** A transition whose prerequisites include
    `owner_decision_recorded` needs a human. Present what they need to decide, then stop. Do not
    record it for them, and do not treat agreement in passing as a decision.
-6. **Use `SHOPYA_CONTENT_CHARTER.proposed.yaml` for editorial and merchandising rules** — voice,
-   naming, collection roles, product selection logic, content quality. It is proposed rather
-   than in force; follow it as guidance and say so when it drives a choice.
+6. **Use `SHOPYA_CONTENT_CHARTER.yaml` for editorial and merchandising rules** — voice, naming,
+   the three-object model, collection roles, product selection logic, content quality. It is
+   approved and binding; numeric technical requirements are referenced to the campaign charter.
 
 ## When a transition is refused
 

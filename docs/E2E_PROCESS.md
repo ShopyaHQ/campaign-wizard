@@ -23,10 +23,13 @@ CREATES its roster entry (method learned, attempts logged) as part of the work.
 MILESTONE M0: FOUNDATIONS_READY.
 
 ## PHASE 1 — KICKOFF & DEFINE  (framework stage 1; owner gate)
-/new-campaign mints run in _drafts. Deliverables: occasion + window + DELIVERY PATH declared
-(evergreen | manual-timed | registry | tagged); one-line idea; audience; surfaces + vertical
-territories; avoid_terms; campaign id <slug>-<year> derived, owner-confirmed, then immutable
--> promote to campaigns/<campaign_id>/runs/<run_id>.
+/new-campaign mints run in _drafts and records the spec/charter versions that created it
+(provenance). VERSION MODEL B (governance_001): the validator always evaluates the CURRENT
+on-disk canon; a run whose recorded versions differ from canon is refused until `run.py migrate`
+records the bump — old runs are historical-version-labelled, not runtime-pinned. Deliverables:
+occasion + window + DELIVERY PATH declared (evergreen | manual-timed | registry | tagged);
+one-line idea; audience; surfaces + vertical territories; avoid_terms; campaign id <slug>-<year>
+derived, owner-confirmed, then immutable -> promote to campaigns/<campaign_id>/runs/<run_id>.
 HARD GATES: no campaign id -> no writes; no avoid_terms -> no lint basis.
 MILESTONE M1: CONCEPT LOCKED.
 
@@ -93,13 +96,21 @@ delivery path) — output is a spec a human executes until admin write access ex
 SANITY HANDOFF BRIEFS for every ❌ seam (S1 hero package, S2/S3 art, S5 posts = the content
 pieces with campaign tag, placement, cover briefs); collections-rail manifest.
 MILESTONE M8: EXECUTION PACKAGE VALIDATED (state validator + build QA PASS; wizard stops at
-prompt_ready/spec — never claims authored, imported, or live).
+prompt_ready/spec — never claims authored, imported, or live). VALIDATED is bound to a REAL
+production build: `run.py validate-execution` runs the v2 builder, self-records the result +
+output hash, and registers the CSV; the gate requires that hash binding (validation_binds_
+products_csv). A stale (--allow-stale) or legacy (--legacy-replay) build is diagnostic-only and
+can NEVER satisfy VALIDATED. An agent-authored 'passed' record cannot either.
 
 ## PHASE 9 — ACCEPTANCE & GO-LIVE  (framework stage 6; owner + human execution)
 Acceptance card -> owner PUBLISH. Human executes: probe_feeds (live order), admin import
 (products, collections, feeds per S6 spec), Sanity authoring from briefs, S1 package window
 (code = activation authority). Owner verifies live page post-cache (~10 min).
-Wizard records: executed_build, verification, collection freeze snapshot -> LIVE.
+Wizard records LIVE readiness through the sanctioned `run.py verify-live` path: the computed
+verification is bound to the executed build's hash (automated_probe or human_observation with
+explicit observed_by); the LIVE gate consumes that record (verification_bound_to_executed_build).
+No generic 'set verification=true' path exists. Then: executed_build, collection freeze snapshot
+-> LIVE.
 MILESTONE M9: LIVE.
 
 ## PHASE 10 — OPERATE & REVIEW
@@ -108,38 +119,29 @@ sellout handling per freeze/exception rules; measurement + review artifacts clos
 -> REVIEWED (terminal, versions unpin).
 MILESTONE M10: REVIEWED.
 
-## Requirements summary (the non-negotiables, one place)
-6 collections/vertical (12 where gendered) · every collection category-constrained ·
->=50 dependable in-stock unique HARD floor, 12 pins, low-stock reported separately, never counted ·
-no padding, natural ceilings reported · rails + SEO content mandatory with every collection ·
-200+ brand roster, every brand method-logged in engine · all product facts engine-only ·
-PDP gate absolute · immutable b/r series + controlled asset vocabulary · decision ledger for
-every owner gate · avoid_terms lint everywhere · probe before every sort_order · delivery
-path declared before any rail plan · handoff briefs for every seam the wizard cannot execute.
+## Requirements summary (non-negotiables — each owned elsewhere, referenced here)
+6 collections/vertical (12 where gendered — SHOPYA_CONTENT_CHARTER §three_object_model + gender) ·
+every collection category-constrained (docs/CATEGORY_TAXONOMY.md) · collection-depth floor and
+low-stock/no-padding/no-silent-widening rules (campaign charter render_003) · 12 pins (render_002 /
+rail contract) · rails + SEO content mandatory with every collection (content charter) · source/
+merchant roster method-logged in engine · all product facts engine-only, PDP gate absolute, sellable
+identity engine-owned (engine boundary) · immutable b/r series + controlled asset vocabulary
+(NAMING_CONVENTIONS) · decision ledger for every owner gate (governance_003) · avoid_terms lint
+everywhere · delivery path declared before any rail plan · handoff briefs for every seam the wizard
+cannot execute.
 
 ## STRUCTURAL CLARIFICATIONS (owner, 2026-08-09 — these win over any conflicting line above)
-1. THREE-OBJECT MODEL (locked):
-   CATEGORY COLLECTION = durable taxonomy shelf: exactly one category/subcategory; gendered
-   only when the category/shopper experience meaningfully genders; >=50 dependable in_stock
-   UNIQUE products (variants and duplicate identities never inflate; low-stock separate,
-   never satisfies); no texture/color/mood/campaign mixes; reusable across campaigns.
-   CAMPAIGN RAIL = campaign-specific editorial merchandising: display-grade name/copy; 12
-   pins; hook may be trend/color/texture/behavior/price/use-case; pins resolve to valid
-   category-collection membership; rail name is NOT an intrinsic property of the collection.
-   CONTENT PIECE = search/editorial acquisition object: demonstrated query intent; adds what
-   rails cannot; links into real collections/rails/products; S5/Sanity handoff.
-   Collections own taxonomy. Rails own editorial mixing. Cross-collection story rails that
-   the one-collection rail contract cannot express are specced and marked
-   'required — technically blocked by current one-collection rail contract' — NEVER worked
-   around with thematic collections.
-2. GENDER: no mirrored pairs. Fashion = minimum 6 relevant women's + 6 relevant men's
-   categories chosen independently on strength. Other verticals gender only where taxonomy,
-   assortment and shopper behavior genuinely justify (outdoor apparel may; gear generally
-   not; beauty/grooming never mechanically duplicated; fragrance/grooming segmentation
-   follows actual category/search behavior). Gendering decisions reported explicitly.
-3. FLOOR: '>=50 dependable in_stock unique products per launched category collection' is the
-   only sanctioned wording. Cannot support 50 honestly -> report category-scope failure and
-   propose the nearest defensible parent category; never off-thesis fill.
+1. THREE-OBJECT MODEL — canonically owned by SHOPYA_CONTENT_CHARTER.yaml §three_object_model
+   (collections own taxonomy · rails own editorial mixing · content owns search/editorial
+   acquisition; cross-collection story rails the one-collection contract cannot express are
+   marked 'required — technically blocked', never worked around with thematic collections).
+   Referenced here; not restated.
+2. GENDER — canonically owned by SHOPYA_CONTENT_CHARTER.yaml (no mirrored pairs; Fashion picks
+   >=6 women's + >=6 men's independently on strength; other verticals gender only where
+   taxonomy/assortment/behavior justify; decisions reported explicitly). Referenced here.
+3. FLOOR — the >=50 dependable in_stock unique SELLABLE floor and its floor-failure protocol
+   are owned by campaign charter render_003. Referenced here; never restated with a competing
+   number.
 4. SOURCE / MERCHANT ROSTER (renamed from brand roster; engine file name may persist for
    compatibility): brand DTC + multi-brand retailers + department stores + accepted
    marketplaces. Per profile: identity, type, URL, vertical/category coverage, geography,

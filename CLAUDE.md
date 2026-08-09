@@ -20,8 +20,10 @@ In this order. If two disagree, the higher one wins.
 3. **`schemas/*.schema.yaml`** — per-artifact structure.
 4. **`schemas/interpretation_rules.yaml`** — how owner input may be normalised, and the
    interpretation-status vocabulary.
-5. **`SHOPYA_CONTENT_CHARTER.proposed.yaml`** — editorial, voice and merchandising rules.
-   Proposed, not yet in force; consult it, do not cite it as binding.
+5. **`SHOPYA_CONTENT_CHARTER.yaml`** — approved editorial, voice and merchandising rules, and
+   the canonical three-object model (collections own taxonomy · rails own editorial mixing ·
+   content owns search/editorial acquisition). Numeric technical requirements (e.g. the >=50
+   collection floor) live in the campaign charter and are referenced here, not redefined.
 
 ## The state file is never hand-edited
 
@@ -62,55 +64,34 @@ operating path. (Owner-approved rule, 2026-08-07, demonstrated on the Almost Fal
 human checklist reduced to 6 items, all hard-gated. Formalize as an approved_rule charter claim
 at the next charter revision — mid-run charter version changes are blocked by design.)
 
-## Phase 1 campaign output requirement (owner-locked, 2026-08-07)
+## Engine/wizard boundary (cardinal)
 
-A completed campaign = four parallel outputs (strategy, merchandising, editorial/content,
-execution) across Default + six verticals — full definition and the permanent process model in
-docs/E2E_PROCESS.md (§CAMPAIGN OUTPUT REQUIREMENT, folded 2026-08-09; the earlier
-docs/archive/PHASE1_CAMPAIGN_OUTPUT_REQUIREMENT.md is history, not authoritative). Critical principle: within each vertical, product
-and editorial opportunities are developed IN PARALLEL from the same premise/evidence/tension —
-content is never appended after merchandising, and the owner architecture checkpoint receives
-both. Default/All composition is a deliberate editorial step, never automatic aggregation.
-Future campaigns carry this from kickoff; Almost Fall's Fashion work is the locked first
-vertical prototype and the remaining verticals + content layer are extension artifacts (a
-one-time migration exception). Phase 2 (social visual prompts preserving product truth)
-remains separately deferred.
+CollectionCuration owns PRODUCT TRUTH (what products exist and what is true about them now):
+discovery, PDP verification, canonical identity + sellable_product_uid, price/currency,
+availability, variants, provenance, truth export. The Campaign Wizard owns CAMPAIGN JUDGMENT
+(which of those belong in this campaign, where, and why): premise, collection/rail/content
+architecture, pins/order, copy, approvals, the execution CSV. The wizard consumes product truth
+READ-ONLY and NEVER authors it; the engine NEVER makes campaign judgments. Full contract:
+docs/E2E_PROCESS.md and the two versioned handoff schemas
+(shopya-collection-curation/{curation_request_schema,truth_export_schema}.yaml).
 
-## Naming conventions (owner-locked, 2026-08-07)
+## Process, output model, naming — canonical homes
 
-Three separate identities, never conflated in one filename: campaign_id (human, kebab-case),
-run_id (immutable cmp_<ULID>), build_id (b001, b002 — immutable execution revisions, never
-overwritten). Full rules: docs/NAMING_CONVENTIONS.md. Both halves are live as of 2026-08-07:
-execution-asset naming AND the campaigns/<campaign_id>/runs/<run_id>/ layout (_drafts/ for
-unnamed kickoffs; `run.py promote` performs the controlled promotion when campaign_id locks;
-artifact paths are stored run-root-relative).
+- What a completed campaign IS (four parallel outputs, the six approval gates, fulfillment,
+  the final execution package): docs/E2E_PROCESS.md — orchestration that references rule IDs.
+- The three-object model, merchandising, editorial/SEO, voice/anti-slop: SHOPYA_CONTENT_CHARTER.yaml.
+- The >=50 collection-depth floor and other numeric/technical contracts: campaign charter (render_003).
+- Naming/identity/build/review conventions: docs/NAMING_CONVENTIONS.md.
+Do not restate those rules here; this file points at their one home.
 
-## Engine/wizard boundary (owner ruling, 2026-08-07)
-
-CollectionCuration owns product truth: discovery, fetching, normalized observations (identity,
-canonical PDP, retailer/brand, price/currency, availability, variants, timestamps, verification
-provenance). The Campaign Wizard owns campaign judgment: which products belong, collection/rail
-assignment, editorial ordering, annotations, copy, approvals, and the execution worklist. The
-wizard consumes product truth READ-ONLY; the builder's refusal to run without the engine log is
-deliberate boundary enforcement. The wizard does not append observations to the engine datastore
-— the Almost Fall run reached across this boundary as a demonstrated temporary fallback; the
-formalized engine-owned verification interface is now an ACTIVE separate workstream (see
-shopya-collection-curation/SCRAPER_TOOL_KICKOFF.md). Availability verification and
-catalog-ingest readiness are separate execution requirements; neither implies the other.
-
-## Documents: the locked set (owner, 2026-08-09)
+## Documents: the locked set
 
 Top-level canon is SEVEN wizard docs: CLAUDE.md, SHOPYA_CAMPAIGN_CHARTER.yaml,
-SHOPYA_CONTENT_CHARTER.proposed.yaml, docs/E2E_PROCESS.md, docs/CATEGORY_TAXONOMY.md,
+SHOPYA_CONTENT_CHARTER.yaml, docs/E2E_PROCESS.md, docs/CATEGORY_TAXONOMY.md,
 docs/NAMING_CONVENTIONS.md, docs/NEXT_PASS_SCOPE.md. Creating any new top-level document
-requires explicit owner approval (this was an owner rule from day one — enforce it).
-Iteration output goes INTO the canonical doc as a version bump, or into the campaign's
-review book — never a sibling file. One-shot prompts/work orders are archived on completion.
-Per campaign run, the single living campaign document is review_book.md (r-series rounds);
-iteration artifacts are marked superseded via `run.py supersede-artifact` as they are absorbed.
-The /explore seams contract's source of truth is the FRONTEND repo
-(agent_knowledge/sanity/PRESENTABLE_ASSETS.md + agent_knowledge/campaigns/
-CAMPAIGN_AUTHORING_CONTRACT.md) — reference it; never duplicate it here.
+requires explicit owner approval. Iteration goes INTO the canonical doc (version bump) or the
+campaign's review_book.md — never a sibling file. The /explore seams contract's source of truth
+is the FRONTEND repo (agent_knowledge/…) — reference it; never duplicate it here.
 
 ## Scope
 

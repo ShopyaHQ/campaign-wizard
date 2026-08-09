@@ -1,9 +1,10 @@
-# SHOPYA CONTENT CHARTER — PROPOSED, NOT ADOPTED
+# SHOPYA CONTENT CHARTER — APPROVED
 # Companion to SHOPYA_CAMPAIGN_CHARTER.yaml. That charter governs whether a campaign is
-# technically valid. This one governs whether it is any good.
-#
-# STATUS: proposal for review. Nothing here is in force. No code, schema, workflow state,
-# campaign artifact or frontend file was modified to produce it.
+# technically valid (product facts, render/execution contracts, the numeric collection-depth
+# rule). This one governs whether it is any GOOD, and it is the canonical home of the
+# merchandising/editorial object model: the three-object model, collection/rail/content rules,
+# SEO/content rules, and voice/anti-slop. Numeric technical requirements are OWNED by the
+# campaign charter (by claim id) and REFERENCED here, never independently redefined.
 #
 # EVIDENCE DISCIPLINE — every rule carries one:
 #   FE     a frontend or API field that demonstrably exists (cited to the technical charter)
@@ -14,9 +15,19 @@
 
 charter:
   name: shopya_content_charter
-  version: 0.7.3-proposed
-  status: proposed
-  companion_to: {file: SHOPYA_CAMPAIGN_CHARTER.yaml, version: 0.2.0}
+  version: 1.0.0
+  status: approved
+  approved_by: product_owner
+  approved_at: 2026-08-09T00:00:00Z
+  supersedes: 0.7.3-proposed
+  companion_to: {file: SHOPYA_CAMPAIGN_CHARTER.yaml, version: 0.4.0}
+  changelog:
+    1.0.0: >
+      Promoted proposed -> approved (owner 2026-08-09) after the system-hardening pass. Adds the
+      three-object model as the canonical merchandising object model; homes collection/rail/
+      content/SEO/voice rules here; references campaign-charter render_003 for the >=50
+      collection-depth floor rather than redefining it; removes the obsolete 24 (2x-rail) floor
+      language (kept only as a superseded note). companion_to bumped to campaign charter 0.4.0.
   interpretation_vocabulary: schemas/interpretation_rules.yaml   # reuse, do not invent a second one
   control_version:
     run: cmp_01KZBYX2QF7102EC7VP4J221HE
@@ -36,6 +47,41 @@ core_operating_principle:
   rule: >
     A collection may never qualify primarily on product count. Availability is a FILTER applied
     after a collection has earned its place, never a reason for its place.
+
+# ═══════════════════════════════════════════════════════════════════
+# 0 · THREE-OBJECT MODEL (canonical — this document owns it)
+# Collections own taxonomy. Rails own editorial mixing. Content owns search/editorial
+# acquisition. Numeric technical requirements are referenced to the campaign charter by claim id.
+# ═══════════════════════════════════════════════════════════════════
+three_object_model:
+  status: approved
+  basis: [BRAND, OPS]
+  category_collection:
+    owns: "durable taxonomy — exactly one canonical category/subcategory; reusable across campaigns"
+    depth: "a LAUNCHED durable category collection requires >=50 dependable in_stock unique
+            SELLABLE products (campaign charter render_003). low-stock is separate and does NOT
+            satisfy the floor; variants and duplicate product identity never inflate depth
+            (engine-owned sellable_product_uid); no padding; category scope cannot silently
+            widen — a material scope change escalates to the owner (render_003 floor-failure
+            protocol). This document does NOT restate the number; render_003 is the sole home."
+    not: "not a thematic/seasonal grouping; not a rail; not a mood/texture/color mix"
+  campaign_rail:
+    owns: "campaign-specific editorial merchandising/mixing over valid category collections"
+    pins: "12 pinned items where the current render contract requires it (campaign charter
+           render_002 / rail contract); pins resolve to valid category-collection membership"
+    hook: "may express trend, color, texture, behavior, price, use-case; the rail name is NOT
+           an intrinsic property of the collection"
+    cross_collection: "cross-collection STORY RAILS are a desired model; where the backend cannot
+                       yet support them they are marked 'required — technically blocked', never
+                       worked around by minting a thematic collection"
+    not: "a collection is never a thematic rail; an editorial mix is never persisted as a collection"
+  content:
+    owns: "search/editorial acquisition — demonstrated query intent; adds what rails cannot"
+    links: "into real collections/rails/products; exact product bindings happen AFTER
+            CollectionCuration fulfillment; prompt-ready content is a required handoff where
+            authoring/publishing is external (the wizard stops at prompt_ready)"
+    developed: "alongside merchandising from the same premise/evidence/tension — never appended
+                after merchandising"
 
 # ═══════════════════════════════════════════════════════════════════
 # 1 · CONTENT SURFACE MANIFEST
@@ -1011,10 +1057,10 @@ implementation:
 # ═══════════════════════════════════════════════════════════════════
 
 inventory_depth:
-  version_note: "0.7.0-proposed introduced a 24 (2x-rail) hard floor + >50 target; SUPERSEDED by
-                 owner ruling 2026-08-09 (charter render_003 v0.4.0): the collection-depth HARD
-                 FLOOR is >=50 dependable in_stock UNIQUE products. There is no separate lower
-                 hard floor; the 2x-rail figure is now only a trivially-subsumed sanity note."
+  version_note: "The collection-depth HARD FLOOR is owned by campaign charter render_003 (>=50
+                 dependable in_stock unique sellable products). An earlier 0.7.0-proposed draft
+                 set a 24 (2x-rail) floor; that is OBSOLETE and removed. This section explains
+                 WHY depth matters editorially; it does not restate or compete with the number."
   principle: >
     A rail showing 12 products does NOT imply that a collection containing 12 available
     products is healthy. At 12/12 every product does double duty as displayed inventory and
@@ -1023,14 +1069,10 @@ inventory_depth:
   layers:
     rail_pins: {standard: 12, meaning: "visible curated set / current display cap"}
     collection_hard_floor:
-      standard: ">=50 dependable in_stock UNIQUE products"
-      meaning: "HARD launch floor (charter render_003, owner 2026-08-09): 49 fails, 50 passes;
-                variants and duplicate identities never inflate; low_stock reported separately
-                and never satisfies; no padding. A collection that cannot reach 50 reports the
-                shortfall and proposes a scope/category change for owner approval."
-    reserve_sanity_note:
-      standard: "trivially satisfied by the >=50 floor (>= 2x a 12-pin rail)"
-      meaning: "the old 2x-rail reserve idea is subsumed: 50 unique already exceeds 24"
+      standard: "render_003 (campaign charter)"
+      meaning: "the >=50 dependable in_stock unique SELLABLE floor is defined ONCE in render_003;
+                variants/duplicate identity never inflate (engine sellable_product_uid), low_stock
+                never satisfies, no padding, no silent scope-widening. See render_003, not here."
     technical_floor:
       standard: 1
       meaning: "rendering/system fact ONLY (render_001); never an editorial definition of readiness"

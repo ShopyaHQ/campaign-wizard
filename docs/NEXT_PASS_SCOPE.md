@@ -5,12 +5,29 @@ unresolved weaknesses, infrastructure enhancements, evidence-pending ideas, or e
 post-v1 deferrals. Nothing here is promoted into the current process SSOT merely because it
 sounds sensible — promotion requires a demonstrated reusable lesson from a real run.
 
+## CLOSED by the 2026-08-09 system-hardening pass (no longer open)
+These were implemented and TESTED; they are not backlog anymore. Kept here as a closure record.
+- Version semantics — Model B (current-canon + explicit migration): validator loads current canon,
+  a stale-pinned run is refused (run_canon_version_mismatch) until `run.py migrate` records the
+  bump; provenance kept in history. (was "functional schema-version pinning")
+- VALIDATED bound to a real production build (run.py validate-execution; validation_binds_products_csv;
+  validation_attempts no longer settable).
+- Stale/legacy builds cannot satisfy VALIDATED (production-only attempt binding).
+- Owner-decision ledger is BINARY (provisional_recommendation | owner_confirmed; governance_003).
+- Reopen edges executable through the sanctioned interface (run.py reopen writes `invalidated`).
+- Engine-owned canonical sellable-product identity (sellable_product_uid) + floor_eligible; the
+  >=50 floor counts distinct sellable parents, so variants/colors/sizes/name-drift cannot inflate it.
+- Versioned cross-repo contracts: curation_request_schema.yaml (Wizard->Engine) and
+  truth_export_schema.yaml (Engine->Wizard, truth_contract_version).
+- verify-live sanctioned LIVE path (verification bound to the executed build; no asserted boolean).
+- Removed dead/phantom enforcement (p_downstream_superseded stub; frozen_collection_modified phantom
+  check — reclassified below as post-LIVE); wired has_rail_position.
+
 ## Deferred infrastructure (from CLAUDE.md, parked 2026-08-06)
 - README cleanup (still describes the pre-rebuild model)
 - duplicate `status:` key on ABANDONED in workflow_state.schema.yaml
-- functional schema-version pinning (currently descriptive; LRN-014)
 - archive semantics for old campaign run directories
-- replay / supersede / join-existing-campaign mechanics
+- join-existing-campaign mechanics (replay/supersede now exist)
 - additional schemas or workflow expansion not demonstrated necessary
 
 ## Signal-ledger enhancements (proposed in learning logs, not applied)
@@ -25,7 +42,7 @@ sounds sensible — promotion requires a demonstrated reusable lesson from a rea
   Shopya behaviour when ghostframe2025 becomes queryable
 - volume-bearing search data source (autocomplete gives ordering only)
 
-## Content system (from SHOPYA_CONTENT_CHARTER.proposed, explicitly deferred there)
+## Content system (from SHOPYA_CONTENT_CHARTER.yaml, explicitly deferred there)
 - rail_subtitle (no frontend field exists)
 - product-annotation display verification (API field exists; render path unverified)
 - automated brand scoring (rejected: single score hides which layer failed)
@@ -145,3 +162,34 @@ live collection contents against the freeze snapshot's per-collection sha256 and
 which a controlled writer records for the validator to consume (the pattern used by
 verify-live / validate-execution). Until that lands, freeze integrity is not machine-enforced;
 the refusal string is retained in the schema (status: not_yet_enforced) for when it does.
+- problem: a frozen collection could be modified post-LIVE with no automatic detection.
+- status: not machine-enforced (phantom check removed); refusal string retained.
+- trigger: first real post-LIVE modification need, or a live campaign in operate/review.
+- acceptance: an engine collection-diff writer records drift; a modified frozen collection with
+  no recorded exception fails frozen_collection_modified; a test proves it fires and that an
+  approved exception clears it.
+
+## Owner authentication (deferred to Wizard UI)
+- problem: `run.py record-decision --by product_owner` is free text — the status gate makes
+  misuse visible/cross-checked but does NOT authenticate who the owner is. Same for who runs any
+  controlled command. This is the only place "an owner decision" rests on honest self-labelling.
+- status: prose acknowledges it; NOT claimed as authentication anywhere.
+- trigger: the guided Wizard UI (which can carry a real identity/session).
+- acceptance: an owner_confirmed decision is bound to an authenticated owner identity, not a CLI
+  string; a test proves an unauthenticated caller cannot mint owner_confirmed.
+
+## Cross-collection story rails (desired; technically blocked)
+- problem: the current one-collection rail contract cannot express a rail whose pins span
+  multiple category collections; these are a desired editorial model.
+- status: allowed in the object model, marked 'required — technically blocked' when specced.
+- trigger: a backend rail contract that accepts multi-collection membership.
+- acceptance: a story rail with pins across >=2 collections validates and renders; the
+  execution CSV/manifest carry it without minting a thematic collection.
+
+## Phase 2 — channel-specific social visuals (deferred; recorded not implemented)
+- problem: campaigns need channel-specific social prompts/assets from approved rails/products.
+- status: recorded, NOT implemented; must preserve product truth (compose/art-direct verified
+  imagery, never hallucinate or materially alter products).
+- trigger: after the hardened E2E product is settled and imagery truth is available.
+- acceptance: prompts/assets are generated from approved campaign rails+verified products with
+  provenance; no product fact is invented or altered.

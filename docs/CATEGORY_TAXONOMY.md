@@ -148,10 +148,12 @@ out.coldacc · Cold-Weather Accessories · beanies, gloves, gaiters, warm socks 
 
 ## REGISTRY TOTALS
 Nodes: 26 W-fashion + 20 M-fashion + 20 home + 15 tech + 15 beauty + 10 travel + 16 outdoors
-= 122 durable category collections (121 unique + 1 shared listing)
-Almost Fall selections: 42 (per three_layer_map_v2 — v2 names now mapped to registry ids;
-minor splits noted inline: Audio->headphones+speakers, Men's Outerwear->coats+jackets,
-Men's Footwear->boots+sneakers — SELECTION stays 42, registry carries the finer nodes)
+= 122 label rows = 121 UNIQUE nodes + 1 shared listing (tech.power appears on both the tech and
+travel surfaces). Authoritative unique-node count: 121.
+Almost Fall selections: 43 unique selected nodes (44 SEL markers — tech.power carries a SEL on
+both its listings). Per three_layer_map_v2, with v2 names mapped to registry ids; minor splits
+noted inline: Audio->headphones+speakers, Men's Outerwear->coats+jackets,
+Men's Footwear->boots+sneakers — the registry carries the finer nodes.
 Floor-risk nodes flagged (F?): 10 · parent alternatives prepared where owner protocol requires
 Campaign-selection rule: a campaign surfaces a vertical with >=6 selections from THIS registry;
 seasonal windows guide selection; rails+content attach at selection per E2E process.
