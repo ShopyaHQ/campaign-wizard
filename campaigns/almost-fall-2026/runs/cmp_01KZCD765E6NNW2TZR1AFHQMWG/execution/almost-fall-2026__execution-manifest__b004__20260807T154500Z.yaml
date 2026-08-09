@@ -1,0 +1,21 @@
+campaign_id: almost-fall-2026
+display_name: Almost Fall
+run_id: cmp_01KZCD765E6NNW2TZR1AFHQMWG
+build_id: b004
+built_at: 2026-08-07T15:45:00Z
+supersedes: b003
+status: PROPOSED — owner approval pending (autonomous proposal run). NOT import-ready.
+execution_file: almost-fall-2026__execution__b004__20260807T154500Z.csv
+execution_sha256: 114810ab4412212520f3fe9e84deed310c7b23117074d33e33d9b68002d9eee0
+rows: 129
+collections: 15
+new_columns: [target_surface, rail_sort_order, surface_blocker, row_flags]
+proposed_gaps: 24 (pin/body gaps listed in build output; expansion collections at proposal depth)
+known_blockers:
+  - "outdoors_sports sub_group absent in frontend (3 collections marked SUB_GROUP_BLOCKED)"
+  - "30 Fashion rows PDP_RESOLUTION_PENDING (scraper workstream)"
+  - "content rails & Default interleave: required — technically blocked (S5 cap 2)"
+  - "T2/T3/V2/B1 rails have zero verified pins this round (sourcing itemized)"
+execution:
+  status: proposed_not_importable
+  executed_build: null

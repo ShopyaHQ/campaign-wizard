@@ -117,6 +117,7 @@ owner_decisions:
       week; exclusions=three, superset reading of dual selection, flagged in chat).
       Frame transcribes those answers. Agent-labeled: launch-window normalization,
       US market carried as proposal pending confirmation.'
+    status: owner_confirmed
   opportunity_selected:
     decided: true
     decided_by: product_owner
@@ -136,6 +137,7 @@ owner_decisions:
       precision, ''most of what is worth wanting'' breadth, anti-commerce/anti-urgency
       as the campaign stance, and predetermining the wait-vs-wear collection split
       — that split is a hypothesis for the deeper research pass, not architecture.'
+    status: owner_confirmed
   collection_architecture_workshopped:
     decided: true
     decided_by: product_owner
@@ -157,6 +159,7 @@ owner_decisions:
     note: 'Basis: owner''s written architecture ruling 2026-08-07. Causal correction
       recorded: CR-C breaks the locked premise (home has no weather problem) and would
       silently broaden a fashion/weather campaign into general early-fall experience.'
+    status: owner_confirmed
   curation_pass_approved:
     decided: true
     decided_by: product_owner
@@ -175,6 +178,7 @@ owner_decisions:
       - no premise or role changes mid-scrape
       - no workflow/schema work from sourcing results
     note: 'Basis: owner''s written approval with stopping criteria, 2026-08-07.'
+    status: owner_confirmed
   collection_architecture_approved:
     decided: true
     decided_by: product_owner
@@ -192,6 +196,7 @@ owner_decisions:
     note: 'Basis: owner written approval 2026-08-07 — ''D survived on relevance, not
       padding.'' Flags carried, not solved by architecture change. Proceed to naming
       and frontend copy; stop before assembly/CSV.'
+    status: owner_confirmed
   naming_provisional_locks:
     decided: true
     decided_by: product_owner
@@ -212,6 +217,7 @@ owner_decisions:
       - collection A description (describe collection, not premise)
     note: 'Basis: owner naming ruling 2026-08-07. Process freeze: no further schema/process
       changes until U1-U4 hood-lift reviewed; U5 lesson captured as PROPOSED only.'
+    status: owner_confirmed
   naming_locked:
     decided: true
     decided_by: product_owner
@@ -232,6 +238,7 @@ owner_decisions:
       - the-turn ban approved as demonstrated content rule
     note: 'Basis: owner lock message 2026-08-07, dek corrected by owner to remove
       banned phrase.'
+    status: owner_confirmed
   assembly_reactions:
     decided: true
     decided_by: product_owner
@@ -250,6 +257,7 @@ owner_decisions:
       U6b: approved
       annotations: NOT locked — editorial-language review required before lock
     note: 'Basis: owner assembly-reaction message 2026-08-07.'
+    status: owner_confirmed
   verification_path:
     decided: true
     decided_by: product_owner
@@ -260,6 +268,7 @@ owner_decisions:
       U7b: HELD — reported only
       presentation_rule: approved
     note: 'Basis: owner checkpoint answers 2026-08-07.'
+    status: owner_confirmed
   agent_first_verification_rule_approved:
     decided: true
     decided_by: product_owner
@@ -269,6 +278,7 @@ owner_decisions:
       owner; owner verification is the fallback for irreducible ambiguity, not the
       default operating path. Charter formalization queued for next charter revision
       in NEXT_PASS_SCOPE.'
+    status: owner_confirmed
   final_assembly_provisional:
     decided: true
     decided_by: product_owner
@@ -282,6 +292,10 @@ owner_decisions:
       A/B items NOT to be verified (collections clear; stopping rule applies). Callery
       size-S-only: prefer an already-verified comparable A candidate with broader
       sizing IF one exists; do not source to replace.'
+    status: owner_confirmed
+    superseded_by: final_campaign_assembly_approved
+    scope_note: provisional-scope confirmation (owner explicitly wrote it, so owner_confirmed);
+      the FINAL confirmation is final_campaign_assembly_approved (PUBLISH).
   d_human_verification_and_product_lock:
     decided: true
     decided_by: product_owner
@@ -291,6 +305,7 @@ owner_decisions:
       Per locked stopping rule verification stopped (ASOS unchecked, UO belt not added).
       D clears 12/12 with 3 verified brooches. Owner directed: log results, lock final
       A/B/D sets, present compact acceptance card. No CSV until final acceptance.'
+    status: owner_confirmed
   final_campaign_assembly_approved:
     decided: true
     decided_by: product_owner
@@ -301,6 +316,7 @@ owner_decisions:
       per-size soft flag, Sandy Liang low stock) accepted, no changes required. Directed:
       advance approved states, run final execution validation, build CSV from locked
       sets, stop after execution package.'
+    status: owner_confirmed
   brief_approved:
     decided: true
     decided_by: product_owner
@@ -309,6 +325,7 @@ owner_decisions:
       assembly (A/B/D 12/12 each, 3 caveats accepted) with instruction to advance
       the approved states through the existing workflow. Brief content unchanged since
       stage4_brief; final assembly recorded in naming_and_assembly.yaml locked_final_sets.'
+    status: owner_confirmed
   route_selected:
     decided: true
     decided_by: product_owner
@@ -317,6 +334,7 @@ owner_decisions:
       1 verbatim on 2026-08-07 (opportunity_selected) and rejecting the C-forward
       alternative at the collection-role ruling; ratified by the 2026-08-07 Publish
       directive. RTE-2 preserved as rejected-for-this-premise.
+    status: owner_confirmed
   campaign_approved:
     decided: true
     decided_by: product_owner
@@ -326,6 +344,7 @@ owner_decisions:
       states, final execution validation, CSV build, stop after execution package.
       Handoff authored: S1 campaign header (name+dek+rail order) — handoff-only per
       scope; not implemented.'
+    status: owner_confirmed
   naming_conventions_locked:
     decided: true
     decided_by: product_owner
@@ -336,6 +355,7 @@ owner_decisions:
       via AskUserQuestion: apply execution-asset naming NOW (Almost Fall CSV stamped
       b001 + manifest, pre-convention products.csv retained byte-identical for in-flight
       import); directory restructure locked but implemented next pass, first item.'
+    status: owner_confirmed
   naming_restructure_executed:
     decided: true
     decided_by: product_owner
@@ -347,6 +367,7 @@ owner_decisions:
       (validator resolves run-root first, repo-root legacy fallback); campaign.yaml
       per campaign. All four runs migrated and validated PASS; test suite updated
       for _drafts and passing 92/92.'
+    status: owner_confirmed
   inventory_depth_model_approved:
     decided: true
     decided_by: product_owner
@@ -363,6 +384,7 @@ owner_decisions:
       consequence: A/B/D are rail-ready NOT collection-ready; CollectionCuration deepens
       each to >50 without changing approved pins or architecture; no padding. Codified
       in content charter 0.7.0-proposed.'
+    status: owner_confirmed
   summer_skip_and_reuse_first:
     decided: true
     decided_by: product_owner
@@ -380,6 +402,7 @@ owner_decisions:
       card reviewed; Step 3 will be targeted per demonstrated gap. Boundary re-affirmed:
       engine owns product truth incl. catalog capture; wizard owns campaign membership;
       no scraping/catalog behavior added to wizard.'
+    status: owner_confirmed
   targeted_topup_authorized:
     decided: true
     decided_by: product_owner
@@ -399,6 +422,7 @@ owner_decisions:
       Stop at depth/readiness checkpoint before changing execution build. SSOT proposal
       requested if ingestion is real prerequisite (smallest form, no new workflow
       state unless QA cannot represent it).'
+    status: owner_confirmed
   depth_accepted_and_subs_approved:
     decided: true
     decided_by: product_owner
@@ -416,6 +440,7 @@ owner_decisions:
       truth — 8 dev questions issued (handoffs/EXECUTION_TRUTH_dev_questions.md);
       27 products are POTENTIAL ingest blockers, not confirmed. Next checkpoint: execution-path
       truth report. No execution build change yet — b002 pending truth report.'
+    status: owner_confirmed
   execution_truth_resolved:
     decided: true
     decided_by: product_owner
@@ -428,6 +453,7 @@ owner_decisions:
       catalog->feed->upsert pipeline NOT required for this launch; catalog capture
       stays stopped; dev questionnaire retired. Product ingestion is a handoff seam
       owned by the owner; the CSV is the manual-add worklist.'
+    status: owner_confirmed
   launch_membership_and_b002:
     decided: true
     decided_by: product_owner
@@ -441,6 +467,7 @@ owner_decisions:
       for review (rail readiness vs collection launch depth) — checked current rules:
       NOT clearly implied, captured as proposed, not applied. No further campaign
       development.'
+    status: owner_confirmed
   master_execution_csv_contract:
     decided: true
     decided_by: product_owner
@@ -455,6 +482,7 @@ owner_decisions:
       product set = b002; b001/b002 immutable). Implemented in scripts/build_execution_csv.py;
       collection_description omitted (no approved collection-level copy exists — not
       invented); external_id column present, blank until identifiers exist.'
+    status: owner_confirmed
   launch_paused_pdp_resolution:
     decided: true
     decided_by: product_owner
@@ -468,6 +496,236 @@ owner_decisions:
       (engine owns product truth; no scraping added to wizard). Kickoff brief: shopya-collection-curation/SCRAPER_TOOL_KICKOFF.md.
       Almost Fall import PAUSED pending re-resolution of the 30 rows -> b004. b003
       remains immutable evidence.'
+    status: owner_confirmed
+  phase1_output_requirement_locked:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T14:36:28Z'
+    note: 'Owner 2026-08-07: full Phase 1 campaign output requirement LOCKED — four
+      parallel outputs (strategy/merchandising/editorial-content/execution) across
+      Default + six verticals; 18-rail merchandising minimum; >=3 content concepts
+      per vertical + campaign-wide; content rails distinct from product rails; wizard
+      stops at prompt-ready; scale reported pins vs memberships vs uniques; Phase
+      2 social visuals deferred with product-truth rule. Recorded in docs/PHASE1_CAMPAIGN_OUTPUT_REQUIREMENT.md
+      + CLAUDE.md.'
+    status: owner_confirmed
+  phase1_process_model_locked:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T14:36:28Z'
+    note: 'Owner 2026-08-07 clarification: extension-artifact treatment applies ONLY
+      to Almost Fall (migration exception — Fashion completed the prior narrower E2E
+      before the definition expanded). Going forward the expanded model is the normal
+      required E2E from kickoff. Permanent process model locked incl. parallel product+editorial
+      development from shared vertical interpretation, both programs at the owner
+      architecture checkpoint, content feasibility alongside inventory reality tests,
+      Default/All composition as a formal deliberate step, final owner acceptance.
+      Recorded in process SSOT (CLAUDE.md + requirement doc), NOT only NEXT_PASS.
+      No new workflow states — responsibilities mapped into existing stages; genuine
+      structural gaps reported separately.'
+    status: owner_confirmed
+  phase1_matrix_approved_rulings_r1_r5:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T14:47:11Z'
+    note: 'Owner 2026-08-07: deliverable matrix APPROVED as working Phase 1 contract
+      with corrections. Default/All is NOT a seventh vertical — separate ''Default
+      composition'' deliverable (prominent rails, global ordering, category representation,
+      campaign-wide vs vertical-specific content, editorial balance), decided late.
+      Requirement stays separate from renderability: blocked placements marked ''required
+      — technically blocked''; wizard still produces concepts/selections/prompt-ready
+      packages/proposed placements. R1: explore_feeds<=4 model INVALID for Phase 1
+      — minimum 3 rails per vertical; no new arbitrary global number; audit establishes
+      practical per-surface max. R2: outdoors_sports is a distinct required vertical,
+      NOT mapped to wellness_health. R3: desired model — durable collection may support
+      multiple rail placements when its thesis genuinely applies; no duplicating collections
+      per surface hook; per-placement surface/title/copy/ordering; audit identifies
+      implementation change before depending on it. R4: S5 cap 2 incompatible — not
+      the future limit; audit finds smallest content model; ideation NOT capped by
+      rendering. R5: one premise + six vertical interpretations, carried in existing
+      brief/process, no new state. Sequence: audit prompt -> Fashion extraction ->
+      fresh research 5 verticals -> six-row Vertical Strategy Matrix -> STOP for owner
+      approval; then concepts (>=3+>=3 per vertical) -> architecture/content review
+      -> only then sourcing. Fashion b004/catalog work parallel, NOT a prerequisite.
+      No broad sourcing.'
+    status: owner_confirmed
+  vertical_interpretations_locked:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T15:09:59Z'
+    note: 'Owner 2026-08-07: six-row Vertical Strategy Matrix APPROVED with corrections,
+      LOCKED as input to concepts round. Fashion locked/not reopened; Home approved;
+      Tech approved with corrected evidence language (expected/reported NOT announced;
+      corrected interpretation = predictable upgrade uncertainty, save/compare/distinguish
+      cycle-tied vs not; rumored products editorial-only until retail existence; last-gen-smart-buys
+      NOT locked as territory); Beauty approved (warm-note fragrance phrasing; metrics
+      = sourced evidence claims not SSOT facts); Travel approved (general framing:
+      trip being planned now often belongs to a cooler later season; destination editorial
+      stays product-adjacent); Outdoors approved provisionally despite surface blocker
+      (geography-safe preparation language; distinct from wellness_health). Guardrail:
+      wait/bridge/transform observed pattern only — concepts round must NOT slot-fill;
+      strongest concepts from each interpretation regardless of pattern. Next: combined
+      concepts round (4-5 product + 3-5 content per vertical), NO sourcing, NO full
+      article prompts, stop for one architecture/content review.'
+    status: owner_confirmed
+  autonomous_proposal_mode_authorized:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-07T15:13:24Z'
+    note: 'Owner 2026-08-07 (stepping away): run expanded Phase 1 Almost Fall end-to-end
+      in AUTONOMOUS PROPOSAL MODE. At every normal owner gate: record alternatives,
+      select provisional_recommendation (owner approval pending), continue downstream,
+      preserve rationale for later reversal. NEVER: record owner decisions on owner''s
+      behalf, claim approval, publish, transition LIVE, change frontend/product architecture,
+      invent facts, silently weaken requirements. Nothing becomes owner_approved;
+      content stops at prompt_ready. Unresolved human verification batched into ONE
+      final residual list. Proposed SSOT updates recorded separately, not applied.
+      Deliverable: one consolidated review package with executive acceptance dashboard
+      + ordered human decision list.'
+    status: owner_confirmed
+  content_placement_binding_specced:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-09T10:46:15Z'
+    note: 'Owner 2026-08-07: final seams = pinned rail items + collections + content;
+      every content piece binds seam-level to rail placement, planned collection(s),
+      and concrete verified incorporated products; reviews/spotlights added to format
+      set. Retroactive to Almost Fall, standard from kickoff. Implemented: CONTENT_PLACEMENT_MAP.md
+      (18 bound; PENDING bindings follow sourcing gaps; NONE-BY-RULE for TC2), 18
+      prompts amended with authoritative binding pointers, 8-spotlight shortlist,
+      requirement doc updated.'
+    status: owner_confirmed
+  collections_depth_rule:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-09T10:46:15Z'
+    note: 'Owner 2026-08-07: >=5 collections per vertical so a related-collections
+      rail on filtered views has enough cards; >=3 railed stays rail minimum, remainder
+      may be collection-only. Content floor scales: one paired concept per launched
+      collection (parallel principle — same pass, same interpretation), replacing
+      flat 3-per-vertical. Charter tension flagged for next revision: render_002 collections-feed
+      quality minimum 10 vs owner floor 5. Gap to 5: Fashion +2 (boots revival = flagged
+      owner decision), Home promote H4, Beauty +1, Travel +1, Tech/Outdoors covered
+      by drafted alternates.'
+    status: owner_confirmed
+  boots_collection_approved:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-09T10:52:00Z'
+    note: 'Owner 2026-08-09: BOOTS APPROVED as Fashion F4 ''Boots in the Cart'' (collection-only,
+      no rail — honors the original no-boots-rail intent while filling >=5 depth).
+      Provenance of the prior exclusion: run-level owner decision, NOT a charter/SSOT
+      rule — recorded in decision targeted_topup_authorized (2026-08-07: ''boots stay
+      excluded, recorded as reusable fall inventory''), in engine artifact collections/FW26_reusable_fall_inventory.md,
+      and in the strategy-matrix exclusions. This decision supersedes it for Almost
+      Fall. Fashion depth plan: F4 + F5 First Knits + F6 Chocolate & Burgundy = 6
+      collections.'
+    status: owner_confirmed
+  engine_truth_pipeline_confirmed:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-09T10:52:01Z'
+    note: 'Owner 2026-08-09: confirmed — CollectionCuration owns scraping/product
+      truth (pdp_gate.py, single write path product_truth.py, repair_identity.py,
+      PDP_RESOLUTION_PROTOCOL, exports/current_truth.jsonl, worklists/checklist);
+      wizard owns campaign judgment and CSV GENERATION as pure consumer (rewritten
+      build_execution_csv.py v2 hydrates ALL product facts from engine truth export;
+      wizard-authored product facts refused; judgment-only curated.json keyed by product_uid).
+      Consistent with the 2026-08-07 boundary ruling in CLAUDE.md and SCRAPER_TOOL_KICKOFF.md.
+      All future builds (b005+) MUST use: engine export_current_truth.py -> judgment
+      curated.json -> v2 builder; b004 (built by one-off assembly pre-v2) stands as
+      proposed evidence only.'
+    status: owner_confirmed
+  review_book_naming_convention:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-09T14:07:34Z'
+    note: 'Owner 2026-08-09 (catching agent''s own convention violation): review book
+      gets formal naming. Working copy runs/<run_id>/review_book.md; immutable per-round
+      snapshots runs/<run_id>/review/<campaign_id>__review-book__rNNN__<ts>.md; r-series
+      = review revision counter, distinct from b-series builds; asset label ''review-book''
+      added to controlled vocabulary. Applied: r001 cut for Almost Fall.'
+    status: owner_confirmed
+  e2e_process_revision_proposed:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-09T14:55:46Z'
+    note: 'Owner 2026-08-09: requested ideal revised E2E wizard+CollectionCuration
+      process. Drafted docs/E2E_PROCESS.md — 11 phases M0-M10 with boundaries, handoffs,
+      milestones, gates; locks category-constrained 6/12 gendered collections, >50
+      hard floor, 200+ method-logged brand roster, rails+SEO-content as inseparable
+      layers of every collection deliverable (spec-incomplete without them), seams-contract
+      integration (delivery paths, probe-first sort_order, verbatim rail names, S6-as-human-executed-spec,
+      Sanity briefs for handoff seams), engine truth pipeline as sole product-fact
+      source. Status: PROPOSED pending owner approval; on approval supersedes prior
+      process sketch and CLAUDE.md pointer updates.'
+    status: owner_confirmed
+  e2e_approved_with_clarifications:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-09T15:03:45Z'
+    note: 'Owner 2026-08-09: E2E process APPROVED IN DIRECTION with 12 structural
+      clarifications, applied verbatim to docs/E2E_PROCESS.md: three-object model
+      locked (category collection / campaign rail / content piece — collections own
+      taxonomy, rails own editorial mixing, cross-collection rails blocked-marked
+      never worked around); gender = strongest-6 independently per side for Fashion,
+      justified-only elsewhere, beauty never mechanical; floor wording standardized
+      ''>=50 dependable in_stock unique products''; Source/Merchant Roster definition
+      + coverage-by-vertical-and-tier reporting; rail scope = campaign-selection completeness
+      rule, rail names not intrinsic to collections; SEO standard natural-language
+      titles + never-invent-metrics; content link intent (P4) vs concrete bindings
+      (post-P5); gate wording softened for _drafts + global voice rules; 6-way scale
+      reporting; Fashion prototype mapped forward not grandfathered (First Coats ~
+      category collection; Suede Sheer & Denim + Fall Accents -> rail/story concepts);
+      next deliverable = three-layer vertical map + roster plan, NO sourcing.'
+    status: owner_confirmed
+  three_layer_v2_directive:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-09T15:16:03Z'
+    note: 'Owner 2026-08-09: three-layer architecture APPROVED; map v2 ordered before
+      any sourcing. Canonical taxonomy nodes with category_id/parent/boundary/exclusions
+      (12 named collections to revisit; broader parents named honestly); durable rationale
+      per collection (mall shelves, not Almost Fall themes); base 1C rail spec for
+      ALL selected collections (rail_type/scope/execution_status/activation_priority
+      vocabulary; scoped != activated; report true 42+ scale, not 18); XC story rails
+      kept blocked-marked with enough executable 1C rails per vertical; content coverage
+      = >=1 candidate query per collection OR explicit no-opportunity finding, plus
+      3-5 vertical priorities (no 42-article quota); SEO model splits target_query/seo_title/content_card_headline
+      with evidence classes verified/directional/candidate_unverified; ''Packed before
+      the fare drops'' replaced (discount framing); roster: audit 343 first, working
+      = PDP-gate-demonstrated, unique-merchant 200 goal, backfill platform_json wins,
+      brand!=merchant; Phase 4 link intent / Phase 5 engine-supplies-truth-wizard-picks-pins
+      / floor-failure protocol with owner approval; Beauty unified; Fashion prototype
+      mapped forward not grandfathered.'
+    status: owner_confirmed
+  full_taxonomy_registry_v1:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-09T15:26:00Z'
+    note: 'Owner 2026-08-09 (correcting agent under-scoping): the system is year-round,
+      all-seasons, all-events, all-categories — ''minimum 6'' is a per-campaign SELECTION
+      floor, never the registry size. Delivered docs/CATEGORY_TAXONOMY.md v1.0-proposed:
+      122 durable category collections (26 W-fashion, 20 M-fashion, 20 home, 15 tech,
+      15 beauty, 10 travel, 16 outdoors) each with canonical id, boundary/exclusions,
+      durable rationale, floor+coverage hypothesis, seasonal window, Almost Fall selection
+      status. Almost Fall''s 42 selections mapped onto registry ids (with noted parent
+      splits). Expansiveness standard applies to ALL future planning deliverables.'
+    status: owner_confirmed
+  doc_consolidation_executed:
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-09T15:31:48Z'
+    note: 'Owner 2026-08-09: consolidation executed. Locked 7-doc canon in CLAUDE.md
+      with no-new-docs enforcement (day-one owner rule restored); PHASE1 requirement
+      folded into E2E_PROCESS and archived; PROPOSED_SSOT_UPDATES items moved to NEXT_PASS
+      awaiting ruling, file archived; seams contract referenced to frontend repo,
+      not duplicated; run.py gained supersede-artifact (controlled write path for
+      existing schema fields); 5 iteration artifacts marked superseded (three_layer_map
+      v1, concepts_round, depth_expansion, expansion_architecture, verification_checklist);
+      living campaign docs = review_book + three_layer_map_v2 + placement map + content
+      program + default_composition + naming_and_assembly.'
+    status: owner_confirmed
 artifacts:
   frame:
     path: frame.yaml
@@ -537,10 +795,10 @@ artifacts:
     path: verification_checklist.md
     written_at: '2026-08-07T08:45:32Z'
     sha256: ef9f8b35108e9a58707ac742fea9715ac7ef94273f14009c070126a971d9d692
-    status: current
-    superseded_by: null
-    superseded_at: null
-    supersession_reason: null
+    status: superseded
+    superseded_by: naming_and_assembly
+    superseded_at: '2026-08-09T15:31:48Z'
+    supersession_reason: manual checklist superseded by agent-first verification records
   naming_and_assembly:
     path: naming_and_assembly.yaml
     written_at: '2026-08-07T12:02:09Z'
@@ -585,6 +843,118 @@ artifacts:
     path: execution/almost-fall-2026__execution-manifest__b003__20260807T125705Z.yaml
     written_at: '2026-08-07T12:57:37Z'
     sha256: bdf3dd85b0ba8434ec8ec114f667d25993987972e3c32d08f87d79b4e1d27459
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  vertical_interpretations:
+    path: vertical_interpretations.yaml
+    written_at: '2026-08-07T14:47:12Z'
+    sha256: 28225a24cceac514aa6e45096344700974320e93eee6e80d048f335942b60433
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  vertical_strategy_matrix:
+    path: vertical_strategy_matrix.md
+    written_at: '2026-08-07T15:09:59Z'
+    sha256: 9eb13545bd4c5bcea056204bbb29b8f4fd9bcc33f4894811df857a624d870408
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  concepts_round:
+    path: concepts_round.md
+    written_at: '2026-08-07T15:11:11Z'
+    sha256: f1cd8f2472c9262bd3f8286981e7eb180ec445df358dbaf9b6a43337eef500c5
+    status: superseded
+    superseded_by: three_layer_map_v2
+    superseded_at: '2026-08-09T15:31:48Z'
+    supersession_reason: concepts absorbed into depth expansion + v2 map
+  expansion_architecture:
+    path: expansion_architecture.md
+    written_at: '2026-08-07T15:23:50Z'
+    sha256: 4053cf37415333c7cfd69221e3df6bd48a9f1e7df4a01992d0975c19649cfc66
+    status: superseded
+    superseded_by: three_layer_map_v2
+    superseded_at: '2026-08-09T15:31:48Z'
+    supersession_reason: pre-taxonomy architecture replaced by v2 + registry
+  default_composition:
+    path: default_composition.md
+    written_at: '2026-08-07T15:23:50Z'
+    sha256: 76f0b010105b9806879a81f2d46f18a634e36021e032c0b2bb4c817c1e61d307
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  content_program:
+    path: handoffs/content/CONTENT_PROGRAM.md
+    written_at: '2026-08-07T15:23:51Z'
+    sha256: 05ccc26fbce35e675b49d516a3d3045841057ecf2cf6d50b6d1047dbc29485e7
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  proposed_execution_csv:
+    path: execution/almost-fall-2026__execution__b004__20260807T154500Z.csv
+    written_at: '2026-08-07T15:24:11Z'
+    sha256: 114810ab4412212520f3fe9e84deed310c7b23117074d33e33d9b68002d9eee0
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  proposed_execution_manifest:
+    path: execution/almost-fall-2026__execution-manifest__b004__20260807T154500Z.yaml
+    written_at: '2026-08-07T15:24:11Z'
+    sha256: 4a2b61c6c2d1eff1d3b92d02ce6b8aa99d529019b45e374cabd974fb0f35280e
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  content_placement_map:
+    path: handoffs/content/CONTENT_PLACEMENT_MAP.md
+    written_at: '2026-08-09T10:46:15Z'
+    sha256: 1f7830d28ecf4dc07f945717a628082044228a7022d40dc8fb92901f2db8025f
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  depth_expansion:
+    path: depth_expansion.md
+    written_at: '2026-08-09T10:52:01Z'
+    sha256: c066f80282f317768c4e0798c73152862054dd1b5e7e9774325b644b8519e62a
+    status: superseded
+    superseded_by: three_layer_map_v2
+    superseded_at: '2026-08-09T15:31:48Z'
+    supersession_reason: depth additions absorbed into v2 selections
+  campaign_review_book:
+    path: review_book.md
+    written_at: '2026-08-09T14:07:34Z'
+    sha256: 64da23364aeff12a76065ec6896cd849ad8f47cef1676578f13860f5eb0919c9
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  three_layer_map:
+    path: three_layer_map.md
+    written_at: '2026-08-09T15:05:30Z'
+    sha256: 00ebc3c7f406ba69623eb3151b865c3d3e6806d8d1183f4d41774eb66fb49d0c
+    status: superseded
+    superseded_by: three_layer_map_v2
+    superseded_at: '2026-08-09T15:31:48Z'
+    supersession_reason: v2 replaced v1 wholesale (canonical taxonomy edition)
+  three_layer_map_v2:
+    path: three_layer_map_v2.md
+    written_at: '2026-08-09T15:17:48Z'
+    sha256: fdc040bc76d0a2123c427f8dfd7a6cedd2e5a3dd36eff9ce087db71104a18fea
+    status: current
+    superseded_by: null
+    superseded_at: null
+    supersession_reason: null
+  category_taxonomy:
+    path: docs/CATEGORY_TAXONOMY.md
+    written_at: '2026-08-09T15:26:01Z'
+    sha256: fb7dda28453146c4b8b76afce4bdfb8e55a043e8fc8338e7611097c28e7934a7
     status: current
     superseded_by: null
     superseded_at: null
