@@ -226,17 +226,33 @@ def cmd_status(a):
     print("next states  %s" % (", ".join(nxt) or "none (terminal)"))
 
 
+# Owner-decision ledger is BINARY (governance_003, owner 2026-08-09): a judgment is either a
+# provisional agent recommendation or a genuinely explicit owner confirmation. Engine
+# fulfillment, validator passes and material exceptions are NOT owner decisions and live in
+# their own structures (product truth / validation_attempts / exception artifacts).
+DECISION_STATUSES = ("provisional_recommendation", "owner_confirmed")
+
+
 def cmd_record_decision(a):
     s = require_run(a.run)
+    status = a.status
+    # governance_003: product_owner is valid ONLY on an owner_confirmed entry. An agent
+    # recommendation or engine fulfillment must never be stamped as an owner decision.
+    if a.by == "product_owner" and status != "owner_confirmed":
+        sys.exit("REFUSED (decision_status_misstamped): decided_by product_owner requires "
+                 "--status owner_confirmed, got %r. Record agent proposals as "
+                 "provisional_recommendation, engine output as fulfilled." % status)
     val = json.loads(a.value_json) if a.value_json else None
-    rec = {"decided": True, "decided_by": a.by, "decided_at": now()}
+    # decided is true ONLY for a genuine owner confirmation; every other status is not a decision.
+    rec = {"status": status, "decided": status == "owner_confirmed",
+           "decided_by": a.by, "decided_at": now()}
     if val is not None:
         rec["value"] = val
     if a.note:
         rec["note"] = a.note
     s.setdefault("owner_decisions", {})[a.id] = rec
     atomic_write(state_path(a.run), s)
-    print("recorded decision %r by %s at %s" % (a.id, a.by, rec["decided_at"]))
+    print("recorded %s %r by %s at %s" % (status, a.id, a.by, rec["decided_at"]))
     if val is not None:
         print("  value: %s" % json.dumps(val))
 
@@ -261,6 +277,172 @@ def cmd_register_artifact(a):
     atomic_write(state_path(a.run), s)
     print("registered artifact %-20s %s" % (a.key, rel))
     print("  sha256 %s" % sha)
+
+
+def _artifact_rel(run_id, p):
+    rd, ap = os.path.abspath(run_dir(run_id)), os.path.abspath(p)
+    return os.path.relpath(ap, rd) if (ap + os.sep).startswith(rd + os.sep) \
+        else os.path.relpath(ap, ROOT)
+
+
+def cmd_reopen(a):
+    """Prepare a reopen edge so a subsequent `transition --to <to>` validates.
+
+    Reopen obligations (check_reopen) are: the named artifacts superseded WITH a reason, the
+    reopen owner-decision recorded (owner_confirmed) with its required value fields + reason,
+    and every `invalidates` target present in state.invalidated. Before F5 there was no writer
+    for `invalidated`, so both non-trivial reopen edges were un-executable through the sanctioned
+    interface (forcing a hand-edit of state.yaml). This command performs those writes atomically;
+    it does NOT transition — run `transition --to <to>` after, so the validator still gates it.
+    """
+    s = require_run(a.run)
+    schema = load(SCHEMA)
+    frm = s.get("workflow", {}).get("state")
+    t = next((x for x in schema["transitions"]
+              if x.get("from") == frm and x.get("to") == a.to
+              and x.get("transition_type") == "reopen"), None)
+    if not t:
+        sys.exit("FATAL: no reopen edge %s -> %s in the schema" % (frm, a.to))
+    did = t["owner_decision"]
+    # 1) supersede the named artifacts (idempotent) with the reopen reason.
+    for key in t.get("supersedes_artifacts") or []:
+        rec = (s.get("artifacts") or {}).get(key)
+        if rec and rec.get("status") != "superseded":
+            rec["status"] = "superseded"; rec["superseded_by"] = None
+            rec["superseded_at"] = now(); rec["supersession_reason"] = a.reason
+    # 2) record every invalidates target in state.invalidated.
+    inval = s.setdefault("invalidated", [])
+    for target in t.get("invalidates") or []:
+        if target not in inval:
+            inval.append(target)
+    # 3) record the reopen owner decision (owner_confirmed; required value fields + reason).
+    value = json.loads(a.value_json) if a.value_json else {}
+    value.setdefault("reason", a.reason)
+    missing = [f for f in (t.get("decision_value_required_fields") or []) if not value.get(f)]
+    if missing:
+        sys.exit("FATAL: reopen decision %r requires value fields %s — pass them via --value-json"
+                 % (did, missing))
+    if a.by == "product_owner":
+        pass  # allowed: reopen is an explicit owner decision
+    s.setdefault("owner_decisions", {})[did] = {
+        "status": "owner_confirmed", "decided": True, "decided_by": a.by,
+        "decided_at": now(), "value": value, "note": a.reason}
+    atomic_write(state_path(a.run), s)
+    print("reopen prepared %s -> %s: superseded %s; invalidated %s; decision %r recorded"
+          % (frm, a.to, t.get("supersedes_artifacts") or [], t.get("invalidates") or [], did))
+    print("  now run:  python3 scripts/run.py transition --run %s --to %s" % (a.run, a.to))
+
+
+def cmd_verify_live(a):
+    """Record the COMPUTED live-verification the LIVE gate consumes. This is the only writer of
+    `verification` (which is not settable), the F2-equivalent for go-live: an agent cannot enter
+    LIVE by asserting post_cache_verified=true. The record is bound to the registered products_csv
+    by build_sha256. For an automated probe the result is gathered; when the sandbox cannot reach
+    the live product a human-observed result may be ingested with explicit provenance (--observed-by),
+    never a generic boolean.
+    """
+    s = require_run(a.run)
+    registered = ((s.get("artifacts") or {}).get("products_csv") or {}).get("sha256")
+    if not registered:
+        sys.exit("FATAL: no registered products_csv to bind verification to — run "
+                 "validate-execution first")
+    if a.method == "human_observation" and not a.observed_by:
+        sys.exit("FATAL: --method human_observation requires --observed-by <who>")
+    passed = a.result == "pass"
+    s["verification"] = {
+        "post_cache_verified": passed,
+        "reprobe_at": a.reprobe_at or now(),
+        "executed_build": a.executed_build,
+        "build_sha256": registered,           # bound to the build that was actually executed
+        "rail_ids": [x for x in (a.rail_ids or "").split(",") if x],
+        "method": a.method,
+        "observed_by": a.observed_by or "",
+        "evidence": a.evidence or "",
+        "result": a.result,
+    }
+    et = s.setdefault("execution_tracking", {})
+    et["executed_build"] = a.executed_build
+    atomic_write(state_path(a.run), s)
+    print("verify-live: recorded %s (%s) for build %s, bound to products_csv %s"
+          % (a.result, a.method, a.executed_build, registered[:12]))
+    if not passed:
+        print("  result=fail — LIVE will refuse until a passing verification is recorded")
+
+
+def cmd_migrate(a):
+    """Model B (current-canon + explicit migration): bring a run's pinned spec/charter
+    versions up to the on-disk canon and record why. The validator evaluates current canon
+    always; an un-migrated run whose pins differ is refused (run_canon_version_mismatch)
+    until this records the bump. Creating-versions remain in workflow.history as provenance."""
+    s = require_run(a.run)
+    schema = load(SCHEMA); charter = load(CHARTER)
+    to_spec = schema["schema"]["version"]
+    to_chart = charter["charter"]["version"]
+    run = s.setdefault("run", {})
+    frm_spec, frm_chart = run.get("spec_version"), run.get("charter_version")
+    if (frm_spec, frm_chart) == (to_spec, to_chart):
+        print("already at canon: spec %s / charter %s — no migration needed" % (to_spec, to_chart))
+        return
+    rec = {"from_spec_version": frm_spec, "to_spec_version": to_spec,
+           "from_charter_version": frm_chart, "to_charter_version": to_chart,
+           "at": now(), "by": a.by, "note": a.note or ""}
+    run.setdefault("migration", []).append(rec)
+    run["spec_version"] = to_spec
+    run["charter_version"] = to_chart
+    atomic_write(state_path(a.run), s)
+    print("migrated run %s: spec %s->%s, charter %s->%s"
+          % (a.run, frm_spec, to_spec, frm_chart, to_chart))
+    print("  by %s: %s" % (a.by, a.note or "(no note)"))
+
+
+def cmd_validate_execution(a):
+    """Run the v2 execution builder as a REAL subprocess and record the result.
+
+    This is the ONLY writer of validation_attempts and of the products_csv artifact.
+    An agent cannot fabricate a passing validation: the pass is computed from the
+    builder's exit code, and the attempt is bound by output_sha256 to the exact CSV
+    the builder wrote (which is registered here in the same operation). The VALIDATED
+    gate later requires that binding to hold.
+    """
+    s = require_run(a.run)
+    # PRODUCTION validation path: stale or legacy truth can NEVER produce a launch-ready
+    # attempt. --allow-stale / --legacy-replay are diagnostic-only and are run against the raw
+    # builder directly, which never touches validation_attempts. There is therefore no path
+    # from stale/legacy truth to a VALIDATED-satisfying attempt.
+    builder = os.path.join(HERE, "build_execution_csv.py")
+    out = a.out if os.path.isabs(a.out) else os.path.join(run_dir(a.run), a.out)
+    cmd = [sys.executable, builder, "--campaign", a.campaign, "--campaign-name",
+           a.campaign_name, "--build", a.build, "--judgment", a.judgment,
+           "--out", out]
+    if a.engine:
+        cmd += ["--engine", a.engine]
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    passed = proc.returncode == 0
+    attempt = {"attempted_at": now(), "result": "passed" if passed else "failed",
+               "builder_argv": cmd[1:], "allow_stale_used": False, "legacy_replay_used": False,
+               "production": passed,  # only a clean, non-stale, non-legacy build is production
+               "builder_stdout_tail": (proc.stdout or "")[-2000:],
+               "output_sha256": None, "failures": []}
+    if passed and os.path.exists(out):
+        sha = hashlib.sha256(open(out, "rb").read()).hexdigest()
+        attempt["output_sha256"] = sha
+        s.setdefault("artifacts", {})["products_csv"] = {
+            "path": _artifact_rel(a.run, out), "written_at": now(), "sha256": sha,
+            "status": "current", "superseded_by": None, "superseded_at": None,
+            "supersession_reason": None}
+    else:
+        attempt["failures"] = [{"builder_exit": proc.returncode,
+                                "stderr_tail": (proc.stderr or "")[-1000:]}]
+    s.setdefault("validation_attempts", []).append(attempt)
+    atomic_write(state_path(a.run), s)
+    print("validate-execution: %s (builder exit %d)"
+          % ("PASSED" if passed else "FAILED", proc.returncode))
+    if passed:
+        print("  products_csv registered, sha256 %s" % attempt["output_sha256"])
+    else:
+        print(proc.stdout[-1500:] if proc.stdout else "")
+        print(proc.stderr[-500:] if proc.stderr else "")
+        sys.exit(1)
 
 
 def cmd_promote(a):
@@ -311,6 +493,23 @@ def cmd_promote(a):
     print(out or err)
     print("PROMOTED  %s -> %s" % (os.path.relpath(old_dir, ROOT), os.path.relpath(new_dir, ROOT)))
     print("  %d artifact path(s) rewritten run-root-relative; campaign.yaml updated" % rewritten)
+
+
+def cmd_supersede_artifact(a):
+    """Mark a registered artifact superseded (fields exist in the artifact record schema;
+    this is the controlled write path for them — the state file is never hand-edited)."""
+    s = require_run(a.run)
+    rec = (s.get("artifacts") or {}).get(a.key)
+    if not rec:
+        sys.exit("FATAL: no artifact %r registered" % a.key)
+    if rec.get("status") == "superseded":
+        print("already superseded: %s" % a.key); return
+    rec["status"] = "superseded"
+    rec["superseded_by"] = a.by_key
+    rec["superseded_at"] = now()
+    rec["supersession_reason"] = a.reason
+    atomic_write(state_path(a.run), s)
+    print("superseded artifact %-24s -> %s" % (a.key, a.by_key))
 
 
 def _coerce(raw):
@@ -404,13 +603,23 @@ def _row(label, said, normalized, interp, status, extra=None):
     return status == "proposed"
 
 
+def artifact_path(run_id, rec):
+    """Resolve a registered artifact path: absolute as-is; else run-root-relative first
+    (current convention), repo-root-relative second (legacy). Mirrors the validator."""
+    pth = rec["path"]
+    if os.path.isabs(pth):
+        return pth
+    rr = os.path.join(run_dir(run_id), pth)
+    return rr if os.path.exists(rr) else os.path.join(ROOT, pth)
+
+
 def cmd_review_inputs(a):
     """Review only. Creates no decision and transitions nothing."""
     s = require_run(a.run)
     rec = (s.get("artifacts") or {}).get("frame")
     if not rec or rec.get("status", "current") != "current":
         sys.exit("FATAL: no current frame artifact registered for this run.")
-    p = rec["path"] if os.path.isabs(rec["path"]) else os.path.join(ROOT, rec["path"])
+    p = artifact_path(a.run, rec)
     fr = load(p)
     oi, tm = fr.get("owner_inputs") or {}, fr.get("timing") or {}
     ob, av = fr.get("objective") or {}, fr.get("avoidance") or {}
@@ -533,8 +742,56 @@ def main():
 
     p = sub.add_parser("record-decision")
     p.add_argument("--run", required=True); p.add_argument("--id", required=True)
-    p.add_argument("--by", required=True); p.add_argument("--value-json"); p.add_argument("--note")
+    p.add_argument("--by", required=True)
+    p.add_argument("--status", required=True, choices=DECISION_STATUSES,
+                   help="governance_003: owner_confirmed is the only status that gates a "
+                        "transition and the only one on which --by may be product_owner")
+    p.add_argument("--value-json"); p.add_argument("--note")
     p.set_defaults(f=cmd_record_decision)
+
+    p = sub.add_parser("supersede-artifact")
+    p.add_argument("--run", required=True); p.add_argument("--key", required=True)
+    p.add_argument("--by-key", required=True); p.add_argument("--reason", required=True)
+    p.set_defaults(f=cmd_supersede_artifact)
+
+    p = sub.add_parser("validate-execution",
+                       help="run the v2 builder and record a hash-bound validation attempt "
+                            "(the ONLY writer of validation_attempts + products_csv)")
+    p.add_argument("--run", required=True)
+    p.add_argument("--campaign", required=True); p.add_argument("--campaign-name", required=True)
+    p.add_argument("--build", required=True); p.add_argument("--judgment", required=True)
+    p.add_argument("--out", default="execution/execution.csv")
+    p.add_argument("--engine")
+    # NOTE: no --allow-stale / --legacy-replay here by design. Diagnostic/legacy builds use the
+    # raw build_execution_csv.py directly; they can never produce a launch-ready validation.
+    p.set_defaults(f=cmd_validate_execution)
+
+    p = sub.add_parser("verify-live",
+                       help="record the computed live-verification the LIVE gate consumes "
+                            "(the only writer of `verification`; binds to the executed build)")
+    p.add_argument("--run", required=True); p.add_argument("--executed-build", required=True)
+    p.add_argument("--result", required=True, choices=["pass", "fail"])
+    p.add_argument("--method", required=True, choices=["automated_probe", "human_observation"])
+    p.add_argument("--reprobe-at"); p.add_argument("--rail-ids")
+    p.add_argument("--observed-by"); p.add_argument("--evidence")
+    p.set_defaults(f=cmd_verify_live)
+
+    p = sub.add_parser("reopen",
+                       help="prepare a reopen edge (supersede artifacts, write invalidated, "
+                            "record the reopen decision) so a following transition validates")
+    p.add_argument("--run", required=True); p.add_argument("--to", required=True)
+    p.add_argument("--by", required=True); p.add_argument("--reason", required=True)
+    p.add_argument("--value-json")
+    p.set_defaults(f=cmd_reopen)
+
+    p = sub.add_parser("migrate",
+                       help="Model B: bump this run's pinned spec/charter versions to the "
+                            "current on-disk canon and record the migration (required before "
+                            "a stale-pinned run can transition)")
+    p.add_argument("--run", required=True)
+    p.add_argument("--by", required=True)
+    p.add_argument("--note")
+    p.set_defaults(f=cmd_migrate)
 
     p = sub.add_parser("promote")
     p.add_argument("--run", required=True)

@@ -114,29 +114,103 @@ def main():
         rc, out = validate(write(os.path.join(tmp, "b.yaml"), mk()), "VALIDATED")
         ok("illegal transition refused", rc != 0 and "illegal_transition" in out)
 
+        print("\n-- F3: version semantics (Model B, current-canon + explicit migration) --")
+        # A run pinned to an OLD charter version differs from the loaded canon -> refused.
+        s = mk(); s["run"]["charter_version"] = "0.0.1-ancient"
+        rc, out = validate(write(os.path.join(tmp, "v1.yaml"), s), "FRAME_READY")
+        ok("run pinned to stale charter is refused against current canon",
+           rc != 0 and "run_canon_version_mismatch" in out)
+        # Recording a migration to the current canon version clears it.
+        s = mk()
+        s["run"]["charter_version"] = "0.0.1-ancient"
+        s["run"]["migration"] = [{"from_charter_version": "0.0.1-ancient",
+                                  "to_charter_version": chart_v,
+                                  "from_spec_version": spec_v, "to_spec_version": spec_v,
+                                  "at": "z", "by": "product_owner", "note": "migrate"}]
+        s["run"]["charter_version"] = chart_v  # migration bumps the pin to canon
+        rc, out = validate(write(os.path.join(tmp, "v2.yaml"), s), "FRAME_READY")
+        ok("after migration to canon the run transitions", rc == 0, out)
+        # A drift to a value that is NEITHER the NEW-pin NOR a migration target is refused.
+        s = mk(); s["run"]["charter_version"] = "9.9.9-bogus"
+        rc, out = validate(write(os.path.join(tmp, "v3.yaml"), s), "FRAME_READY")
+        ok("silent version drift (no migration) is refused",
+           rc != 0 and ("charter_version_changed_without_migration" in out
+                        or "run_canon_version_mismatch" in out))
+
         print("\n-- owner decisions are not inferable --")
         s = mk(); s["workflow"]["state"] = "FRAME_READY"
         rc, out = validate(write(os.path.join(tmp, "c.yaml"), s), "RESEARCHING")
         ok("missing owner decision refused", rc != 0 and "closing_sentence_is_not_proof" in out)
 
         s = mk(); s["workflow"]["state"] = "FRAME_READY"
-        s["owner_decisions"] = {"frame_accepted": {"decided": True, "decided_by": "po",
+        s["owner_decisions"] = {"frame_accepted": {"status": "owner_confirmed", "decided": True,
+                                                   "decided_by": "po",
                                                    "decided_at": "2026-08-06T15:10:00Z"}}
         rc, out = validate(write(os.path.join(tmp, "c2.yaml"), s), "RESEARCHING")
         ok("recorded owner decision passes", rc == 0, out)
 
+        # F4 (binary ledger): a provisional_recommendation cannot satisfy an owner gate.
+        s = mk(); s["workflow"]["state"] = "FRAME_READY"
+        s["owner_decisions"] = {"frame_accepted": {"status": "provisional_recommendation",
+                                                   "decided": False, "decided_by": "agent",
+                                                   "decided_at": "z"}}
+        rc, out = validate(write(os.path.join(tmp, "c3.yaml"), s), "RESEARCHING")
+        ok("provisional_recommendation cannot satisfy the owner gate", rc != 0)
+        # F4: a would-be 'fulfilled'/'validated' entry stamped as an owner decision is rejected
+        # (engine fulfillment / validation are not owner decisions).
+        s = mk(); s["workflow"]["state"] = "FRAME_READY"
+        s["owner_decisions"] = {"frame_accepted": {"status": "fulfilled", "decided": True,
+                                                   "decided_by": "product_owner",
+                                                   "decided_at": "z"}}
+        rc, out = validate(write(os.path.join(tmp, "c4.yaml"), s), "RESEARCHING")
+        ok("a fulfilled/validated status in owner_decisions is rejected",
+           rc != 0 and "decision_status_misstamped" in out)
+
         print("\n-- validation is an attempt, not a transition --")
+        # products_csv is registered with a real sha; a passing attempt must be BOUND to it.
+        csv_sha = sha  # reuse the frame file's sha as the "built CSV" hash
         s = mk(); s["workflow"]["state"] = "SEAM6_READY"
         s["execution_tracking"]["seam6_execution_status"] = "validated"
-        s["artifacts"]["products_csv"] = {"path": frame_p, "status": "current"}
+        s["artifacts"]["products_csv"] = {"path": frame_p, "sha256": csv_sha, "status": "current"}
         s["validation_attempts"] = [{"attempted_at": "x", "result": "failed", "failures": [{}]}]
         rc, out = validate(write(os.path.join(tmp, "d.yaml"), s), "VALIDATED")
         ok("failed attempt cannot reach VALIDATED", rc != 0 and
            "validation_failure_treated_as_transition" in out)
 
+        # ADVERSARIAL (F2): an agent-authored 'passed' attempt with NO hash binding is refused.
         s["validation_attempts"] = [{"attempted_at": "x", "result": "passed", "failures": []}]
+        rc, out = validate(write(os.path.join(tmp, "d1.yaml"), s), "VALIDATED")
+        ok("agent-authored passed attempt (no output_sha256) cannot reach VALIDATED",
+           rc != 0 and "not bound to the registered products_csv" in out)
+
+        # ADVERSARIAL (F2): a passed attempt bound to the WRONG hash is refused.
+        s["validation_attempts"] = [{"attempted_at": "x", "result": "passed",
+                                     "output_sha256": "deadbeef", "failures": []}]
+        rc, out = validate(write(os.path.join(tmp, "d1b.yaml"), s), "VALIDATED")
+        ok("passed attempt bound to a mismatched hash cannot reach VALIDATED",
+           rc != 0 and "not bound to the registered products_csv" in out)
+
+        # ADVERSARIAL (F4): a hash-bound pass that used --allow-stale cannot reach VALIDATED.
+        s["validation_attempts"] = [{"attempted_at": "x", "result": "passed",
+                                     "output_sha256": csv_sha, "production": True,
+                                     "allow_stale_used": True, "failures": []}]
+        rc, out = validate(write(os.path.join(tmp, "d1c.yaml"), s), "VALIDATED")
+        ok("a --allow-stale build cannot satisfy VALIDATED",
+           rc != 0 and "not a production build" in out)
+        # ADVERSARIAL (F4): an attempt not marked production is refused.
+        s["validation_attempts"] = [{"attempted_at": "x", "result": "passed",
+                                     "output_sha256": csv_sha, "failures": []}]
+        rc, out = validate(write(os.path.join(tmp, "d1d.yaml"), s), "VALIDATED")
+        ok("a non-production attempt cannot satisfy VALIDATED",
+           rc != 0 and "not a production build" in out)
+
+        # Only a hash-bound, production pass reaches VALIDATED.
+        s["validation_attempts"] = [{"attempted_at": "x", "result": "passed",
+                                     "output_sha256": csv_sha, "production": True,
+                                     "allow_stale_used": False, "legacy_replay_used": False,
+                                     "failures": []}]
         rc, out = validate(write(os.path.join(tmp, "d2.yaml"), s), "VALIDATED")
-        ok("passing attempt reaches VALIDATED", rc == 0, out)
+        ok("hash-bound production passing attempt reaches VALIDATED", rc == 0, out)
 
         s["validation_attempts"][-1]["invalidated_at"] = "y"
         s["validation_attempts"][-1]["invalidated_by_decision"] = "reopen_seam6_execution"
@@ -145,12 +219,12 @@ def main():
 
         print("\n-- abandonment --")
         s = mk(); s["workflow"]["state"] = "LIVE"
-        s["owner_decisions"] = {"abandon_run": {"decided": True, "decided_by": "po", "decided_at": "z"}}
+        s["owner_decisions"] = {"abandon_run": {"status": "owner_confirmed", "decided": True, "decided_by": "po", "decided_at": "z"}}
         rc, out = validate(write(os.path.join(tmp, "e.yaml"), s), "ABANDONED")
         ok("abandon after LIVE refused", rc != 0 and "abandon_after_live" in out)
 
         s = mk(); s["workflow"]["state"] = "BRIEF_DRAFT"
-        s["owner_decisions"] = {"abandon_run": {"decided": True, "decided_by": "po", "decided_at": "z"}}
+        s["owner_decisions"] = {"abandon_run": {"status": "owner_confirmed", "decided": True, "decided_by": "po", "decided_at": "z"}}
         s["abandonment"] = {"run_id_status": "retained", "campaign_id_status": "never_minted"}
         rc, out = validate(write(os.path.join(tmp, "e2.yaml"), s), "ABANDONED")
         ok("pre-LIVE abandon with correct classification passes", rc == 0, out)
@@ -159,14 +233,69 @@ def main():
         rc, out = validate(write(os.path.join(tmp, "e3.yaml"), s), "ABANDONED")
         ok("wrong campaign_id classification refused", rc != 0)
 
+        print("\n-- item 5: LIVE verification cannot be asserted --")
+        def live_base():
+            s = mk(); s["workflow"]["state"] = "CAMPAIGN_APPROVED"
+            s["artifacts"]["products_csv"] = {"path": frame_p, "sha256": sha, "status": "current"}
+            s["execution_tracking"]["seam6_execution_status"] = "executed"
+            s["collection_freeze"] = {"snapshot": [{"collection_id": "c1", "frozen_at": "z",
+                                                    "sha256": "x"}], "exceptions": []}
+            return s
+        # ADVERSARIAL: asserting post_cache_verified=true with no computed record cannot reach LIVE.
+        s = live_base()
+        s["verification"] = {"post_cache_verified": True, "reprobe_at": "z"}
+        rc, out = validate(write(os.path.join(tmp, "lv1.yaml"), s), "LIVE")
+        ok("asserted post_cache_verified (no computed verification) cannot reach LIVE",
+           rc != 0 and "verification" in out)
+        # ADVERSARIAL: verification bound to the WRONG build hash refused.
+        s = live_base()
+        s["verification"] = {"post_cache_verified": True, "reprobe_at": "z", "result": "pass",
+                             "build_sha256": "deadbeef", "method": "automated_probe"}
+        rc, out = validate(write(os.path.join(tmp, "lv2.yaml"), s), "LIVE")
+        ok("verification bound to a mismatched build hash cannot reach LIVE",
+           rc != 0 and "build_sha256" in out)
+        # ADVERSARIAL: human_observation without observed_by refused.
+        s = live_base()
+        s["verification"] = {"post_cache_verified": True, "reprobe_at": "z", "result": "pass",
+                             "build_sha256": sha, "method": "human_observation"}
+        rc, out = validate(write(os.path.join(tmp, "lv3.yaml"), s), "LIVE")
+        ok("human-observed verification without observed_by refused",
+           rc != 0 and "observed_by" in out)
+        # A properly computed, build-bound verification reaches LIVE.
+        s = live_base()
+        s["verification"] = {"post_cache_verified": True, "reprobe_at": "z", "result": "pass",
+                             "build_sha256": sha, "method": "automated_probe",
+                             "executed_build": "b005"}
+        rc, out = validate(write(os.path.join(tmp, "lv4.yaml"), s), "LIVE")
+        ok("build-bound automated verification reaches LIVE", rc == 0, out)
+
         print("\n-- reopen obligations --")
         s = mk(); s["workflow"]["state"] = "BRIEF_APPROVED"
-        s["owner_decisions"] = {"brief_reopened": {"decided": True, "decided_by": "po",
+        s["owner_decisions"] = {"brief_reopened": {"status": "owner_confirmed", "decided": True, "decided_by": "po",
                                                    "decided_at": "z", "value": {"reason": "r"}}}
         s["artifacts"]["stage5_routes"] = {"path": frame_p, "status": "current"}
         rc, out = validate(write(os.path.join(tmp, "f.yaml"), s), "BRIEF_DRAFT")
         ok("reopen without supersession/invalidation refused",
            rc != 0 and "reopen_without_decision" in out)
+
+        # F5: with obligations MET (artifacts superseded + invalidated populated + decision),
+        # the reopen is EXECUTABLE — proving the edge is not a dead-end (was un-executable
+        # before the run.py reopen writer existed).
+        s = mk(); s["workflow"]["state"] = "BRIEF_APPROVED"
+        s["owner_decisions"] = {"brief_reopened": {
+            "status": "owner_confirmed", "decided": True, "decided_by": "po", "decided_at": "z",
+            "value": {"reason": "scope changed", "invalidating_finding": "x",
+                      "affected_artifacts": ["stage5_routes", "stage6_activation"]}}}
+        s["artifacts"]["stage5_routes"] = {"path": frame_p, "status": "superseded",
+                                           "supersession_reason": "reopen"}
+        s["artifacts"]["stage6_activation"] = {"path": frame_p, "status": "superseded",
+                                               "supersession_reason": "reopen"}
+        s["artifacts"]["stage4_brief"] = {"path": frame_p, "status": "current"}
+        s["invalidated"] = ["route_selected", "campaign_approved",
+                            "execution_tracking.activation_architecture_status",
+                            "execution_tracking.seam6_execution_status", "validation_attempts"]
+        rc, out = validate(write(os.path.join(tmp, "f2.yaml"), s), "BRIEF_DRAFT")
+        ok("reopen WITH all obligations met is executable", rc == 0, out)
 
         print("\n-- C2: each_has_keys vs each_has_non_null --")
         FAMS = ["cultural_or_editorial", "demand_or_behavioral", "commercial_or_category",
@@ -211,10 +340,16 @@ def main():
            rc != 0 and "null or empty" in out)
 
         print("\n-- reserved hooks are not operational --")
-        s = mk(); s["run"]["charter_migration"] = {"from": "0.1.0", "to": "0.2.0"}
+        # F3: migration is now a real model (was a refused stub). A run.migration record whose
+        # target matches the loaded canon is accepted; see the dedicated F3 block above.
+        s = mk()
+        s["run"]["charter_version"] = "0.1.0-old"
+        s["run"]["migration"] = [{"from_charter_version": "0.1.0-old",
+                                  "to_charter_version": chart_v, "from_spec_version": spec_v,
+                                  "to_spec_version": spec_v, "at": "z", "by": "po", "note": "x"}]
+        s["run"]["charter_version"] = chart_v
         rc, out = validate(write(os.path.join(tmp, "g.yaml"), s), "FRAME_READY")
-        ok("charter_migration refused as unimplemented",
-           rc != 0 and "charter_migration_not_supported" in out)
+        ok("a recorded migration to canon is accepted", rc == 0, out)
 
         rc, out = validate(write(os.path.join(tmp, "g2.yaml"), mk()), "FRAME_READY")
         ok("withdrawal enforcement warns that it is inactive",
@@ -270,6 +405,13 @@ def main():
                             "--path", "workflow.state", "--value", "LIVE"],
                            capture_output=True, text=True, env=env)
         ok("set refuses a non-whitelisted path",
+           r.returncode != 0 and "not a settable path" in r.stdout)
+        # F2: validation_attempts is no longer agent-settable (only validate-execution writes it).
+        r = subprocess.run([sys.executable, RUNNER, "set", "--run", rid,
+                            "--path", "validation_attempts",
+                            "--value-json", '[{"result":"passed"}]'],
+                           capture_output=True, text=True, env=env)
+        ok("set refuses validation_attempts (not settable — validate-execution only)",
            r.returncode != 0 and "not a settable path" in r.stdout)
         r = subprocess.run([sys.executable, RUNNER, "set", "--run", rid,
                             "--path", "execution_tracking.seam6_execution_status",

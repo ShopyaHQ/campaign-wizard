@@ -24,7 +24,10 @@ def ok(name, cond, detail=""):
 
 def frames():
     out = []
-    for p in sorted(glob.glob(os.path.join(ROOT, "campaigns", "*", "frame.yaml"))):
+    pats = [os.path.join(ROOT, "campaigns", "*", "frame.yaml"),
+            os.path.join(ROOT, "campaigns", "_drafts", "*", "frame.yaml"),
+            os.path.join(ROOT, "campaigns", "*", "runs", "*", "frame.yaml")]
+    for p in sorted(q for pat in pats for q in glob.glob(pat)):
         if os.sep + QUARANTINE + os.sep in p:
             continue
         with open(p, encoding="utf-8") as f:

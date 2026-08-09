@@ -76,12 +76,22 @@ def main():
     ap.add_argument("--campaign", required=True)
     ap.add_argument("--rows", required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--legacy-replay", action="store_true",
+                    help="required: this builder accepts wizard-authored product "
+                         "facts and is retained ONLY to replay historic builds")
     ap.add_argument("--engine", default=os.path.join(os.path.dirname(os.path.dirname(
         os.path.dirname(os.path.abspath(__file__)))), "shopya-collection-curation"))
     ap.add_argument("--pin", type=int, default=12)
     ap.add_argument("--entity-type", default="products")
     ap.add_argument("--exceptions", help="JSON map {collection_name: {approved, approved_by, rationale}}")
     a = ap.parse_args()
+
+    if not a.legacy_replay:
+        sys.exit("STOP — build_csv.py is a LEGACY builder that accepts wizard-"
+                 "authored product facts (urls, prices, names). The current "
+                 "contract (owner, 2026-08-07) hydrates all product facts from "
+                 "engine truth: use scripts/build_execution_csv.py. Pass "
+                 "--legacy-replay only to reproduce a historic build.")
 
     rows = json.load(open(a.rows, encoding="utf-8"))
     exceptions = json.load(open(a.exceptions, encoding="utf-8")) if a.exceptions else {}

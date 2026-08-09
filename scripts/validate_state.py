@@ -188,22 +188,46 @@ class Validator:
         return ok
 
     def p_versions_unchanged(self, a, ctx):
+        """run.spec_version / charter_version may only change through a recorded migration.
+        The current value must equal EITHER the value pinned at NEW, OR the `to_*` of the
+        latest run.migration record. Any other change is a silent drift and is refused."""
         run = self.state.get("run") or {}
         hist = self.state.get("workflow", {}).get("history") or []
         pinned = next((h for h in hist if h.get("to") == "NEW"), None)
+        migs = run.get("migration") or []
+        latest = migs[-1] if migs else None
         ok = True
-        # RESERVED, v1: charter migration does not exist. Supplying the key is itself an error.
-        if run.get("charter_migration") is not None:
-            self.fail("charter_migration_not_supported",
-                      "%s: run.charter_migration is set, but migration is unimplemented" % ctx,
-                      "run.charter_migration", "<absent>", run.get("charter_migration"))
-            ok = False
         for f, refusal in (("spec_version", "spec_version_changed_mid_run"),
                            ("charter_version", "charter_version_changed_without_migration")):
             was = (pinned or {}).get("pinned_" + f)
-            if was and was != run.get(f):
-                self.fail(refusal, "%s: %s changed from %r to %r" % (ctx, f, was, run.get(f)),
-                          "run." + f, was, run.get(f))
+            allowed = {was}
+            if latest is not None:
+                allowed.add(latest.get("to_" + f))
+            if was and run.get(f) not in allowed:
+                self.fail(refusal, "%s: %s is %r — neither the value pinned at NEW (%r) nor a "
+                          "recorded migration target" % (ctx, f, run.get(f), was),
+                          "run." + f, "pinned value or a migrated target", run.get(f))
+                ok = False
+        return ok
+
+    def p_canon_matches_or_migrated(self, a, ctx):
+        """Model B (current-canon): the validator ALWAYS evaluates rules against the on-disk
+        canon. A run whose pinned versions differ from the loaded canon is stale and MUST be
+        migrated (run.py migrate) before it can transition — otherwise it would be silently
+        judged under rules it never adopted. Provenance (creating versions) stays in history."""
+        run = self.state.get("run") or {}
+        loaded = {"spec_version": (self.schema.get("schema") or {}).get("version"),
+                  "charter_version": (self.charter.get("charter") or {}).get("version")}
+        ok = True
+        for f in ("spec_version", "charter_version"):
+            if run.get(f) and loaded[f] and run.get(f) != loaded[f]:
+                self.fail("run_canon_version_mismatch",
+                          "%s: run.%s is %r but the loaded canon is %r — this run predates the "
+                          "current rules and must be migrated (run.py migrate) before it can "
+                          "transition; the validator evaluates current canon, so an un-migrated "
+                          "run would be judged under rules it never adopted"
+                          % (ctx, f, run.get(f), loaded[f]),
+                          "run." + f, loaded[f], run.get(f))
                 ok = False
         return ok
 
@@ -433,8 +457,17 @@ class Validator:
             self.fail("closing_sentence_is_not_proof",
                       "%s: owner decision %r is not recorded" % (ctx, did),
                       "owner_decisions.%s" % did,
-                      "{decided: true, decided_by, decided_at}",
+                      "{status: owner_confirmed, decided: true, decided_by, decided_at}",
                       d if d else MISSING)
+            return False
+        # governance_003: only an owner_confirmed entry gates a transition. A provisional
+        # recommendation, engine fulfillment, validator pass or exception never satisfies it.
+        if d.get("status") != "owner_confirmed":
+            self.fail("closing_sentence_is_not_proof",
+                      "%s: owner decision %r has status %r, not owner_confirmed — an agent "
+                      "recommendation or engine fulfillment cannot gate this transition"
+                      % (ctx, did, d.get("status")),
+                      "owner_decisions.%s.status" % did, "owner_confirmed", d.get("status"))
             return False
         return True
 
@@ -505,8 +538,80 @@ class Validator:
             return False
         return True
 
-    def p_downstream_superseded(self, a, ctx):
-        return True    # evaluated inside the reopen check, which knows the edge
+    def p_validation_binds_products_csv(self, a, ctx):
+        """The passing attempt must be bound to the registered products_csv by hash.
+        A validation attempt is written ONLY by run.py validate-execution, which stamps
+        output_sha256 = sha256(built CSV) and registers that same file as products_csv.
+        Requiring equality here means an agent cannot hand-author a CSV, register it, and
+        separately fabricate a 'passed' attempt — the two are no longer settable, and their
+        hashes must agree."""
+        att = self.state.get("validation_attempts") or []
+        if not att:
+            self.fail("validation_failure_treated_as_transition",
+                      "%s: no validation attempt to bind" % ctx, "validation_attempts",
+                      "a passing attempt bound to products_csv", [])
+            return False
+        last = att[-1]
+        stamped = last.get("output_sha256")
+        rec = self.artifact_record("products_csv") or {}
+        registered = rec.get("sha256")
+        if not stamped or not registered or stamped != registered:
+            self.fail("validation_failure_treated_as_transition",
+                      "%s: passing attempt is not bound to the registered products_csv "
+                      "(attempt output_sha256=%r, products_csv sha256=%r) — run "
+                      "validate-execution so the pass is computed from the built file"
+                      % (ctx, stamped, registered),
+                      "validation_attempts[-1].output_sha256", registered, stamped)
+            return False
+        # A stale-truth (--allow-stale) or legacy-replay build is diagnostic, never launch-ready.
+        # validate-execution never produces such an attempt; a hand-forged one is refused here.
+        if last.get("production") is not True or last.get("allow_stale_used") or last.get("legacy_replay_used"):
+            self.fail("validation_failure_treated_as_transition",
+                      "%s: the bound validation attempt is not a production build "
+                      "(production=%r, allow_stale_used=%r, legacy_replay_used=%r) — stale or "
+                      "legacy builds cannot satisfy VALIDATED"
+                      % (ctx, last.get("production"), last.get("allow_stale_used"),
+                         last.get("legacy_replay_used")),
+                      "validation_attempts[-1].production", True, last.get("production"))
+            return False
+        return True
+
+    def p_verification_bound_to_executed_build(self, a, ctx):
+        """LIVE consumes a COMPUTED verification record (run.py verify-live), not an asserted
+        boolean. The record must report a pass, be bound by build_sha256 to the registered
+        products_csv, and — for a human-observed result — name who observed it."""
+        v = self.state.get("verification") or {}
+        if v.get("result") != "pass" or v.get("post_cache_verified") is not True:
+            self.fail("prerequisites_unmet",
+                      "%s: verification is not a recorded pass (result=%r, post_cache_verified=%r)"
+                      % (ctx, v.get("result"), v.get("post_cache_verified")),
+                      "verification.result", "pass", v.get("result"))
+            return False
+        vsha = v.get("build_sha256")
+        registered = (self.artifact_record("products_csv") or {}).get("sha256")
+        if not vsha or not registered or vsha != registered:
+            self.fail("prerequisites_unmet",
+                      "%s: verification.build_sha256 (%r) does not match the registered "
+                      "products_csv (%r) — verify the build that was actually executed"
+                      % (ctx, vsha, registered),
+                      "verification.build_sha256", registered, vsha)
+            return False
+        if v.get("method") == "human_observation" and not v.get("observed_by"):
+            self.fail("prerequisites_unmet",
+                      "%s: human-observed verification must record observed_by" % ctx,
+                      "verification.observed_by", "<non-empty>", MISSING)
+            return False
+        if v.get("method") not in ("automated_probe", "human_observation"):
+            self.fail("prerequisites_unmet",
+                      "%s: verification.method must be automated_probe or human_observation (got %r)"
+                      % (ctx, v.get("method")), "verification.method",
+                      "automated_probe|human_observation", v.get("method"))
+            return False
+        return True
+
+    # (F5, 2026-08-09) removed p_downstream_superseded: it was a `return True` stub referenced
+    # by no prerequisite. Reopen supersession is enforced concretely in check_reopen against the
+    # transition's supersedes_artifacts list, not via this predicate.
 
     # ---------- sibling runs ----------
     def _sibling_states(self):
@@ -546,6 +651,7 @@ class Validator:
         ctx = "invariant"
         self.p_versions_pinned([], ctx)
         self.p_versions_unchanged([], ctx)
+        self.p_canon_matches_or_migrated([], ctx)
         self.p_version_not_withdrawn([], ctx)
 
         run_id = (self.state.get("run") or {}).get("run_id")
@@ -581,19 +687,32 @@ class Validator:
                       "execution_tracking.external_handoffs_implemented", "unknown",
                       et.get("external_handoffs_implemented"))
 
-        cur = self.state.get("workflow", {}).get("state")
-        if cur == "LIVE" or (cur == "REVIEWED"):
-            frozen = {c.get("collection_id")
-                      for c in ((self.state.get("collection_freeze") or {}).get("snapshot") or [])}
-            excs = {e.get("affected_collection_id")
-                    for e in ((self.state.get("collection_freeze") or {}).get("exceptions") or [])
-                    if all(e.get(k) for k in ("reason", "approved_by", "approved_at",
-                                              "affected_collection_id", "change_summary"))}
-            for c in ((self.state.get("collection_freeze") or {}).get("modified_since_freeze") or []):
-                if c in frozen and c not in excs:
-                    self.fail("frozen_collection_modified",
-                              "collection %r modified after LIVE with no recorded exception" % c,
-                              "collection_freeze.exceptions", "recorded exception", c)
+        # NOTE (F5, 2026-08-09): the former frozen_collection_modified check iterated
+        # collection_freeze.modified_since_freeze — a field no command ever writes and that is
+        # not settable. It could never fire in normal operation (fake enforcement) and was
+        # removed rather than left as a phantom guard. Detecting a REAL post-LIVE modification
+        # needs the engine to diff live collection contents against the freeze snapshot's
+        # per-collection hashes and report drift; that collection-diff writer is a NEXT_PASS
+        # item. The refusal string frozen_collection_modified is retained in the schema for
+        # when that writer lands. Until then, freeze integrity is not machine-enforced here.
+
+        # governance_003: decision-ledger status integrity. product_owner and decided:true are
+        # valid ONLY on an owner_confirmed entry; agent recommendations and engine fulfillment
+        # must never be stamped as owner decisions.
+        for did, d in (self.state.get("owner_decisions") or {}).items():
+            if not isinstance(d, dict):
+                continue
+            st = d.get("status")
+            if d.get("decided_by") == "product_owner" and st != "owner_confirmed":
+                self.fail("decision_status_misstamped",
+                          "owner_decisions.%s is decided_by product_owner but status is %r "
+                          "(only owner_confirmed may carry product_owner)" % (did, st),
+                          "owner_decisions.%s.status" % did, "owner_confirmed", st)
+            if d.get("decided") is True and st != "owner_confirmed":
+                self.fail("decision_status_misstamped",
+                          "owner_decisions.%s sets decided: true but status is %r "
+                          "(decided is true only when owner_confirmed)" % (did, st),
+                          "owner_decisions.%s.status" % did, "owner_confirmed", st)
 
         for key, rec in (self.state.get("artifacts") or {}).items():
             p = rec.get("path", "")

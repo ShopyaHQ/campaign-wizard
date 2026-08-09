@@ -12,13 +12,23 @@
 
 schema:
   name: workflow_state
-  version: 1.4.1
+  version: 1.5.0
   charter_min_version: 0.2.0
   state_file_path: "campaigns/<run_id>/state.yaml"
   notes: >
     Claim ids in `charter_ref` fields point at SHOPYA_CAMPAIGN_CHARTER.yaml. A prerequisite
     with a charter_ref is traceable to an approved decision; one without is a schema-local
     structural check.
+  changelog:
+    1.5.0: >
+      Owner ruling 2026-08-09 (Ruling 2 — governance_003). owner_decisions entries carry a
+      BINARY status enum (provisional_recommendation | owner_confirmed). owner_decision_recorded
+      requires status owner_confirmed; decided:true and decided_by:product_owner are valid ONLY
+      on owner_confirmed (refusal decision_status_misstamped). Engine fulfillment, validator
+      passes and material exceptions are NOT owner decisions and live in their own structures —
+      never in owner_decisions. (An interim draft briefly added fulfilled/validated/exception to
+      this enum; the hardening pass removed them.) Under Model B (governance_001) a run pinned to
+      an older canon must migrate (run.py migrate) before it can transition.
 
 # ═══════════════════════════════════════════════════════════════════
 # 1 · STATE FILE SHAPE
@@ -86,12 +96,22 @@ state_file:
   owner_decisions:
     type: map
     description: >
-      Explicit, recorded decisions. The key is the decision id named by a transition's
-      owner_decision_recorded predicate. A transition requiring one CANNOT proceed on
-      conversational inference.
+      Ledger of OWNER JUDGMENTS ONLY. The key is the decision id named by a transition's
+      owner_decision_recorded predicate. A transition requiring an owner gate CANNOT proceed on
+      conversational inference NOR on an agent recommendation — only on a genuinely explicit
+      owner confirmation (status owner_confirmed).
+      Status vocabulary is BINARY (charter governance_003, owner ruling 2026-08-09):
+        provisional_recommendation  agent proposal, owner approval pending
+        owner_confirmed             genuinely explicit owner confirmation (the ONLY status that
+                                    gates a transition, and the ONLY status on which
+                                    decided_by may be product_owner)
+      Engine FULFILLMENT lives in product truth / current_truth.jsonl; VALIDATION lives in
+      validation_attempts; material EXCEPTIONS are reported in their own artifacts. None of
+      those are owner decisions and none belong in this ledger.
     item:
-      decided: {type: boolean}
-      decided_by: {type: string}
+      status: {type: enum, values: [provisional_recommendation, owner_confirmed]}
+      decided: {type: boolean, description: "true only when status == owner_confirmed"}
+      decided_by: {type: string, description: "product_owner permitted ONLY when status == owner_confirmed"}
       decided_at: {type: timestamp}
       value: {type: any, description: "the selection, e.g. an opportunity_id or route_id"}
       note: {type: string, optional: true}
@@ -181,6 +201,27 @@ state_file:
     type: list
     item: {capability: string, asserted_at_state: string}
 
+  verification:
+    description: >
+      The COMPUTED live-verification record. Written ONLY by `run.py verify-live` (not settable),
+      which binds the result to the executed build. LIVE consumes it; an agent cannot enter LIVE
+      by asserting post_cache_verified=true. When the sandbox cannot reach the live product, a
+      human-observed result may be ingested — but method + observed_by make that provenance
+      explicit; there is no generic boolean set-path.
+    fields:
+      post_cache_verified: {type: boolean, desc: "the observed live result (pass)"}
+      reprobe_at:          {type: timestamp, desc: "post-cache verification time (~10min after activation)"}
+      executed_build:      {type: string, desc: "the build id that was imported/executed"}
+      build_sha256:        {type: string, desc: "sha256 of the products_csv that was executed — must match the registered artifact"}
+      rail_ids:            {type: list, desc: "expected rail/feed identifiers checked live"}
+      method:              {type: enum, values: [automated_probe, human_observation]}
+      observed_by:         {type: string, desc: "who/what observed (required for human_observation)"}
+      evidence:            {type: string, desc: "probe output ref / screenshot ref / hash of evidence"}
+      result:              {type: enum, values: [pass, fail]}
+
+  execution_tracking_executed_build:
+    note: "execution_tracking.executed_build: the build id recorded as imported. Set by verify-live."
+
 # ═══════════════════════════════════════════════════════════════════
 # 2 · PREDICATE VOCABULARY
 # The validator implements exactly these. No others may appear in prerequisites.
@@ -214,15 +255,25 @@ predicates:
                             desc: "DEPRECATED alias of each_has_non_null. Retained so an older
                                    pinned spec still resolves. Do not use in new prerequisites."}
   each_satisfies:          {args: [dotted_path, predicate], desc: "single level of nesting only"}
-  owner_decision_recorded: {args: [decision_id], desc: "owner_decisions[id].decided == true with decided_by and decided_at"}
+  owner_decision_recorded: {args: [decision_id], desc: "owner_decisions[id].status == owner_confirmed
+                                                        AND decided == true with decided_by and decided_at.
+                                                        A provisional_recommendation, fulfilled, validated
+                                                        or exception entry does NOT satisfy this gate."}
   pending_validation_passed: {args: [validation_id], desc: "charter pending_validations[id] recorded as passed"}
   capability_permitted:    {args: [capability], desc: "no unpassed pending_validation blocks it"}
   campaign_id_unique:      {args: [], desc: "no other active or externally-referenced run owns this occasion-year id"}
   last_validation_passed:  {args: [], desc: "validation_attempts is non-empty, its last entry has
                                              result: passed, and that entry is not invalidated"}
+  validation_binds_products_csv: {args: [], desc: "the last passing validation_attempt's
+                                             output_sha256 equals the registered products_csv
+                                             artifact sha256 — the pass is bound to THAT built
+                                             file, so a hand-authored CSV cannot satisfy VALIDATED"}
+  verification_bound_to_executed_build: {args: [], desc: "verification.result == pass, its
+                                             build_sha256 equals the registered products_csv
+                                             sha256, executed_build matches, and (for
+                                             human_observation) observed_by is present — so LIVE
+                                             cannot be entered by asserting a boolean"}
   artifact_current:        {args: [key], desc: "artifacts[key].status == current"}
-  downstream_superseded:   {args: [state_name], desc: "every artifact produced at or after
-                                                       state_name is marked superseded"}
 
 # ═══════════════════════════════════════════════════════════════════
 # 3 · STATES
@@ -392,6 +443,7 @@ states:
     entry_prerequisites:
       - {p: artifact_exists, args: [stage7_seam6]}
       - {p: each_has_non_null, args: [rails, [rail_id, collection_id, rail_position]], charter_ref: rail_001}
+      - {p: each_satisfies, args: [rails, has_rail_position], charter_ref: rail_001}
       - {p: each_satisfies, args: [rails, exactly_one_collection], charter_ref: rail_001}
       - {p: each_satisfies, args: [entities, meets_technical_minimum], charter_ref: render_001}
       - {p: each_satisfies, args: [entities, meets_quality_minimum_or_has_exception], charter_ref: render_002}
@@ -412,6 +464,7 @@ states:
     entry_prerequisites:
       - {p: artifact_exists, args: [products_csv]}
       - {p: last_validation_passed}
+      - {p: validation_binds_products_csv}
       - {p: field_equals, args: [execution_tracking.seam6_execution_status, validated]}
       - {p: field_present, args: [validation_attempts]}
     notes: "Warnings do not block: deprecated collection_rank, non-blocking pending validations,
@@ -429,6 +482,7 @@ states:
     entry_prerequisites:
       - {p: field_present, args: [verification.reprobe_at]}
       - {p: field_equals, args: [verification.post_cache_verified, true]}
+      - {p: verification_bound_to_executed_build}
       - {p: field_non_empty, args: [collection_freeze.snapshot]}
       - {p: field_equals, args: [execution_tracking.seam6_execution_status, executed]}
     on_entry:
@@ -491,14 +545,14 @@ settable_paths:
   execution_tracking.activation_architecture_status: {type: enum, values: [not_started, drafted, approved]}
   execution_tracking.external_handoffs_status:       {type: enum, values: [not_started, authored]}
   execution_tracking.seam6_execution_status:         {type: enum, values: [not_started, ready, validated, executed]}
-  validation_attempts:                               {type: list}
-  verification:                                      {type: mapping}
   collection_freeze:                                 {type: mapping}
 
 not_settable:
   note: >
     workflow.state (transition only) · workflow.history (transition only) · run.* (pinned at NEW)
     · owner_decisions (record-decision only) · artifacts (register-artifact only) ·
+    validation_attempts (validate-execution ONLY — a real build appends it; an agent may NOT
+    author a passing attempt) · verification (verify-live ONLY — computed, not asserted) ·
     identity.campaign_id.externally_referenced and first_external_reference (deferred — these
     trigger immutability and need their own controlled operation) · abandonment (computed on
     entry to ABANDONED) · capability_claims (deferred) · invalidated (deferred to reopen work).
@@ -720,6 +774,12 @@ refusals:
     charter_ref: governance_001
     message: "charter_version changed with no migration record. A new charter does not
               auto-migrate an active run. Refusing."
+  run_canon_version_mismatch:
+    charter_ref: governance_001
+    message: "The run's pinned spec/charter version differs from the on-disk canon the
+              validator loaded (Model B: rules are always evaluated against current canon).
+              An un-migrated run would be judged under rules it never adopted. Run
+              `run.py migrate` to record an explicit migration, then retry. Refusing."
   withdrawn_version_loaded:
     message: "Pinned spec or charter version is withdrawn. Refusing."
   charter_not_approved:
@@ -733,6 +793,11 @@ refusals:
   closing_sentence_is_not_proof:
     message: "A transition requiring owner_decision_recorded cannot proceed on conversational
               inference. The model asserting that a stage is complete is not evidence."
+  decision_status_misstamped:
+    charter_ref: governance_003
+    message: "An owner_decisions entry sets decided_by: product_owner (or decided: true) without
+              status owner_confirmed. Engine fulfillment and agent recommendations are never
+              owner decisions; product_owner is valid only on an owner_confirmed entry. Refusing."
   reopen_without_decision:
     charter_ref: governance_001
     message: "A reopen transition requires its named owner decision, a recorded reason, and
@@ -766,6 +831,14 @@ refusals:
               Refusing."
   frozen_collection_modified:
     charter_ref: constraint_repo_005
+    status: not_yet_enforced   # POST-LIVE operational integrity, NOT a launch gate (owner 2026-08-09)
+    scope_ruling: >
+      Freeze detection is POST-LIVE operational integrity, not part of the initial LIVE gate:
+      a collection can only be modified AFTER it is frozen at go-live, so this never blocks the
+      launch transition. Real enforcement needs an engine collection-diff (live contents vs the
+      freeze snapshot's per-collection sha256) — a NEXT_PASS item. This refusal string is
+      retained for when that writer lands; it is NOT enforced today (the former check read a
+      phantom field and was removed in the 2026-08-09 hardening pass).
     message: "Collection <id> is frozen from LIVE. A material change requires a new versioned
               collection; an emergency correction requires a recorded exception with reason,
               approved_by, approved_at, affected_collection_id and change_summary. Refusing."

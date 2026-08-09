@@ -110,7 +110,7 @@ def main():
             rp = os.path.join(tmp, "curated.json")
             json.dump(rows, open(rp, "w"))
             outp = os.path.join(tmp, "p.csv")
-            r = subprocess.run([sys.executable, BUILD, "--campaign", "t", "--rows", rp,
+            r = subprocess.run([sys.executable, BUILD, "--legacy-replay", "--campaign", "t", "--rows", rp,
                                 "--out", outp, "--engine", ENGINE], capture_output=True, text=True)
             ok("build succeeds on a compliant collection set", r.returncode == 0, r.stdout + r.stderr)
             got = list(csv.DictReader(open(outp, encoding="utf-8")))
@@ -129,7 +129,7 @@ def main():
             ok("stock_status is resolved for every row, never blank",
                all(x["stock_status"] for x in got))
             out2 = os.path.join(tmp, "p2.csv")
-            subprocess.run([sys.executable, BUILD, "--campaign", "t", "--rows", rp,
+            subprocess.run([sys.executable, BUILD, "--legacy-replay", "--campaign", "t", "--rows", rp,
                             "--out", out2, "--engine", ENGINE], capture_output=True, text=True)
             ok("output is deterministic across builds",
                open(outp, "rb").read() == open(out2, "rb").read())
@@ -138,7 +138,7 @@ def main():
 
             thin = [x for x in rows if x["collection_name"] == "The Summer Bag"][:10]
             tp = os.path.join(tmp, "thin.json"); json.dump(thin, open(tp, "w"))
-            r = subprocess.run([sys.executable, BUILD, "--campaign", "t", "--rows", tp,
+            r = subprocess.run([sys.executable, BUILD, "--legacy-replay", "--campaign", "t", "--rows", tp,
                                 "--out", os.path.join(tmp, "t.csv"), "--engine", ENGINE],
                                capture_output=True, text=True)
             ok("a collection below the quality minimum on AVAILABLE products refuses",
@@ -149,13 +149,13 @@ def main():
             ep = os.path.join(tmp, "exc.json")
             json.dump({"The Summer Bag": {"approved": True, "approved_by": "product_owner",
                                           "rationale": "diagnostic"}}, open(ep, "w"))
-            r = subprocess.run([sys.executable, BUILD, "--campaign", "t", "--rows", tp,
+            r = subprocess.run([sys.executable, BUILD, "--legacy-replay", "--campaign", "t", "--rows", tp,
                                 "--out", os.path.join(tmp, "t2.csv"), "--engine", ENGINE,
                                 "--exceptions", ep], capture_output=True, text=True)
             ok("an approved quality_exception downgrades the refusal to a warning",
                r.returncode == 0 and "limited inventory resilience" in r.stdout)
 
-            r = subprocess.run([sys.executable, BUILD, "--campaign", "t", "--rows", rp,
+            r = subprocess.run([sys.executable, BUILD, "--legacy-replay", "--campaign", "t", "--rows", rp,
                                 "--out", os.path.join(tmp, "n.csv"), "--engine", "/tmp/__no_engine__"],
                                capture_output=True, text=True)
             ok("build refuses when availability cannot be established",
