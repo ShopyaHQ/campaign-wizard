@@ -1,0 +1,24 @@
+# VERTICAL INTERPRETATIONS — Almost Fall (extension artifact, R5)
+# One central premise, six evidence-backed vertical interpretations.
+# Fashion is EXTRACTED from the completed prototype (locked work, not new strategy).
+premise: >
+  Fashion has moved into fall before the weather has. That creates a gap between what shoppers
+  are beginning to want and what they can realistically wear now. Shopya turns that gap into a
+  useful discovery behavior: save what belongs to the season ahead, while finding the signals
+  of that season that already work now. The campaign is about wanting ahead without having to
+  resolve that desire immediately. (Owner-locked 2026-08-07.)
+verticals:
+  fashion:
+    status: EXTRACTED_FROM_PROTOTYPE_LOCKED
+    interpretation: >
+      In fashion the gap is literal and physical: fall inventory is in every store window in
+      August while it is still too hot to wear it. The mechanism is three time-relationships
+      to the season — save what you cannot wear yet (First Coats of Fall), wear the season's
+      signals that already work in the heat (Suede, Sheer & Denim: texture, colour and weight
+      as early-fall signals in summer-compatible forms), and shift an existing summer outfit
+      with one small addition (Fall Accents). Wanting ahead IS saving; the coat rail expects
+      save intent, not purchase intent.
+    evidence_basis: "stage1_signals.yaml + verification runs 2026-08-06/07 (carried, not re-researched)"
+    merchandising_territories: ["locked: A First Coats of Fall / B Suede Sheer & Denim / D Fall Accents"]
+    editorial_territories: ["NOT YET DEVELOPED — owed with the other five verticals' content concepts"]
+    exclusions: ["no back-to-school framing", "no cosy/pumpkin cliches", "no discount language", "C taste-display concept rejected-for-premise", "boots (no architecture slot this run)"]
