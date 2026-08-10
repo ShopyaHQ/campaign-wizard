@@ -20,7 +20,21 @@ scrape method, attempt history, PDP pattern; truth pipeline operational.
 Wizard deliverables: charters/schemas/naming/SSOT current; seams contract pinned in docs.
 REQUIREMENT: no campaign sources from a brand absent from the roster — using a new brand
 CREATES its roster entry (method learned, attempts logged) as part of the work.
-MILESTONE M0: FOUNDATIONS_READY.
+MILESTONE M0: FOUNDATIONS_READY — MACHINE-CHECKED AND BLOCKING (2026-08-10, post-regression
+fix A3; definition reconciled by owner directive the same day): `python3
+tools/foundation_readiness.py` in the engine must exit 0, measured on
+**roster_working_profiles >= 200** — a WORKING PROFILE is registered in the roster with
+URL/identity, an explicitly recorded PDP-capable NON-DISCOVERY method (static_html / json_ld /
+browser_agent; og_meta or search-snippet alone never qualify), and >=1 demonstrating
+PDP-gate-clean verified truth row from that method — i.e. repeatable method truth, not merely
+a merchant observed in truth. The check reports the full reconciliation (observed merchants ·
+roster-working · intersection · observed-not-profiled · profiled-not-demonstrated); nothing is
+queried live. ENFORCEMENT POINT: the wizard->engine request boundary —
+tools/validate_curation_request.py REFUSES any curation request while M0 is unmet unless the
+request declares `foundation_shortfall_acknowledged: true`, so a campaign proceeds only by
+openly acknowledging the shortfall and adding roster profiles as part of its sourcing.
+(Reconciled count 2026-08-10: 62 roster_working_profiles · 168 observed merchant hosts ·
+82 profiled-not-demonstrated · 17 observed-not-profiled · shortfall 138.)
 
 ## PHASE 1 — KICKOFF & DEFINE  (framework stage 1; owner gate)
 /new-campaign mints run in _drafts and records the spec/charter versions that created it

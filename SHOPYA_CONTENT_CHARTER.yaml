@@ -20,7 +20,15 @@ charter:
   approved_by: product_owner
   approved_at: 2026-08-09T00:00:00Z
   supersedes: 0.7.3-proposed
-  companion_to: {file: SHOPYA_CAMPAIGN_CHARTER.yaml, version: 0.4.0}
+  companion_to:
+    file: SHOPYA_CAMPAIGN_CHARTER.yaml
+    min_version: 0.4.0            # first campaign-charter version carrying the >=50 floor +
+                                  # six-gate model this charter references; a RANGE, not a pin
+    last_verified_against: 0.5.0  # 2026-08-10 — 0.5.0 changed only explore_002 (feed-cap
+                                  # removal), which this charter does not restate; no content
+                                  # rule affected. Formalized as a range per owner directive
+                                  # 2026-08-10: an exact pin went stale on every campaign-charter
+                                  # revision even when no content rule changed.
   changelog:
     1.0.0: >
       Promoted proposed -> approved (owner 2026-08-09) after the system-hardening pass. Adds the

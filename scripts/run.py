@@ -251,6 +251,12 @@ def cmd_record_decision(a):
     if a.note:
         rec["note"] = a.note
     s.setdefault("owner_decisions", {})[a.id] = rec
+    # A1 (2026-08-10): a decision invalidated by a reopen becomes gate-worthy again ONLY by
+    # being genuinely re-recorded. An owner_confirmed re-record clears the invalidation; any
+    # other status leaves it invalidated (a provisional recommendation cannot resurrect it).
+    if status == "owner_confirmed" and a.id in (s.get("invalidated") or []):
+        s["invalidated"].remove(a.id)
+        print("  cleared invalidation of %r (re-recorded by owner)" % a.id)
     atomic_write(state_path(a.run), s)
     print("recorded %s %r by %s at %s" % (status, a.id, a.by, rec["decided_at"]))
     if val is not None:
@@ -315,6 +321,24 @@ def cmd_reopen(a):
     for target in t.get("invalidates") or []:
         if target not in inval:
             inval.append(target)
+    # 2b) A1 (2026-08-10): the invalidation is ATOMIC with the reopen preparation — stale
+    # execution-dependent proof must not survive as live proof. Driven by the edge's declared
+    # invalidates list; these fields are stamped ONLY here and in cmd_migrate.
+    if "validation_attempts" in (t.get("invalidates") or []):
+        for att in s.get("validation_attempts") or []:
+            if att.get("result") == "passed" and not att.get("invalidated_at"):
+                att["invalidated_at"] = now()
+                att["invalidated_by_decision"] = did
+    if "verification" in (t.get("invalidates") or []) and s.get("verification"):
+        v = s["verification"]
+        if not v.get("invalidated_at"):
+            v["invalidated_at"] = now()
+            v["invalidated_by_decision"] = did
+    if a.to == "SEAM6_READY":
+        # execution returns to regenerate-and-revalidate; 'validated' may not survive a reopen
+        et = s.setdefault("execution_tracking", {})
+        if et.get("seam6_execution_status") in ("validated", "executed"):
+            et["seam6_execution_status"] = "ready"
     # 3) record the reopen owner decision (owner_confirmed; required value fields + reason).
     value = json.loads(a.value_json) if a.value_json else {}
     value.setdefault("reason", a.reason)
@@ -389,10 +413,62 @@ def cmd_migrate(a):
     run.setdefault("migration", []).append(rec)
     run["spec_version"] = to_spec
     run["charter_version"] = to_chart
+
+    # A2 (2026-08-10): migration may NOT leave traversed canon-dependent/hash-bound proof that
+    # would fail the current canon. Deterministic invalidation, not historical replay:
+    # a passing validation attempt is current-canon-valid only if it is a production build
+    # hash-bound to the CURRENTLY registered products_csv. Anything else is stamped invalid,
+    # the 'validated' execution status is downgraded, and the stale execution artifacts are
+    # superseded (never deleted). The validator's stale_execution_proof invariant enforces the
+    # same rule, so a hand-edited state cannot dodge this.
+    csv_rec = (s.get("artifacts") or {}).get("products_csv") or {}
+    csv_sha = csv_rec.get("sha256")
+    invalidated_n = 0
+    live_valid = False
+    for att in s.get("validation_attempts") or []:
+        if att.get("result") != "passed" or att.get("invalidated_at"):
+            continue
+        bound = (att.get("production") is True and att.get("output_sha256")
+                 and att.get("output_sha256") == csv_sha
+                 and not att.get("allow_stale_used") and not att.get("legacy_replay_used"))
+        if bound and csv_rec.get("status", "current") == "current":
+            live_valid = True
+        else:
+            att["invalidated_at"] = now()
+            att["invalidated_by_decision"] = "canon_migration"
+            invalidated_n += 1
+    et = s.setdefault("execution_tracking", {})
+    if invalidated_n and not live_valid:
+        if et.get("seam6_execution_status") == "validated":
+            et["seam6_execution_status"] = "ready"
+        for key in ("products_csv", "execution_manifest"):
+            arec = (s.get("artifacts") or {}).get(key)
+            if arec and arec.get("status", "current") == "current":
+                arec["status"] = "superseded"
+                arec["superseded_by"] = None
+                arec["superseded_at"] = now()
+                arec["supersession_reason"] = ("canon migration %s/%s -> %s/%s: bound proof "
+                                               "invalid under current canon; regenerate via "
+                                               "validate-execution"
+                                               % (frm_spec, frm_chart, to_spec, to_chart))
+        rec["proof_invalidated"] = {
+            "validation_attempts_stamped": invalidated_n,
+            "seam6_execution_status": et.get("seam6_execution_status"),
+            "superseded": [k for k in ("products_csv", "execution_manifest")
+                           if ((s.get("artifacts") or {}).get(k) or {}).get("status") == "superseded"],
+        }
+
     atomic_write(state_path(a.run), s)
     print("migrated run %s: spec %s->%s, charter %s->%s"
           % (a.run, frm_spec, to_spec, frm_chart, to_chart))
     print("  by %s: %s" % (a.by, a.note or "(no note)"))
+    if invalidated_n:
+        print("  OBLIGATION: %d passing validation attempt(s) carried no current-canon proof "
+              "and were stamped invalidated" % invalidated_n)
+        if not live_valid:
+            print("  OBLIGATION: no live proof remains — seam6_execution_status downgraded to "
+                  "%r; stale execution artifacts superseded; run validate-execution to "
+                  "regenerate" % et.get("seam6_execution_status"))
 
 
 def cmd_validate_execution(a):

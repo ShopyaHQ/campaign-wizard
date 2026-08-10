@@ -16,12 +16,22 @@
 # Proposed and inferred claims are NEVER silently promoted to product truth.
 
 charter:
-  version: 0.4.0
+  version: 0.5.0
   status: approved
   approved_by: product_owner
-  approved_at: 2026-08-09T00:00:00Z
-  supersedes: 0.3.0
+  approved_at: 2026-08-10T00:00:00Z
+  supersedes: 0.4.0
   changelog:
+    0.5.0: >
+      Post-regression reconciliation (owner directive 2026-08-10). explore_002 REVISED: the
+      global four-feed campaign ceiling (owner ruling 2026-08-06) was already superseded by the
+      owner's Phase-1 ruling of 2026-08-07 (phase1_matrix_approved_rulings_r1_r5, R1: the
+      explore_feeds<=4 model is INVALID for the locked Phase-1 product, which requires >=3
+      product rails per required vertical; no new arbitrary global number). The charter now
+      matches that ruling: per-feed justification and per-activation declaration survive; the
+      global numeric cap is removed; NO replacement maximum is invented — practical per-surface
+      maximums are established from frontend/product evidence. The conflict was surfaced by the
+      Almost Fall r002 end-to-end regression. No other claim changed.
     0.4.0: >
       Owner rulings 2026-08-09. RULING 1 (collection depth): render_003 is REVERSED — every
       launched durable category collection now carries a HARD >=50 dependable in_stock unique
@@ -937,13 +947,13 @@ claims:
 
   - id: explore_002
     category: explore_limits
-    claim: "Interim absolute guardrail: normal_range [1,4]; maximum_new_campaign_feeds 4. Four is a CEILING, not an entitlement — every feed must be justified by the activation architecture."
+    claim: "Every explore feed must be justified by the activation architecture, and every activation must DECLARE its explore_feeds count (0 for handoff seams). There is NO global numeric feed cap: the locked Phase-1 product model requires at least three product rails per required vertical, so the former four-feed campaign ceiling is obsolete. No replacement global maximum is asserted — practical per-surface maximums are established from frontend/product evidence when it exists, not invented."
     status: approved_rule
-    approved_in_version: 0.2.0
+    approved_in_version: 0.5.0
     sources: []
-    basis: ["Owner ruling 2026-08-06"]
+    basis: ["Owner ruling 2026-08-07 (run cmp_01KZCD765E6NNW2TZR1AFHQMWG decision phase1_matrix_approved_rulings_r1_r5, R1): the explore_feeds<=4 model is INVALID for Phase 1 — minimum 3 rails per vertical; no new arbitrary global number; audit establishes practical per-surface max", "Owner directive 2026-08-10: reconcile the charter with that existing ruling (post-regression correction pass)"]
     requires_owner_confirmation: false
-    notes: "After normalization: allowed_new_feeds = min(absolute_campaign_cap, proportional_page_cap)."
+    notes: "REVISED from 0.2.0 (normal_range [1,4] / maximum_new_campaign_feeds 4, owner ruling 2026-08-06 — superseded by the 2026-08-07 Phase-1 ruling). The declaration requirement survives; the cap does not. Conflict surfaced by the Almost Fall r002 regression."
 
   # ═══ 12 · CAMPAIGN-WORTHY BEHAVIOR ═══════════════════════════════
   - id: behavior_rule_001

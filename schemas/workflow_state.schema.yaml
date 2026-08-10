@@ -12,7 +12,7 @@
 
 schema:
   name: workflow_state
-  version: 1.5.0
+  version: 1.6.0
   charter_min_version: 0.2.0
   state_file_path: "campaigns/<run_id>/state.yaml"
   notes: >
@@ -20,6 +20,25 @@ schema:
     with a charter_ref is traceable to an approved decision; one without is a schema-local
     structural check.
   changelog:
+    1.6.0: >
+      Post-regression corrections (owner directive 2026-08-10, defects demonstrated by the
+      Almost Fall r002 regression). A1: new reopen edge CAMPAIGN_APPROVED -> SEAM6_READY
+      (reopen_execution_post_approval) so a run approved on stale execution can regenerate it
+      through the sanctioned interface; the reopen atomically invalidates campaign_approved,
+      stamps validation_attempts/verification invalid and supersedes products_csv +
+      execution_manifest. An invalidated owner decision no longer satisfies
+      owner_decision_recorded until re-recorded. A2: canon migration (run.py migrate) may not
+      leave traversed hash-bound proof that fails the current canon — non-compliant passing
+      validation_attempts are stamped invalidated, seam6_execution_status is downgraded from
+      'validated', and the stale execution artifacts are superseded (refusal
+      stale_execution_proof enforces status/proof coherence). Binding predicates now refuse a
+      superseded products_csv. A4: the ACTIVATION_READY explore-feed gate no longer enforces
+      the superseded global <=4 cap (owner ruling phase1_matrix_approved_rulings_r1_r5,
+      2026-08-07: the global four-feed model is INVALID for the locked Phase-1 product, which
+      requires >=3 product rails per required vertical); every activation must still DECLARE
+      explore_feeds — the declaration requirement survives, the obsolete cap does not. No
+      replacement numeric maximum is invented; practical per-surface maximums arrive from
+      frontend evidence (charter explore_002 revision, 0.5.0).
     1.5.0: >
       Owner ruling 2026-08-09 (Ruling 2 — governance_003). owner_decisions entries carry a
       BINARY status enum (provisional_recommendation | owner_confirmed). owner_decision_recorded
@@ -427,10 +446,14 @@ states:
                                                       cache_latency_seconds, precision]],
          charter_ref: scheduling_003}
       - {p: field_present, args: [delivery.intent.mode], charter_ref: scheduling_006}
-      - {p: sum_max, args: [activations.explore_feeds, 4], charter_ref: explore_002,
-         rationale: "count_max counted ACTIVATIONS, not feeds — three activations declaring 100
-                     feeds each passed a cap of 4. Every activation must declare explore_feeds,
-                     including 0 for handoff seams; an undeclared value fails."}
+      - {p: sum_max, args: [activations.explore_feeds, null], charter_ref: explore_002,
+         rationale: "Every activation must DECLARE a NUMERIC explore_feeds, including 0 for
+                     handoff seams; an undeclared or non-numeric value fails. The cap is null:
+                     the former global ceiling of 4 was superseded by owner ruling
+                     phase1_matrix_approved_rulings_r1_r5 (2026-08-07 — the locked Phase-1
+                     product requires >=3 product rails per required vertical), and no
+                     replacement numeric maximum is invented; practical per-surface maximums
+                     come from frontend evidence (charter explore_002, 0.5.0)."}
       - {p: capability_permitted, args: [claiming_s6_window_scheduling_verified], charter_ref: scheduling_005}
       - {p: capability_permitted, args: [claiming_rail_links_to_collection_page], charter_ref: view_all_001}
       - {p: field_equals, args: [execution_tracking.activation_architecture_status, approved]}
@@ -552,7 +575,9 @@ not_settable:
     workflow.state (transition only) · workflow.history (transition only) · run.* (pinned at NEW)
     · owner_decisions (record-decision only) · artifacts (register-artifact only) ·
     validation_attempts (validate-execution ONLY — a real build appends it; an agent may NOT
-    author a passing attempt) · verification (verify-live ONLY — computed, not asserted) ·
+    author a passing attempt; invalidated_at/invalidated_by_decision are stamped ONLY by
+    run.py reopen and run.py migrate, never authored directly) ·
+    verification (verify-live ONLY — computed, not asserted; invalidation stamped by reopen) ·
     identity.campaign_id.externally_referenced and first_external_reference (deferred — these
     trigger immutability and need their own controlled operation) · abandonment (computed on
     entry to ABANDONED) · capability_claims (deferred) · invalidated (deferred to reopen work).
@@ -750,6 +775,43 @@ transitions:
 
   - {from: VALIDATED,         to: CAMPAIGN_APPROVED, transition_type: forward}
   - {from: CAMPAIGN_APPROVED, to: LIVE,              transition_type: forward}
+
+  - from: CAMPAIGN_APPROVED
+    to: SEAM6_READY
+    transition_type: reopen
+    owner_decision: reopen_execution_post_approval
+    transition_reason: execution_reopened_post_approval
+    applies_when: >
+      an APPROVED run's execution must be regenerated — the approved execution is stale
+      (e.g. canon migration invalidated its proof, or engine truth moved) or is deliberately
+      changed. Demonstrated need: Almost Fall r002 regression (2026-08-10) — the run sat one
+      state past the only execution reopen edge and could not express the invalidation
+      cascade through the sanctioned interface.
+    does_not_apply_to: "a LIVE run — post-LIVE change is a separate future concept"
+    decision_value_required_fields: [reason]
+    invalidates:
+      - campaign_approved
+      - execution_tracking.seam6_execution_status
+      - validation_attempts
+      - verification
+    supersedes_artifacts:
+      - products_csv
+      - execution_manifest
+    on_transition:
+      - "stamp every non-invalidated passing validation_attempts entry with invalidated_at and
+         invalidated_by_decision (writer: run.py reopen) — preserve reports as history"
+      - "stamp verification (if present) invalidated the same way — a pre-reopen live probe
+         can never satisfy a post-reopen LIVE gate"
+      - "supersede products_csv and execution_manifest — NEVER delete"
+      - "set execution_tracking.seam6_execution_status back to 'ready'"
+      - "campaign_approved is invalidated: re-entering CAMPAIGN_APPROVED requires the owner to
+         RE-RECORD the decision on the regenerated execution (record-decision clears the
+         invalidation); the stale approval can never gate again"
+    cascade_note: >
+      A fresh passing hash-bound validation attempt is required before SEAM6_READY ->
+      VALIDATED, and a fresh owner approval before VALIDATED -> CAMPAIGN_APPROVED. Artifacts
+      are superseded, never deleted; the run retains full history.
+
   - {from: LIVE,              to: REVIEWED,          transition_type: forward}
 
   - from: ANY_PRE_LIVE
@@ -852,6 +914,18 @@ refusals:
     charter_ref: scope_002
     message: "external_handoffs_implemented may only be set from an explicit owner report,
               never inferred from external_handoffs_status. Refusing."
+  stale_execution_proof:
+    charter_ref: governance_001
+    message: "execution_tracking.seam6_execution_status asserts 'validated' but the run holds
+              no live current-canon proof: the last non-invalidated passing validation attempt
+              must be a production build hash-bound to the CURRENT products_csv. A migrated
+              run may not remain semantically post-VALIDATED on proof the current canon would
+              refuse — run.py migrate stamps such proof invalid and downgrades the status;
+              regenerate via validate-execution. Refusing."
+  stale_decision_after_reopen:
+    charter_ref: governance_001
+    message: "owner decision <id> was invalidated by a reopen and cannot gate a transition
+              until the owner re-records it on the regenerated work. Refusing."
 
 # ═══════════════════════════════════════════════════════════════════
 # 8 · RULINGS APPLIED IN 1.1.0

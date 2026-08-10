@@ -342,7 +342,10 @@ class Validator:
         return True
 
     def p_sum_max(self, a, ctx):
-        """Sum numeric values at the path. Missing or non-numeric fails loudly."""
+        """Sum numeric values at the path. Missing or non-numeric fails loudly.
+        A null cap (A4, 2026-08-10) means NO ceiling: the declaration and numericity
+        requirements still apply in full, but no maximum is enforced — used where an owner
+        ruling removed an obsolete cap without inventing a replacement number."""
         path, cap = a[0], a[1]
         pairs = self.resolve_all(path)
         if not pairs or all(v is MISSING for _, v in pairs):
@@ -362,7 +365,7 @@ class Validator:
                 ok = False
             else:
                 total += val
-        if ok and total > cap:
+        if ok and cap is not None and total > cap:
             self.fail("prerequisites_unmet",
                       "%s: %s sums to %s, over the cap" % (ctx, path, total),
                       path, "<= %s" % cap, total)
@@ -469,6 +472,15 @@ class Validator:
                       % (ctx, did, d.get("status")),
                       "owner_decisions.%s.status" % did, "owner_confirmed", d.get("status"))
             return False
+        # A1 (2026-08-10): a decision invalidated by a reopen is not a live approval. It gates
+        # again only after the owner genuinely re-records it (record-decision clears the entry
+        # from state.invalidated on an owner_confirmed re-record).
+        if did in (self.state.get("invalidated") or []):
+            self.fail("stale_decision_after_reopen",
+                      "%s: owner decision %r was invalidated by a reopen and cannot gate a "
+                      "transition until re-recorded by the owner" % (ctx, did),
+                      "invalidated", "does not include %r" % did, did)
+            return False
         return True
 
     def p_pending_validation_passed(self, a, ctx):
@@ -554,6 +566,15 @@ class Validator:
         last = att[-1]
         stamped = last.get("output_sha256")
         rec = self.artifact_record("products_csv") or {}
+        # A1 (2026-08-10): a superseded products_csv can never anchor a live binding — the
+        # schema rule "a superseded artifact can never satisfy a gate" applies to hash
+        # anchors too, not only to artifact_exists.
+        if rec and rec.get("status", "current") != "current":
+            self.fail("stale_artifact_treated_as_current",
+                      "%s: products_csv is superseded — a superseded build cannot anchor a "
+                      "validation binding; regenerate via validate-execution" % ctx,
+                      "artifacts.products_csv.status", "current", rec.get("status"))
+            return False
         registered = rec.get("sha256")
         if not stamped or not registered or stamped != registered:
             self.fail("validation_failure_treated_as_transition",
@@ -581,6 +602,21 @@ class Validator:
         boolean. The record must report a pass, be bound by build_sha256 to the registered
         products_csv, and — for a human-observed result — name who observed it."""
         v = self.state.get("verification") or {}
+        # A1 (2026-08-10): a verification invalidated by a reopen is history, not proof.
+        if v.get("invalidated_at"):
+            self.fail("prerequisites_unmet",
+                      "%s: verification was invalidated by %r — a pre-reopen probe cannot "
+                      "satisfy LIVE; re-run verify-live against the regenerated build"
+                      % (ctx, v.get("invalidated_by_decision")),
+                      "verification.invalidated_at", None, v.get("invalidated_at"))
+            return False
+        vrec = self.artifact_record("products_csv") or {}
+        if vrec and vrec.get("status", "current") != "current":
+            self.fail("stale_artifact_treated_as_current",
+                      "%s: products_csv is superseded — verification cannot bind to a "
+                      "superseded build" % ctx,
+                      "artifacts.products_csv.status", "current", vrec.get("status"))
+            return False
         if v.get("result") != "pass" or v.get("post_cache_verified") is not True:
             self.fail("prerequisites_unmet",
                       "%s: verification is not a recorded pass (result=%r, post_cache_verified=%r)"
@@ -721,6 +757,34 @@ class Validator:
                 self.fail("artifact_deleted",
                           "artifact %r is registered but missing on disk" % key,
                           "artifacts.%s.path" % key, "<exists>", p)
+
+        # A2 (2026-08-10): status/proof coherence. 'validated' is a machine-checkable claim:
+        # it holds ONLY while the last non-invalidated passing validation attempt is a
+        # production build hash-bound to the CURRENT products_csv. A migrated run whose
+        # traversed proof fails the current canon may not remain semantically post-VALIDATED
+        # on it (run.py migrate stamps such proof invalid and downgrades this status; this
+        # invariant catches any state that dodged the writer).
+        if et.get("seam6_execution_status") == "validated":
+            live = [x for x in (self.state.get("validation_attempts") or [])
+                    if x.get("result") == "passed" and not x.get("invalidated_at")]
+            csv_rec = self.artifact_record("products_csv") or {}
+            lastp = live[-1] if live else None
+            bound = (lastp is not None
+                     and lastp.get("production") is True
+                     and lastp.get("output_sha256")
+                     and lastp.get("output_sha256") == csv_rec.get("sha256")
+                     and csv_rec.get("status", "current") == "current"
+                     and not lastp.get("allow_stale_used")
+                     and not lastp.get("legacy_replay_used"))
+            if not bound:
+                self.fail("stale_execution_proof",
+                          "seam6_execution_status is 'validated' but the last non-invalidated "
+                          "passing validation attempt is not a production build hash-bound to "
+                          "the current products_csv — regenerate via validate-execution "
+                          "(canon migration stamps such stale proof invalid)",
+                          "execution_tracking.seam6_execution_status",
+                          "a live hash-bound production pass",
+                          "unbound or invalidated proof")
 
     # ---------- artifact structural validation (separate phase) ----------
     def check_artifacts(self):

@@ -78,18 +78,21 @@ def main():
                                 "--phase", "transition"], capture_output=True, text=True)
             return r.returncode, r.stdout + r.stderr
 
+        # A4 (2026-08-10): the global 4-feed cap is SUPERSEDED (owner Phase-1 ruling
+        # phase1_matrix_approved_rulings_r1_r5: >=3 product rails per required vertical;
+        # no replacement global number). Declaration + numericity survive in full.
         rc, out = run([2, 2])
-        ok("2 + 2 passes the cap of 4", rc == 0, out[-300:])
+        ok("2 + 2 passes", rc == 0, out[-300:])
         rc, out = run([2, 3])
-        ok("2 + 3 refuses", rc != 0 and "sums to 5" in out)
-        rc, out = run([100, 100, 100])
-        ok("three activations of 100 refuse (count_max would have passed this)",
-           rc != 0 and "sums to 300" in out)
+        ok("2 + 3 passes (former cap of 4 is superseded, not enforced)", rc == 0, out[-300:])
+        rc, out = run([3, 3, 3, 3, 3, 3])
+        ok("a Phase-1 multi-vertical spec (6 verticals x 3 rails = 18) is no longer refused "
+           "by the superseded global cap", rc == 0, out[-300:])
         rc, out = run([2, None])
-        ok("an undeclared explore_feeds fails rather than being skipped",
+        ok("an undeclared explore_feeds STILL fails rather than being skipped",
            rc != 0 and "undeclared" in out)
         rc, out = run([2, "two"])
-        ok("a non-numeric explore_feeds fails clearly", rc != 0 and "not numeric" in out)
+        ok("a non-numeric explore_feeds STILL fails clearly", rc != 0 and "not numeric" in out)
         rc, out = run([0, 4])
         ok("handoff seams may declare 0", rc == 0, out[-300:])
 
