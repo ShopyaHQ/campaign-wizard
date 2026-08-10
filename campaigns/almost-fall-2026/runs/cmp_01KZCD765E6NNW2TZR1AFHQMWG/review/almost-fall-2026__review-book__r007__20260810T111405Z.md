@@ -1259,35 +1259,3 @@ executes in admin; then verify-live. Product ingestion remains owner manual-add 
 No product rows are part of this decision; products arrive via engine fulfillment under the
 hard-50 floor, and pins/bindings return in the final execution package for launch approval.
 
-
-═══════════════════════════════════════════════════════════════════
-
-# ROUND r008 — OWNER APPROVAL WITH FOUR AMENDMENTS · FINAL SPEC LOCKED (2026-08-10)
-
-Decision `final_campaign_spec_approved` recorded owner_confirmed. Amendments applied exactly:
-
-- **A1 · Travel sixth selection:** Chargers & Power (tech.power) added as Travel's sixth
-  campaign selection/placement — no duplicate collection. Canonical scale: **43 unique
-  durable collections · 44 vertical collection selections/placements** (tech.power in Tech
-  and Travel). Its second rail placement stays `required — technically blocked` under the
-  one-collection/one-rail contract; the desired spec is preserved, never worked around.
-- **A2 · Gearcare rail copy** (r007 §7.1 line superseded): now
-  "Fix last year's gear first — **wash, patch and reproof what you already own.**"
-  QA FINDING logged (docs/NEXT_PASS_SCOPE.md): the avoid-terms lint missed COMPARATIVE
-  cheapness framing ("cheaper than new"); the campaign-pass lint was trivially extended
-  in place (comparative cheap* now caught); the durable rule goes to the next hardening pass.
-- **A3 · Coats rail copy** (superseded): now
-  "Coats you can't wear yet — **trenches and wool for when the weather catches up.**"
-  No nationwide temperature/month assumptions on a geographically unscoped surface.
-- **A4 · Content gaps closed at spec level:** four prompt-ready packages authored with the
-  full minimum field set — FC4 (long sleeve dresses fall · verified), FC5 (sweater trends
-  fall 2026 · verified), MC1 (flannel shirt outfits men · directional), TC5 (best headphones
-  2026 · verified) — handoffs/content/. Selected program = 22 prompt-ready pieces; broader
-  43/43 coverage stays opportunity/none-level by design. Products bind post-fulfillment.
-
-**Approval scope:** campaign judgment (premise/dek/exclusions · six interpretations ·
-43-collection universe / 44 placements · base+story rails · naming/copy direction · content
-program · Default · seam intent). NOT product fulfillment rows. Next sanctioned sequence
-(no further owner checkpoint unless material exception): roster >= 200 working profiles →
-fulfill approved collections to >=50 → wizard assembly (pins/freshness/bindings/annotations/
-Default/QA) → final human execution package → compact exceptions/readiness card. No launch.

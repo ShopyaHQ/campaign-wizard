@@ -1,0 +1,54 @@
+campaign_id: almost-fall-2026
+display_name: Almost Fall
+run_id: cmp_01KZCD765E6NNW2TZR1AFHQMWG
+build_id: b006
+built_at: '2026-08-10T10:43:41Z'
+products_file: almost-fall-2026__execution__b006__20260810T104341Z.csv
+products_sha256: 4d227fabac0e51e1250f2cfb0512b5d9cede0f6015ba3c645f9ac2e5925ec341
+rows: 359
+rail_items: 120
+body_items: 239
+collections:
+- Bath & Body
+- Candles & Home Fragrance
+- Decorative Accents
+- Dinnerware & Serveware
+- Fragrance
+- Women's Coats & Trenches
+- Women's Dresses
+- Women's Handbags
+- Women's Jackets
+- Women's Jeans
+rails:
+- collection: Bath & Body
+  rail_name: Heavier creams start now
+- collection: Candles & Home Fragrance
+  rail_name: Light for 8pm
+- collection: Decorative Accents
+  rail_name: Brown, in objects
+- collection: Dinnerware & Serveware
+  rail_name: The table comes inside
+- collection: Fragrance
+  rail_name: Smell like fall first
+- collection: Women's Coats & Trenches
+  rail_name: Coats you can't wear yet
+- collection: Women's Dresses
+  rail_name: Dresses for the in-between weeks
+- collection: Women's Handbags
+  rail_name: Bags for the season ahead
+- collection: Women's Jackets
+  rail_name: Suede, before the coats
+- collection: Women's Jeans
+  rail_name: Dark denim, done
+validation:
+  path: validate-execution (v2 builder)
+  result: passed
+  production: true
+  canon: schema 1.6.0 / charter 0.6.0
+  note: NON-LAUNCHABLE pending owner depth ruling (r006 decision 1) — built under
+    render_003 v0.6.0 (24 publishable floor)
+truth_source:
+  export: shopya-collection-curation/exports/current_truth.jsonl
+  contract: 1.0.0
+  generated_at: '2026-08-10'
+  fresh_vs_log: true

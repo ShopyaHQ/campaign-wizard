@@ -15,21 +15,36 @@
 
 charter:
   name: shopya_content_charter
-  version: 1.0.0
+  version: 1.2.0
   status: approved
   approved_by: product_owner
-  approved_at: 2026-08-09T00:00:00Z
-  supersedes: 0.7.3-proposed
+  approved_at: 2026-08-10T00:00:00Z
+  supersedes: 1.1.0
   companion_to:
     file: SHOPYA_CAMPAIGN_CHARTER.yaml
-    min_version: 0.4.0            # first campaign-charter version carrying the >=50 floor +
-                                  # six-gate model this charter references; a RANGE, not a pin
-    last_verified_against: 0.5.0  # 2026-08-10 — 0.5.0 changed only explore_002 (feed-cap
+    min_version: 0.4.0            # first campaign-charter version carrying the depth-floor
+                                  # claim + six-gate model this charter references; a RANGE
+    last_verified_against: 0.7.0  # 2026-08-10 — 0.7.0 restored hard->=50 render_003 (Decision 1). Prior: 0.6.0 (accidental layered regression) +
+                                  # truth_refresh_001; this charter's depth pointers updated. Prior: 0.5.0 (feed-cap
                                   # removal), which this charter does not restate; no content
                                   # rule affected. Formalized as a range per owner directive
                                   # 2026-08-10: an exact pin went stale on every campaign-charter
                                   # revision even when no content rule changed.
   changelog:
+    1.2.0: >
+      Owner Decision 1 (2026-08-10): depth POINTERS restored to the HARD >=50
+      launched-collection floor (render_003 v0.7.0) — the 1.1.0 pointer change to a
+      24-publishable model tracked an accidental campaign-charter regression, now reversed.
+      product_selection_ladder and freshness_hierarchy are UNCHANGED (depth-agnostic,
+      owner-locked operating model). companion_to last_verified_against: 0.7.0.
+    1.1.0: >
+      Owner operating-model lock 2026-08-10. Adds product_selection_ladder (v1 three-tier
+      sourcing/reuse logic with contextual requalification and honest-carryover rule) and
+      freshness_hierarchy (collections must FEEL current; the pinned rail bears the strongest
+      freshness burden; rail/body/reserve are distinct populations). Depth POINTERS updated to
+      render_003 v0.6.0 (hard publishable floor 24 dependable in_stock unique; >50 the
+      preferred health target, never a quota) — numbers stay defined once in the campaign
+      charter, not here. companion_to last_verified_against: 0.6.0.
     1.0.0: >
       Promoted proposed -> approved (owner 2026-08-09) after the system-hardening pass. Adds the
       three-object model as the canonical merchandising object model; homes collection/rail/
@@ -67,11 +82,12 @@ three_object_model:
   category_collection:
     owns: "durable taxonomy — exactly one canonical category/subcategory; reusable across campaigns"
     depth: "a LAUNCHED durable category collection requires >=50 dependable in_stock unique
-            SELLABLE products (campaign charter render_003). low-stock is separate and does NOT
-            satisfy the floor; variants and duplicate product identity never inflate depth
-            (engine-owned sellable_product_uid); no padding; category scope cannot silently
-            widen — a material scope change escalates to the owner (render_003 floor-failure
-            protocol). This document does NOT restate the number; render_003 is the sole home."
+            SELLABLE products (campaign charter render_003 v0.7.0, hard launch requirement).
+            low-stock is separate and does NOT satisfy the floor; variants and duplicate product
+            identity never inflate depth (engine-owned sellable_product_uid); no padding;
+            category scope cannot silently widen — a material scope change escalates to the
+            owner (render_003 floor-failure protocol). This document does NOT restate the
+            number; render_003 is the sole home."
     not: "not a thematic/seasonal grouping; not a rail; not a mood/texture/color mix"
   campaign_rail:
     owns: "campaign-specific editorial merchandising/mixing over valid category collections"
@@ -1078,9 +1094,10 @@ inventory_depth:
     rail_pins: {standard: 12, meaning: "visible curated set / current display cap"}
     collection_hard_floor:
       standard: "render_003 (campaign charter)"
-      meaning: "the >=50 dependable in_stock unique SELLABLE floor is defined ONCE in render_003;
-                variants/duplicate identity never inflate (engine sellable_product_uid), low_stock
-                never satisfies, no padding, no silent scope-widening. See render_003, not here."
+      meaning: "the >=50 dependable in_stock unique SELLABLE floor is defined ONCE in render_003
+                (v0.7.0, hard launch requirement — 49 fails, 50 passes); variants/duplicate
+                identity never inflate (engine sellable_product_uid), low_stock never satisfies,
+                no padding, no silent scope-widening. See render_003, not here."
     technical_floor:
       standard: 1
       meaning: "rendering/system fact ONLY (render_001); never an editorial definition of readiness"
@@ -1090,8 +1107,9 @@ inventory_depth:
     — not a license for 12 great products plus vaguely related filler.
   division_of_labor: >
     The wizard defines what the collection means and which 12 products best express it.
-    CollectionCuration supplies enough additional qualifying inventory (>=50 dependable in_stock
-    unique) to make it durable, AFTER the owner has approved the campaign specification.
+    CollectionCuration supplies enough additional qualifying inventory (>=50 dependable
+    in_stock unique per render_003 v0.7.0) to make it durable, AFTER the owner has approved
+    the campaign specification.
 
 readiness_model:
   note: "splits the jobs render_002 was doing; charter-claim formalization queued for next campaign-charter revision"
@@ -1100,7 +1118,7 @@ readiness_model:
     - "subject/coherence checks pass"
     - "pin ordering passes (PS-3)"
   collection_readiness:
-    - "available inventory >= collection hard floor (>=50 dependable in_stock unique; render_003)"
+    - "available inventory >= the collection hard floor (>=50 dependable in_stock unique; render_003 v0.7.0)"
     - "pinned 12 are contained in that pool"
     - "reserve products still satisfy the collection thesis (no_padding_rule)"
   execution_readiness:
@@ -1135,6 +1153,51 @@ low_stock_policy:
     - "soft cap: no more than 3 of 12 pins low_stock without explicit owner acknowledgement"
     - "low_stock products are NEVER counted as dependable reserve inventory toward the collection floor"
 
+product_selection_ladder:
+  status: approved
+  basis: "owner operating-model lock 2026-08-10 (v1 sourcing/reuse logic)"
+  tier_1_fresh_new_trending: >
+    Prefer products supported by CURRENT evidence: recent releases, current retailer
+    merchandising, current trend/editorial evidence, current search behavior, seasonal drops,
+    newly relevant products, products demonstrably moving now. These carry the strongest
+    weight, particularly in the pinned rails.
+  tier_2_requalified_carryover: >
+    If Tier 1 does not provide sufficient depth, mine previous campaign collections, prior
+    CollectionCuration collections, the current catalog/log and previously verified products.
+    A reused product is NOT automatically eligible because it existed in another collection —
+    it must be contextually REQUALIFIED against the current campaign premise, the specific
+    collection thesis, category relevance, current availability, current identity/PDP
+    validity, campaign exclusions, redundancy, and present-day relevance. Editorial judgment
+    may assess contextual fit but must never invent current trend status: a relevant but
+    not-demonstrably-trending reuse is an HONEST CARRYOVER, never presented as a trend signal.
+  tier_3_evergreen_anchors: >
+    Only when the category naturally changes slowly or Tiers 1+2 cannot produce sufficient
+    high-quality depth. Durable products that stay useful without a new-release claim: they
+    may support collection depth, should not dominate the discovery surface where fresher
+    alternatives exist, and are NEVER described as new/trending without current evidence.
+  future_signals: "first-party ranking signals (saves, favorites, restock interest…) are
+    docs/NEXT_PASS_SCOPE.md scope — never simulated with guessed popularity in v1"
+
+freshness_hierarchy:
+  status: approved
+  basis: "owner operating-model lock 2026-08-10"
+  principle: >
+    The requirement is not that every product is new; it is that EVERY COLLECTION FEELS
+    CURRENT. Currentness may come from genuinely new products, currently trending products,
+    older products newly relevant, recent carryovers suited to the moment, and a limited
+    amount of durable evergreen depth.
+  populations:
+    rail_pinned_set: "the strongest current expression of the campaign and collection —
+      prefer fresh / new / trending / newly relevant / editorially distinctive; bears the
+      strongest freshness and editorial burden (see launch_freshness for verification)"
+    collection_body: "the broader live browse universe — fresh products, current carryovers,
+      reused products that PASSED contextual requalification, limited evergreen anchors"
+    engine_reserve_pool: "qualified products not currently part of the live collection —
+      engine-side substitution/replenishment inventory, NEVER in the execution CSV
+      (execution_deliverable)"
+  rule: "never confuse the three populations; pin selection weighs freshness strongly but
+    never mechanically pins the newest 12 (editorial argument, quality and range still rule)"
+
 mechanism_representation:
   status: editorial_qa_rule   # NOT a numeric validator
   rule: >
@@ -1153,9 +1216,10 @@ execution_deliverable:
     ONE master execution CSV per build: one row per product x collection membership,
     containing rail items + collection body, NEVER the reserve pool. is_rail_item TRUE
     requires rail_name and rail_position (1..12); FALSE requires both blank. Campaign QA:
-    >=50 launched members (the collection-depth hard floor, render_003) and exactly 12 rail
-    items per collection; rail_position exactly 1..12; no duplicate product x collection rows.
-    collection_position gives a deterministic 1..N worklist order (N = launched members, >=50).
+    >=50 launched members (the collection-depth hard floor, render_003 v0.7.0) and exactly
+    12 rail items per collection; rail_position exactly 1..12; no duplicate product x
+    collection rows.
+    collection_position gives a deterministic 1..N worklist order (N = launched members).
     Everything else (curated.json, ledgers, observations, reserve pool, schemas) is
     under-the-hood; the operator executes from this file + manifest only.
   population_vocabulary:

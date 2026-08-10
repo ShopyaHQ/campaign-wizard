@@ -16,12 +16,39 @@
 # Proposed and inferred claims are NEVER silently promoted to product truth.
 
 charter:
-  version: 0.5.0
+  version: 0.7.0
   status: approved
   approved_by: product_owner
   approved_at: 2026-08-10T00:00:00Z
-  supersedes: 0.4.0
+  supersedes: 0.6.0
   changelog:
+    0.7.0: >
+      Owner Decision 1, 2026-08-10 (r006): render_003 RESTORED to the HARD >=50
+      launched-collection requirement (50 dependable in_stock unique sellable products;
+      49 fails, 50 passes). The 0.6.0 return to a 24-publishable floor was an ACCIDENTAL
+      REGRESSION: it was applied on an explicit owner instruction whose framing ("keep the
+      existing layered model") incorrectly described the superseded 2026-08-07 layered model
+      as the standing rule, when the standing hardened rule was the 2026-08-09 hard-50
+      ruling. The owner has reconfirmed hard-50. The 24-floor wording is preserved below as
+      historical superseded evidence — not erased. Build b006 (validated under 0.6.0's
+      24-floor) is reclassified DIAGNOSTIC / NON-LAUNCHABLE. truth_refresh_001 and the
+      content-charter selection ladder / freshness hierarchy are unaffected (not
+      depth-numeric rules). Fulfillment order on spec approval: roster to >=200 working
+      profiles first, then fulfill approved collections to >=50.
+    0.6.0: >
+      Owner operating-model lock (directive 2026-08-10, pre-fulfillment). render_003 REVISED
+      to the layered depth model: technical rendering floor 1 (render_001) · rail pins 12
+      (render_002) · HARD PUBLISHABLE collection floor 24 dependable in_stock unique products
+      · >50 the PREFERRED healthy/mature target and an ongoing CollectionCuration objective —
+      explicitly NOT a launch quota and never license to pad; no-padding stays absolute and a
+      natural ceiling is reported rather than filled. This restores the owner's 2026-08-07
+      layered ruling (inventory_depth_model_approved) that the 0.4.0 hard-50 reading had
+      collapsed into a single launch gate. New claim truth_refresh_001 records the dynamic-
+      discovery product principle (engine continuously refreshes the product universe;
+      campaigns apply a timely editorial lens; wizard consumes truth read-only). The v1
+      product-selection ladder, freshness hierarchy and rail/body/reserve population
+      semantics are editorial/merchandising logic and live in SHOPYA_CONTENT_CHARTER.yaml
+      (1.1.0), referenced here, not restated.
     0.5.0: >
       Post-regression reconciliation (owner directive 2026-08-10). explore_002 REVISED: the
       global four-feed campaign ceiling (owner ruling 2026-08-06) was already superseded by the
@@ -710,18 +737,32 @@ claims:
 
   - id: render_003
     category: render_contract
-    claim: "Every LAUNCHED durable category collection must contain at least 50 dependable in_stock UNIQUE products (the collection-depth hard floor). 49 fails, 50 passes. Variants of one product and duplicate product identities never inflate the count. Low-stock products are reported separately and NEVER satisfy the floor. No padding: a collection that cannot honestly reach 50 defensible products reports the shortfall and proposes a scope/category change for owner approval rather than filling off-thesis. This is a launch requirement (not a preferred target) enforced by the wizard's execution builder; render_001 (technical minimum 1) and render_002 (presentation quality 12) remain the separate rendering/first-paint contracts and are NOT collection-readiness floors."
+    claim: "Every LAUNCHED durable category collection must contain at least 50 dependable in_stock UNIQUE sellable products (the collection-depth hard floor). 49 fails, 50 passes. Variants of one product and duplicate product identities never inflate the count (engine-owned sellable_product_uid). Low-stock products are reported separately and NEVER satisfy the floor. No padding: a collection that cannot honestly reach 50 defensible products reports the shortfall and proposes a scope/category change for owner approval rather than filling off-thesis. This is a launch requirement (not a preferred target) enforced by the wizard's execution builder; render_001 (technical minimum 1) and render_002 (presentation quality 12) remain the separate rendering/first-paint contracts and are NOT collection-readiness floors."
     status: approved_rule
-    approved_in_version: 0.4.0
-    supersedes_claim: "0.2.0 render_003 ('There is NO universal >50-item collection expectation') and the interim 0.7.0-proposed content-charter 24 (2x-rail) hard floor."
+    approved_in_version: 0.7.0
+    supersedes_claim: "0.6.0 render_003 (layered 24-publishable/>50-health) — an ACCIDENTAL REGRESSION whose authorizing instruction misdescribed the superseded 2026-08-07 layered model as the standing rule; preserved as historical evidence in the 0.6.0 changelog. Also (as before) 0.2.0 ('no universal >50 expectation') and the interim 24 (2x-rail) floor."
     sources:
       - {path: scripts/build_execution_csv.py, reference: "members < 50 hard failure"}
       - {path: docs/E2E_PROCESS.md, reference: "FLOOR clarification; FLOOR FAILURE PROTOCOL"}
-    basis: ["Owner ruling 2026-08-09 (Ruling 1 — collection depth)"]
+    basis: ["Owner Decision 1, 2026-08-10 (r006 depth ruling): 'The hard launched-collection requirement is >=50 dependable in_stock unique sellable products' — reconfirming Owner Ruling 1 of 2026-08-09", "Owner ruling 2026-08-09 (Ruling 1 — collection depth)"]
     requires_owner_confirmation: false
-    notes: "The earlier reversal (0.2.0) tied the floor to the false 12-floor and was itself
-            corrected by owner ruling 2026-08-09. The >=50 floor is a curation/readiness gate,
-            not a frontend rendering constraint — do not conflate with render_001/render_002."
+    notes: "Full chronology, preserved: 0.2.0 no-floor -> 2026-08-07 layered 24/50 (decision
+            inventory_depth_model_approved) -> 0.4.0 HARD 50 (owner 2026-08-09) -> 0.6.0
+            accidental 24-layered regression (2026-08-10, misframed directive) -> 0.7.0 HARD 50
+            restored (owner Decision 1, 2026-08-10). A curation/readiness gate, not a frontend
+            rendering constraint — do not conflate with render_001/render_002."
+
+  - id: truth_refresh_001
+    category: product_truth
+    claim: "Shopya is a dynamic discovery product: collections and rails must feel current, changing and culturally relevant across the breadth of the taxonomy. CollectionCuration therefore CONTINUOUSLY refreshes inventory across categories and subcategories as a persistent system; campaigns apply a timely editorial lens over that evolving product truth. A campaign never scrapes the product universe from scratch as a matter of course. Ownership boundary (restating CLAUDE.md's cardinal rule as a product fact): CollectionCuration answers what products exist and what is true about them now; Campaign Wizard answers which of those belong in this campaign, where, and why — and consumes product truth READ-ONLY."
+    status: approved_rule
+    approved_in_version: 0.6.0
+    sources: []
+    basis: ["Owner operating-model lock 2026-08-10 (core inventory/content model)"]
+    requires_owner_confirmation: false
+    notes: "Editorial mechanics of currentness (v1 selection ladder, freshness hierarchy,
+            rail/body/reserve populations) live in SHOPYA_CONTENT_CHARTER.yaml — pointer, not
+            restatement. Future first-party ranking signals are docs/NEXT_PASS_SCOPE.md scope."
 
   - id: constraint_repo_001
     category: render_contract

@@ -1,0 +1,3233 @@
+[
+{
+"product_uid": "ganni:dress-in-white-broderie-anglaise:white",
+"collection_name": "Women's Dresses",
+"is_rail_item": true,
+"rail_name": "Dresses for the in-between weeks",
+"rail_position": 1,
+"collection_position": 1,
+"annotation": ""
+},
+{
+"product_uid": "mango:a-line-linen-dress:white",
+"collection_name": "Women's Dresses",
+"is_rail_item": true,
+"rail_name": "Dresses for the in-between weeks",
+"rail_position": 2,
+"collection_position": 2,
+"annotation": ""
+},
+{
+"product_uid": "posse:alice-mini-dress:dusty-citron",
+"collection_name": "Women's Dresses",
+"is_rail_item": true,
+"rail_name": "Dresses for the in-between weeks",
+"rail_position": 3,
+"collection_position": 3,
+"annotation": ""
+},
+{
+"product_uid": "posse:alice-mini-dress:ivory",
+"collection_name": "Women's Dresses",
+"is_rail_item": true,
+"rail_name": "Dresses for the in-between weeks",
+"rail_position": 4,
+"collection_position": 4,
+"annotation": ""
+},
+{
+"product_uid": "sleeper:atlanta-linen-midi-dress:black",
+"collection_name": "Women's Dresses",
+"is_rail_item": true,
+"rail_name": "Dresses for the in-between weeks",
+"rail_position": 5,
+"collection_position": 5,
+"annotation": ""
+},
+{
+"product_uid": "faithfull-the-brand:baia-maxi-dress:lemon",
+"collection_name": "Women's Dresses",
+"is_rail_item": true,
+"rail_name": "Dresses for the in-between weeks",
+"rail_position": 6,
+"collection_position": 6,
+"annotation": ""
+},
+{
+"product_uid": "self-portrait:beige-twill-midi-dress:beige",
+"collection_name": "Women's Dresses",
+"is_rail_item": true,
+"rail_name": "Dresses for the in-between weeks",
+"rail_position": 7,
+"collection_position": 7,
+"annotation": ""
+},
+{
+"product_uid": "cos:bias-cut-linen-blend-midi-dress:dark-brown",
+"collection_name": "Women's Dresses",
+"is_rail_item": true,
+"rail_name": "Dresses for the in-between weeks",
+"rail_position": 8,
+"collection_position": 8,
+"annotation": ""
+},
+{
+"product_uid": "reformation:birdie-linen-dress:cloud-blue",
+"collection_name": "Women's Dresses",
+"is_rail_item": true,
+"rail_name": "Dresses for the in-between weeks",
+"rail_position": 9,
+"collection_position": 9,
+"annotation": ""
+},
+{
+"product_uid": "mango:crocheted-dress-with-scalloped-hem:chocolate",
+"collection_name": "Women's Dresses",
+"is_rail_item": true,
+"rail_name": "Dresses for the in-between weeks",
+"rail_position": 10,
+"collection_position": 10,
+"annotation": ""
+},
+{
+"product_uid": "rixo:dahlia-satin-jacquard-midi-dress:butterfly-bloom-jacquard-red",
+"collection_name": "Women's Dresses",
+"is_rail_item": true,
+"rail_name": "Dresses for the in-between weeks",
+"rail_position": 11,
+"collection_position": 11,
+"annotation": ""
+},
+{
+"product_uid": "cos:fluid-halterneck-mini-dress:light-green",
+"collection_name": "Women's Dresses",
+"is_rail_item": true,
+"rail_name": "Dresses for the in-between weeks",
+"rail_position": 12,
+"collection_position": 12,
+"annotation": ""
+},
+{
+"product_uid": "faithfull-the-brand:bianca-midi-dress-white:white",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 13,
+"annotation": ""
+},
+{
+"product_uid": "farm-rio:fruit-trolley-red-mini-dress:fruit-trolley-red",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 14,
+"annotation": ""
+},
+{
+"product_uid": "mango:handkerchief-a-line-dress:ecru",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 15,
+"annotation": ""
+},
+{
+"product_uid": "faithfull-the-brand:izaro-maxi-dress:chocolate",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 16,
+"annotation": ""
+},
+{
+"product_uid": "mango:linen-blend-wrap-dress:chocolate",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 17,
+"annotation": ""
+},
+{
+"product_uid": "rixo:maura-satin-jacquard-midi-dress:butterfly-bloom-jacquard-red",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 18,
+"annotation": ""
+},
+{
+"product_uid": "reformation:mineral-low-back-knit-dress:mojito",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 19,
+"annotation": ""
+},
+{
+"product_uid": "posse:neve-mini-dress:cream",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 20,
+"annotation": ""
+},
+{
+"product_uid": "show-me-your-mumu:olsen-maxi-dress:riviera-swirl",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 21,
+"annotation": ""
+},
+{
+"product_uid": "cos:rounded-linen-cotton-shirt-dress:white",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 22,
+"annotation": ""
+},
+{
+"product_uid": "reformation:sara-linen-dress:white",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 23,
+"annotation": ""
+},
+{
+"product_uid": "mango:satin-dress-with-gathered-v-neckline:orange",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 24,
+"annotation": ""
+},
+{
+"product_uid": "cos:sculpted-cotton-midi-dress:black",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 25,
+"annotation": ""
+},
+{
+"product_uid": "skims:soft-lounge-long-sleeve-dress:heather-grey",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 26,
+"annotation": ""
+},
+{
+"product_uid": "coolibar:the-captiva-2-0-shirt-dress-mott50-edition:vanilla",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 27,
+"annotation": ""
+},
+{
+"product_uid": "hill-house-home:the-ellie-nap-dress:blue-botanical",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 28,
+"annotation": ""
+},
+{
+"product_uid": "hill-house-home:the-ellie-nap-dress:white-shadow-stripe",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 29,
+"annotation": ""
+},
+{
+"product_uid": "farm-rio:tropical-royalty-mini-dress:off-white",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 30,
+"annotation": ""
+},
+{
+"product_uid": "reformation:ailany-dress:check-colorway-coded-jade-green-jgr-but-default-courtyard-rendered-needs-browser-agent",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 31,
+"annotation": ""
+},
+{
+"product_uid": "sezane:alison-dress:camila-print",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 32,
+"annotation": ""
+},
+{
+"product_uid": "staud:amaris-dress:tomato",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 33,
+"annotation": ""
+},
+{
+"product_uid": "staud:calluna-dress:chartreuse",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 34,
+"annotation": ""
+},
+{
+"product_uid": "sezane:daniella-dress:song-of-summer",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 35,
+"annotation": ""
+},
+{
+"product_uid": "reformation:demi-linen-dress:white",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 36,
+"annotation": ""
+},
+{
+"product_uid": "ganni:dress-in-white-broderie-anglaise:bright-white",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 37,
+"annotation": ""
+},
+{
+"product_uid": "faithfull-the-brand:felice-mini-dress-white:white",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 38,
+"annotation": ""
+},
+{
+"product_uid": "sezane:layla-dress:summer-green",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 39,
+"annotation": ""
+},
+{
+"product_uid": "sezane:leo-dress:powder-blue-gingham",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 40,
+"annotation": ""
+},
+{
+"product_uid": "toteme:linen-and-cotton-blend-midi-dress:ivory-white",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 41,
+"annotation": ""
+},
+{
+"product_uid": "mango:midi-dress-with-knot-detail:emerald-green",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 42,
+"annotation": ""
+},
+{
+"product_uid": "reformation:monette-linen-dress:chloe",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 43,
+"annotation": ""
+},
+{
+"product_uid": "sezane:raquel-dress:light-blue",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 44,
+"annotation": ""
+},
+{
+"product_uid": "mango:ruched-satin-dress:red",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 45,
+"annotation": ""
+},
+{
+"product_uid": "toteme:satin-midi-dress:black",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 46,
+"annotation": ""
+},
+{
+"product_uid": "sezane:tierra-dress:summer-green",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 47,
+"annotation": ""
+},
+{
+"product_uid": "faithfull-the-brand:verena-mini-dress:green",
+"collection_name": "Women's Dresses",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 48,
+"annotation": ""
+},
+{
+"product_uid": "toteme:cape-coat:navy",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": true,
+"rail_name": "Coats you can't wear yet",
+"rail_position": 1,
+"collection_position": 1,
+"annotation": ""
+},
+{
+"product_uid": "toteme:classic-tailored-coat:black",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": true,
+"rail_name": "Coats you can't wear yet",
+"rail_position": 2,
+"collection_position": 2,
+"annotation": ""
+},
+{
+"product_uid": "mango:cotton-trench-coat-with-belt:medium-brown",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": true,
+"rail_name": "Coats you can't wear yet",
+"rail_position": 3,
+"collection_position": 3,
+"annotation": ""
+},
+{
+"product_uid": "mango:cotton-trench-with-maxi-lapels-and-belt:plum",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": true,
+"rail_name": "Coats you can't wear yet",
+"rail_position": 4,
+"collection_position": 4,
+"annotation": ""
+},
+{
+"product_uid": "aligne:rafella-shearling-fur-coat:brown",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": true,
+"rail_name": "Coats you can't wear yet",
+"rail_position": 5,
+"collection_position": 5,
+"annotation": ""
+},
+{
+"product_uid": "khaite:romare-coat:army-melange",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": true,
+"rail_name": "Coats you can't wear yet",
+"rail_position": 6,
+"collection_position": 6,
+"annotation": ""
+},
+{
+"product_uid": "aligne:barnaby-reversible-trench-coat:green",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": true,
+"rail_name": "Coats you can't wear yet",
+"rail_position": 7,
+"collection_position": 7,
+"annotation": ""
+},
+{
+"product_uid": "ducie:corrin-suede-trench:brown",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": true,
+"rail_name": "Coats you can't wear yet",
+"rail_position": 8,
+"collection_position": 8,
+"annotation": ""
+},
+{
+"product_uid": "polo-ralph-lauren:double-breasted-belted-trench:tan",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": true,
+"rail_name": "Coats you can't wear yet",
+"rail_position": 9,
+"collection_position": 9,
+"annotation": ""
+},
+{
+"product_uid": "woolrich:double-breasted-belted-trench-coat:tan",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": true,
+"rail_name": "Coats you can't wear yet",
+"rail_position": 10,
+"collection_position": 10,
+"annotation": ""
+},
+{
+"product_uid": "woolrich:double-breasted-trench:navy-blue",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": true,
+"rail_name": "Coats you can't wear yet",
+"rail_position": 11,
+"collection_position": 11,
+"annotation": ""
+},
+{
+"product_uid": "rixo:milly-leopard-coat:bohemia-leopard-brown",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": true,
+"rail_name": "Coats you can't wear yet",
+"rail_position": 12,
+"collection_position": 12,
+"annotation": ""
+},
+{
+"product_uid": "toteme:classic-winter-coat:biscuit",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 13,
+"annotation": ""
+},
+{
+"product_uid": "mango:double-breasted-wool-coat:black",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 14,
+"annotation": ""
+},
+{
+"product_uid": "mango:double-breasted-wool-coat:light-pastel-grey",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 15,
+"annotation": ""
+},
+{
+"product_uid": "mango:fitted-trench-with-belt:sand",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 16,
+"annotation": ""
+},
+{
+"product_uid": "mango:handmade-wool-coat:chocolate",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 17,
+"annotation": ""
+},
+{
+"product_uid": "mango:handmade-wool-coat:dark-heather-grey",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 18,
+"annotation": ""
+},
+{
+"product_uid": "mango:handmade-wool-coat:medium-brown",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 19,
+"annotation": ""
+},
+{
+"product_uid": "mango:long-double-breasted-trench-coat:light-pastel-grey",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 20,
+"annotation": ""
+},
+{
+"product_uid": "mango:long-funnel-neck-trench-with-belt:chocolate",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 21,
+"annotation": ""
+},
+{
+"product_uid": "mango:midi-trench-coat-with-belt:khaki",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 22,
+"annotation": ""
+},
+{
+"product_uid": "toteme:rounded-peacoat:black",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 23,
+"annotation": ""
+},
+{
+"product_uid": "toteme:signature-double-coat:black",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 24,
+"annotation": ""
+},
+{
+"product_uid": "toteme:drop-shoulder-trench:beige",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 25,
+"annotation": ""
+},
+{
+"product_uid": "toteme:open-front-coat:black",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 26,
+"annotation": ""
+},
+{
+"product_uid": "sezane:scott-trench-coat:camel",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 27,
+"annotation": ""
+},
+{
+"product_uid": "toteme:washed-cotton-trench:washed-black",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 28,
+"annotation": ""
+},
+{
+"product_uid": "aligne:elsa-wrap-trench-coat:navy",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 29,
+"annotation": ""
+},
+{
+"product_uid": "mango:lapels-boucle-coat:ecru",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 30,
+"annotation": ""
+},
+{
+"product_uid": "mango:long-cotton-trench-coat-with-concealed-buttons:medium-brown",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 31,
+"annotation": ""
+},
+{
+"product_uid": "mango:long-faux-leather-trench-coat:chocolate",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 32,
+"annotation": ""
+},
+{
+"product_uid": "mango:long-virgin-wool-trench-coat:chocolate",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 33,
+"annotation": ""
+},
+{
+"product_uid": "woolrich:callery-belted-coat:melton-blue",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 34,
+"annotation": ""
+},
+{
+"product_uid": "burberry:ellingham-car-coat:honey",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 35,
+"annotation": ""
+},
+{
+"product_uid": "burberry:fitzrovia-short-gabardine-trench:honey",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 36,
+"annotation": ""
+},
+{
+"product_uid": "nour-hammour:quinn-double-breasted-leather-coat:black",
+"collection_name": "Women's Coats & Trenches",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 37,
+"annotation": ""
+},
+{
+"product_uid": "agolde:blair-jacket-suede:pecan",
+"collection_name": "Women's Jackets",
+"is_rail_item": true,
+"rail_name": "Suede, before the coats",
+"rail_position": 1,
+"collection_position": 1,
+"annotation": ""
+},
+{
+"product_uid": "mango:chest-pocket-suede-jacket:khaki",
+"collection_name": "Women's Jackets",
+"is_rail_item": true,
+"rail_name": "Suede, before the coats",
+"rail_position": 2,
+"collection_position": 2,
+"annotation": ""
+},
+{
+"product_uid": "agolde:coulson-jacket:khaki",
+"collection_name": "Women's Jackets",
+"is_rail_item": true,
+"rail_name": "Suede, before the coats",
+"rail_position": 3,
+"collection_position": 3,
+"annotation": ""
+},
+{
+"product_uid": "mango:faux-suede-jacket-with-shearling-collar:medium-brown",
+"collection_name": "Women's Jackets",
+"is_rail_item": true,
+"rail_name": "Suede, before the coats",
+"rail_position": 4,
+"collection_position": 4,
+"annotation": ""
+},
+{
+"product_uid": "aligne:lb-diana-denim-boucle-jacket:white",
+"collection_name": "Women's Jackets",
+"is_rail_item": true,
+"rail_name": "Suede, before the coats",
+"rail_position": 5,
+"collection_position": 5,
+"annotation": ""
+},
+{
+"product_uid": "aligne:mavis-reversible-check-jacket:brown",
+"collection_name": "Women's Jackets",
+"is_rail_item": true,
+"rail_name": "Suede, before the coats",
+"rail_position": 6,
+"collection_position": 6,
+"annotation": ""
+},
+{
+"product_uid": "toteme:country-jacket:cedar-brown",
+"collection_name": "Women's Jackets",
+"is_rail_item": true,
+"rail_name": "Suede, before the coats",
+"rail_position": 7,
+"collection_position": 7,
+"annotation": ""
+},
+{
+"product_uid": "nour-hammour:dalma-suede-bomber-jacket:tan",
+"collection_name": "Women's Jackets",
+"is_rail_item": true,
+"rail_name": "Suede, before the coats",
+"rail_position": 8,
+"collection_position": 8,
+"annotation": ""
+},
+{
+"product_uid": "rohe:pankou-closure-jacket:black",
+"collection_name": "Women's Jackets",
+"is_rail_item": true,
+"rail_name": "Suede, before the coats",
+"rail_position": 9,
+"collection_position": 9,
+"annotation": ""
+},
+{
+"product_uid": "sezane:will-jacket:camel-suede",
+"collection_name": "Women's Jackets",
+"is_rail_item": true,
+"rail_name": "Suede, before the coats",
+"rail_position": 10,
+"collection_position": 10,
+"annotation": ""
+},
+{
+"product_uid": "khaite:wyatt-jacket:dumas",
+"collection_name": "Women's Jackets",
+"is_rail_item": true,
+"rail_name": "Suede, before the coats",
+"rail_position": 11,
+"collection_position": 11,
+"annotation": ""
+},
+{
+"product_uid": "sezane:marlys-jacket:chestnut",
+"collection_name": "Women's Jackets",
+"is_rail_item": true,
+"rail_name": "Suede, before the coats",
+"rail_position": 12,
+"collection_position": 12,
+"annotation": ""
+},
+{
+"product_uid": "mango:funnel-neck-leather-jacket:black",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 13,
+"annotation": ""
+},
+{
+"product_uid": "mango:funnel-neck-bomber-jacket:black",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 14,
+"annotation": ""
+},
+{
+"product_uid": "agolde:nahla-cropped-suede-jacket:root",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 15,
+"annotation": ""
+},
+{
+"product_uid": "mango:suede-jacket-with-band-collar:brown",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 16,
+"annotation": ""
+},
+{
+"product_uid": "agolde:veronica-jacket:covell",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 17,
+"annotation": ""
+},
+{
+"product_uid": "aligne:anouk-wool-blend-jacket:grey-marl",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 18,
+"annotation": ""
+},
+{
+"product_uid": "aligne:bark-flock-jacket:orange",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 19,
+"annotation": ""
+},
+{
+"product_uid": "aligne:brody-denim-jacket:blue",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 20,
+"annotation": ""
+},
+{
+"product_uid": "aligne:brody-funnel-jacket:beige",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 21,
+"annotation": ""
+},
+{
+"product_uid": "aligne:brody-sleeveless-funnel-neck-gilet:camel",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 22,
+"annotation": ""
+},
+{
+"product_uid": "aligne:mavis-suede-jacket:camel",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 23,
+"annotation": ""
+},
+{
+"product_uid": "aligne:paloma-wool-blend-jacket:blue",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 24,
+"annotation": ""
+},
+{
+"product_uid": "khaite:shellar-jacket:black-leather",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 25,
+"annotation": ""
+},
+{
+"product_uid": "cos:tailored-vest:brown",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 26,
+"annotation": ""
+},
+{
+"product_uid": "mango:buttoned-suede-jacket:brown",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 27,
+"annotation": ""
+},
+{
+"product_uid": "agolde:dixon-bomber-recycled-leather:detox",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 28,
+"annotation": ""
+},
+{
+"product_uid": "mango:funnel-neck-suede-jacket:blue",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 29,
+"annotation": ""
+},
+{
+"product_uid": "mango:leather-bomber-jacket:medium-brown",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 30,
+"annotation": ""
+},
+{
+"product_uid": "mango:suede-jacket-with-buttons:ochre",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 31,
+"annotation": ""
+},
+{
+"product_uid": "toteme:army-leather-biker-jacket:black",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 32,
+"annotation": ""
+},
+{
+"product_uid": "khaite:hewit-jacket:bordeaux-leather",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 33,
+"annotation": ""
+},
+{
+"product_uid": "mango:oversized-leather-jacket:cognac",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 34,
+"annotation": ""
+},
+{
+"product_uid": "doen:vail-jacket:truffle-brown",
+"collection_name": "Women's Jackets",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 35,
+"annotation": ""
+},
+{
+"product_uid": "agolde:80-s-jean-weightless:rinse",
+"collection_name": "Women's Jeans",
+"is_rail_item": true,
+"rail_name": "Dark denim, done",
+"rail_position": 1,
+"collection_position": 1,
+"annotation": ""
+},
+{
+"product_uid": "agolde:big-cuff-jean:rinse",
+"collection_name": "Women's Jeans",
+"is_rail_item": true,
+"rail_name": "Dark denim, done",
+"rail_position": 2,
+"collection_position": 2,
+"annotation": ""
+},
+{
+"product_uid": "everlane:lightweight-loose-wide-leg-jean:medium-indigo",
+"collection_name": "Women's Jeans",
+"is_rail_item": true,
+"rail_name": "Dark denim, done",
+"rail_position": 3,
+"collection_position": 3,
+"annotation": ""
+},
+{
+"product_uid": "everlane:lightweight-loose-wide-leg-jean-long:black",
+"collection_name": "Women's Jeans",
+"is_rail_item": true,
+"rail_name": "Dark denim, done",
+"rail_position": 4,
+"collection_position": 4,
+"annotation": ""
+},
+{
+"product_uid": "mango:sienna-flared-cropped-jeans:dark-blue",
+"collection_name": "Women's Jeans",
+"is_rail_item": true,
+"rail_name": "Dark denim, done",
+"rail_position": 5,
+"collection_position": 5,
+"annotation": ""
+},
+{
+"product_uid": "khaite:abigail-stretch-jean:boone",
+"collection_name": "Women's Jeans",
+"is_rail_item": true,
+"rail_name": "Dark denim, done",
+"rail_position": 6,
+"collection_position": 6,
+"annotation": ""
+},
+{
+"product_uid": "khaite:callum-jean:dumas",
+"collection_name": "Women's Jeans",
+"is_rail_item": true,
+"rail_name": "Dark denim, done",
+"rail_position": 7,
+"collection_position": 7,
+"annotation": ""
+},
+{
+"product_uid": "agolde:lana-jean:sway",
+"collection_name": "Women's Jeans",
+"is_rail_item": true,
+"rail_name": "Dark denim, done",
+"rail_position": 8,
+"collection_position": 8,
+"annotation": ""
+},
+{
+"product_uid": "everlane:loose-curve-jean:tungsten-dark",
+"collection_name": "Women's Jeans",
+"is_rail_item": true,
+"rail_name": "Dark denim, done",
+"rail_position": 9,
+"collection_position": 9,
+"annotation": ""
+},
+{
+"product_uid": "agolde:low-curve-jean:pendulum",
+"collection_name": "Women's Jeans",
+"is_rail_item": true,
+"rail_name": "Dark denim, done",
+"rail_position": 10,
+"collection_position": 10,
+"annotation": ""
+},
+{
+"product_uid": "agolde:nate-jean:ink",
+"collection_name": "Women's Jeans",
+"is_rail_item": true,
+"rail_name": "Dark denim, done",
+"rail_position": 11,
+"collection_position": 11,
+"annotation": ""
+},
+{
+"product_uid": "everlane:pull-on-carpenter-jean:dark-indigo",
+"collection_name": "Women's Jeans",
+"is_rail_item": true,
+"rail_name": "Dark denim, done",
+"rail_position": 12,
+"collection_position": 12,
+"annotation": ""
+},
+{
+"product_uid": "agolde:spiral-jean-weightless:vanta",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 13,
+"annotation": ""
+},
+{
+"product_uid": "everlane:the-gardener-pull-on-jean:medium-indigo",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 14,
+"annotation": ""
+},
+{
+"product_uid": "everlane:the-way-high-curve-jean:mid-indigo",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 15,
+"annotation": ""
+},
+{
+"product_uid": "everlane:the-way-high-jean-2-0:washed-out-indigo",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 16,
+"annotation": ""
+},
+{
+"product_uid": "everlane:the-way-high-sailor-jean-2-0-long:washed-out-indigo",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 17,
+"annotation": ""
+},
+{
+"product_uid": "everlane:the-way-high-utility-jean:tungsten-rinse",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 18,
+"annotation": ""
+},
+{
+"product_uid": "khaite:callum-jean:shelburne",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 19,
+"annotation": ""
+},
+{
+"product_uid": "khaite:clara-jean:benson",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 20,
+"annotation": ""
+},
+{
+"product_uid": "khaite:dane-stretch-jean:shelburne",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 21,
+"annotation": ""
+},
+{
+"product_uid": "khaite:danielle-stretch-jean:benson",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 22,
+"annotation": ""
+},
+{
+"product_uid": "khaite:danielle-stretch-jean:lykens",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 23,
+"annotation": ""
+},
+{
+"product_uid": "khaite:delmonico-jean:benson",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 24,
+"annotation": ""
+},
+{
+"product_uid": "khaite:farley-jean:seneca",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 25,
+"annotation": ""
+},
+{
+"product_uid": "agolde:harper-straight-jean:hush",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 26,
+"annotation": ""
+},
+{
+"product_uid": "agolde:low-curve-jean:black-tar",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 27,
+"annotation": ""
+},
+{
+"product_uid": "agolde:low-curve-jean:fairway",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 28,
+"annotation": ""
+},
+{
+"product_uid": "agolde:low-curve-jean:force",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 29,
+"annotation": ""
+},
+{
+"product_uid": "agolde:ren-jean:echo",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 30,
+"annotation": ""
+},
+{
+"product_uid": "toteme:net-sustain-classic-cut-high-rise-straight-leg-organic-jeans:mid-denim",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 31,
+"annotation": ""
+},
+{
+"product_uid": "mango:mid-rise-barrel-jeans:chocolate",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 32,
+"annotation": ""
+},
+{
+"product_uid": "khaite:finley-jean:holbrook",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 33,
+"annotation": ""
+},
+{
+"product_uid": "mango:high-waisted-wideleg-jeans:black-denim",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 34,
+"annotation": ""
+},
+{
+"product_uid": "cos:rider-raw-selvedge-relaxed-fit-straight-leg-jeans:raw-indigo",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 35,
+"annotation": ""
+},
+{
+"product_uid": "toteme:twisted-seam-high-rise-straight-leg-jeans:black",
+"collection_name": "Women's Jeans",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 36,
+"annotation": ""
+},
+{
+"product_uid": "calpak:haven-15in-laptop-tote:vegan-suede",
+"collection_name": "Women's Handbags",
+"is_rail_item": true,
+"rail_name": "Bags for the season ahead",
+"rail_position": 1,
+"collection_position": 1,
+"annotation": ""
+},
+{
+"product_uid": "calpak:haven-16in-laptop-tote:vegan-suede",
+"collection_name": "Women's Handbags",
+"is_rail_item": true,
+"rail_name": "Bags for the season ahead",
+"rail_position": 2,
+"collection_position": 2,
+"annotation": ""
+},
+{
+"product_uid": "dagne-dover:hunter-toiletry-bag-small:camel",
+"collection_name": "Women's Handbags",
+"is_rail_item": true,
+"rail_name": "Bags for the season ahead",
+"rail_position": 3,
+"collection_position": 3,
+"annotation": ""
+},
+{
+"product_uid": "topo-designs:mountain-utility-tote:duck-camo",
+"collection_name": "Women's Handbags",
+"is_rail_item": true,
+"rail_name": "Bags for the season ahead",
+"rail_position": 4,
+"collection_position": 4,
+"annotation": ""
+},
+{
+"product_uid": "sandy-liang:terminator-bag-charm:silver",
+"collection_name": "Women's Handbags",
+"is_rail_item": true,
+"rail_name": "Bags for the season ahead",
+"rail_position": 5,
+"collection_position": 5,
+"annotation": ""
+},
+{
+"product_uid": "sandy-liang:wing-bag-charm:pink",
+"collection_name": "Women's Handbags",
+"is_rail_item": true,
+"rail_name": "Bags for the season ahead",
+"rail_position": 6,
+"collection_position": 6,
+"annotation": ""
+},
+{
+"product_uid": "mango:100-raffia-tote-bag:beige",
+"collection_name": "Women's Handbags",
+"is_rail_item": true,
+"rail_name": "Bags for the season ahead",
+"rail_position": 7,
+"collection_position": 7,
+"annotation": ""
+},
+{
+"product_uid": "senreve:aria-belt-bag:pebbled",
+"collection_name": "Women's Handbags",
+"is_rail_item": true,
+"rail_name": "Bags for the season ahead",
+"rail_position": 8,
+"collection_position": 8,
+"annotation": ""
+},
+{
+"product_uid": "cult-gaia:azariah-bag:espresso-calf-leather",
+"collection_name": "Women's Handbags",
+"is_rail_item": true,
+"rail_name": "Bags for the season ahead",
+"rail_position": 9,
+"collection_position": 9,
+"annotation": ""
+},
+{
+"product_uid": "kayu:carmen-woven-straw-clutch:natural",
+"collection_name": "Women's Handbags",
+"is_rail_item": true,
+"rail_name": "Bags for the season ahead",
+"rail_position": 10,
+"collection_position": 10,
+"annotation": ""
+},
+{
+"product_uid": "cult-gaia:estelle-bag:natural",
+"collection_name": "Women's Handbags",
+"is_rail_item": true,
+"rail_name": "Bags for the season ahead",
+"rail_position": 11,
+"collection_position": 11,
+"annotation": ""
+},
+{
+"product_uid": "cos:gallery-hand-woven-tote-bag-leather:black",
+"collection_name": "Women's Handbags",
+"is_rail_item": true,
+"rail_name": "Bags for the season ahead",
+"rail_position": 12,
+"collection_position": 12,
+"annotation": ""
+},
+{
+"product_uid": "calpak:haven-mini-crossbody:vegan-suede",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 13,
+"annotation": ""
+},
+{
+"product_uid": "cult-gaia:farah-shoulder-bag:natural-straw",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 14,
+"annotation": ""
+},
+{
+"product_uid": "cult-gaia:florence-clutch:dominga",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 15,
+"annotation": ""
+},
+{
+"product_uid": "aer:go-tote-2:black-17-5l",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 16,
+"annotation": ""
+},
+{
+"product_uid": "ganni:green-mini-bou-bag:juniper",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 17,
+"annotation": ""
+},
+{
+"product_uid": "cult-gaia:jayleen-tote-bag:natural",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 18,
+"annotation": ""
+},
+{
+"product_uid": "sezane:justine-basket-bag:natural-raffia",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 19,
+"annotation": ""
+},
+{
+"product_uid": "sezane:justine-basket-bag:raffia-embroidery-terracotta-flowers",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 20,
+"annotation": ""
+},
+{
+"product_uid": "sezane:justine-mini-basket-bag:natural-raffia",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 21,
+"annotation": ""
+},
+{
+"product_uid": "cult-gaia:kazia-crossbody-bag:sand-dollar",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 22,
+"annotation": ""
+},
+{
+"product_uid": "cuyana:large-raffia-tote:dark-natural",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 23,
+"annotation": ""
+},
+{
+"product_uid": "coach:laurel-small-shoulder-bag:gold-black",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 24,
+"annotation": ""
+},
+{
+"product_uid": "baggu:medium-cargo-crossbody:black",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 25,
+"annotation": ""
+},
+{
+"product_uid": "baggu:medium-cargo-crossbody:lapis",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 26,
+"annotation": ""
+},
+{
+"product_uid": "baggu:medium-nylon-crescent-bag:black",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 27,
+"annotation": ""
+},
+{
+"product_uid": "baggu:medium-recycled-leather-crescent-bag:black",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 28,
+"annotation": ""
+},
+{
+"product_uid": "cos:mini-cavatelli-clutch-bag-leather:butter-yellow",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 29,
+"annotation": ""
+},
+{
+"product_uid": "staud:moon-bag:saddle",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 30,
+"annotation": ""
+},
+{
+"product_uid": "staud:ollie-bag:cobalt",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 31,
+"annotation": ""
+},
+{
+"product_uid": "kayu:palm-beach-embroidered-straw-clutch:embroidered-natural",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 32,
+"annotation": ""
+},
+{
+"product_uid": "uniqlo:round-mini-shoulder-bag:dark-gray",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 33,
+"annotation": ""
+},
+{
+"product_uid": "baggu:small-nylon-crescent-bag:piscine",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 34,
+"annotation": ""
+},
+{
+"product_uid": "mango:small-split-leather-bag:medium-brown",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 35,
+"annotation": ""
+},
+{
+"product_uid": "kayu:st-tropez-pom-pom-straw-tote:black-and-white",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 36,
+"annotation": ""
+},
+{
+"product_uid": "toteme:t-lock-medium-leather-tote-bag:black",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 37,
+"annotation": ""
+},
+{
+"product_uid": "away:the-everywhere-tote:jet-black",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 38,
+"annotation": ""
+},
+{
+"product_uid": "staud:tommy-beaded-bag:california-clouds-beaded",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 39,
+"annotation": ""
+},
+{
+"product_uid": "cult-gaia:viera-clutch:natural",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 40,
+"annotation": ""
+},
+{
+"product_uid": "loeffler-randall:brit-pearl-flat-pleated-clutch:pearl",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 41,
+"annotation": ""
+},
+{
+"product_uid": "cuyana:classic-structured-leather-tote:no-swatch-name-rendered-on-pdp",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 42,
+"annotation": ""
+},
+{
+"product_uid": "ganni:green-rhinestone-mini-bou-bag:brook-green",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 43,
+"annotation": ""
+},
+{
+"product_uid": "ganni:mini-bou-bag-in-green-ostrich:lily-green",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 44,
+"annotation": ""
+},
+{
+"product_uid": "cuyana:raffia-clutch:black",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 45,
+"annotation": ""
+},
+{
+"product_uid": "sandy-liang:wing-bag-charm:pink-metallic-pink",
+"collection_name": "Women's Handbags",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 46,
+"annotation": ""
+},
+{
+"product_uid": "p-f-candle-co:amber-and-moss-reed-diffuser:amber-and-moss",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": true,
+"rail_name": "Light for 8pm",
+"rail_position": 1,
+"collection_position": 1,
+"annotation": ""
+},
+{
+"product_uid": "brooklyn-candle-studio:cinder-noir-candle:cinder-noir",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": true,
+"rail_name": "Light for 8pm",
+"rail_position": 2,
+"collection_position": 2,
+"annotation": ""
+},
+{
+"product_uid": "brooklyn-candle-studio:kyoto-woods-jar-candle:kyoto-woods",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": true,
+"rail_name": "Light for 8pm",
+"rail_position": 3,
+"collection_position": 3,
+"annotation": ""
+},
+{
+"product_uid": "p-f-candle-co:sandalwood-rose-reed-diffuser:sandalwood-rose",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": true,
+"rail_name": "Light for 8pm",
+"rail_position": 4,
+"collection_position": 4,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:the-candle-in-understory:understory",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": true,
+"rail_name": "Light for 8pm",
+"rail_position": 5,
+"collection_position": 5,
+"annotation": ""
+},
+{
+"product_uid": "parachute:the-parachute-candle:rest",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": true,
+"rail_name": "Light for 8pm",
+"rail_position": 6,
+"collection_position": 6,
+"annotation": ""
+},
+{
+"product_uid": "boy-smells:woodphoria-candle:woodphoria",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": true,
+"rail_name": "Light for 8pm",
+"rail_position": 7,
+"collection_position": 7,
+"annotation": ""
+},
+{
+"product_uid": "p.f.-candle-co:amber-and-moss-standard-candle:7.2oz",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": true,
+"rail_name": "Light for 8pm",
+"rail_position": 8,
+"collection_position": 8,
+"annotation": ""
+},
+{
+"product_uid": "p.f.-candle-co:arroyo-oak-standard-candle:7.2oz",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": true,
+"rail_name": "Light for 8pm",
+"rail_position": 9,
+"collection_position": 9,
+"annotation": ""
+},
+{
+"product_uid": "boy-smells:coco-hinoki-candle:9oz",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": true,
+"rail_name": "Light for 8pm",
+"rail_position": 10,
+"collection_position": 10,
+"annotation": ""
+},
+{
+"product_uid": "otherland:daybed:red-currantpeonyrosebud-1-wick-8-oz",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": true,
+"rail_name": "Light for 8pm",
+"rail_position": 11,
+"collection_position": 11,
+"annotation": ""
+},
+{
+"product_uid": "forvr-mood:mini-candle-gift-set:cuffing-seasonchampagne-showersmatcha-bes-teasjomo-4x2-5oz",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": true,
+"rail_name": "Light for 8pm",
+"rail_position": 12,
+"collection_position": 12,
+"annotation": ""
+},
+{
+"product_uid": "brooklyn-candle-studio:santal-noir-candle:santal-noir",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 13,
+"annotation": ""
+},
+{
+"product_uid": "p.f.-candle-co:pinon-standard-candle:7.2oz",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 14,
+"annotation": ""
+},
+{
+"product_uid": "boy-smells:red-hot-candle:9oz",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 15,
+"annotation": ""
+},
+{
+"product_uid": "p.f.-candle-co:sandalwood-rose-standard-candle:7.2oz",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 16,
+"annotation": ""
+},
+{
+"product_uid": "p.f.-candle-co:teakwood-and-tobacco-standard-candle:7.2oz",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 17,
+"annotation": ""
+},
+{
+"product_uid": "p.f.-candle-co:tuberose-musk-hi-fi-candle:11oz",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 18,
+"annotation": ""
+},
+{
+"product_uid": "p-f-candle-co:amber-and-moss-standard-candle:sagemosslavender-7-2oz",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 19,
+"annotation": ""
+},
+{
+"product_uid": "p-f-candle-co:golden-coast-standard-candle:eucalyptussea-saltpalo-santo-7-2oz",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 20,
+"annotation": ""
+},
+{
+"product_uid": "boy-smells:hinoki-fantome:cardamomhinokismoked-amber-8-5oz",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 21,
+"annotation": ""
+},
+{
+"product_uid": "otherland:rattan:sandalwoodgolden-amberwarm-musk-8oz",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 22,
+"annotation": ""
+},
+{
+"product_uid": "flamingo-estate:roma-heirloom-tomato-candle:tomato-leafblack-pepper-8oz",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 23,
+"annotation": ""
+},
+{
+"product_uid": "p-f-candle-co:sweet-grapefruit-standard-candle:grapefruityuzu-7-2oz",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 24,
+"annotation": ""
+},
+{
+"product_uid": "p-f-candle-co:teakwood-and-tobacco-standard-candle:woody-7-2oz",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 25,
+"annotation": ""
+},
+{
+"product_uid": "p-f-candle-co:wild-herb-tonic-standard-candle:lemon-balmthymefir-7-2oz",
+"collection_name": "Candles & Home Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 26,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:dinner-plate:morel",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": true,
+"rail_name": "The table comes inside",
+"rail_position": 1,
+"collection_position": 1,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:ogee-edge-oval-platter-latte:latte-contrast-edge",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": true,
+"rail_name": "The table comes inside",
+"rail_position": 2,
+"collection_position": 2,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:serving-platter:morel",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": true,
+"rail_name": "The table comes inside",
+"rail_position": 3,
+"collection_position": 3,
+"annotation": ""
+},
+{
+"product_uid": "fellow:carter-move-mug:12oz",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": true,
+"rail_name": "The table comes inside",
+"rail_position": 4,
+"collection_position": 4,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:essential-dinnerware-16-piece-set:bone",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": true,
+"rail_name": "The table comes inside",
+"rail_position": 5,
+"collection_position": 5,
+"annotation": ""
+},
+{
+"product_uid": "ferm-living:flow-bowl:small-off-white-speckle",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": true,
+"rail_name": "The table comes inside",
+"rail_position": 6,
+"collection_position": 6,
+"annotation": ""
+},
+{
+"product_uid": "fishs-eddy:hl-greenband-main-plate:11-1in",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": true,
+"rail_name": "The table comes inside",
+"rail_position": 7,
+"collection_position": 7,
+"annotation": ""
+},
+{
+"product_uid": "fishs-eddy:nyc-toile-dinner-plate:10-25in",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": true,
+"rail_name": "The table comes inside",
+"rail_position": 8,
+"collection_position": 8,
+"annotation": ""
+},
+{
+"product_uid": "year-and-day:outdoor-big-plates:canyon",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": true,
+"rail_name": "The table comes inside",
+"rail_position": 9,
+"collection_position": 9,
+"annotation": ""
+},
+{
+"product_uid": "year-and-day:outdoor-big-plates-set-of-4:assorted",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": true,
+"rail_name": "The table comes inside",
+"rail_position": 10,
+"collection_position": 10,
+"annotation": ""
+},
+{
+"product_uid": "rifle-paper-co:porcelain-mug-book-club:illustrated",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": true,
+"rail_name": "The table comes inside",
+"rail_position": 11,
+"collection_position": 11,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:hand-painted-breakfast-bowl,-tulip-crown:fawn",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": true,
+"rail_name": "The table comes inside",
+"rail_position": 12,
+"collection_position": 12,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:hand-painted-cake-plate,-tulip-crown:fawn",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 13,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:hand-painted-dinner-plate,-tulip-crown:fawn",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 14,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:hand-painted-everyday-bowl,-tulip-crown:fawn",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 15,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:hand-painted-mug,-tulip-crown:fawn",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 16,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:hand-painted-serving-platter,-tulip-crown:fawn",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 17,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:hand-painted-side-plate,-tulip-crown:fawn",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 18,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:hand-painted-weeknight-serving-bowl,-tulip-crown:fawn",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 19,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:the-carafe:panna-cotta",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 20,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:essential-dinnerware-16-piece-set:terracotta",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 21,
+"annotation": ""
+},
+{
+"product_uid": "year-and-day:outdoor-small-bowls:palm",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 22,
+"annotation": ""
+},
+{
+"product_uid": "fishs-eddy:skyblue-scallop-app-plate:7-25in",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 23,
+"annotation": ""
+},
+{
+"product_uid": "year-and-day:splatter-big-plates-set-of-4:dune-plum",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 24,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:the-coupe:morel",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 25,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:the-everyday-bowl:lagoon",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 26,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:travertine-footed-serving-board:beige",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 27,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:tutti-frutti-footed-bowl:cacao-blue-stripes",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 28,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:dotty-mug:brown-orange-red-dot-pattern",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 29,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:terra-serving-board:terra-serving-board",
+"collection_name": "Dinnerware & Serveware",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 30,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:aurora-sphere-vase:smoke",
+"collection_name": "Decorative Accents",
+"is_rail_item": true,
+"rail_name": "Brown, in objects",
+"rail_position": 1,
+"collection_position": 1,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:banded-glass-vase:round-olive",
+"collection_name": "Decorative Accents",
+"is_rail_item": true,
+"rail_name": "Brown, in objects",
+"rail_position": 2,
+"collection_position": 2,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:brass-bowl-candle-holder:antiqued-brass",
+"collection_name": "Decorative Accents",
+"is_rail_item": true,
+"rail_name": "Brown, in objects",
+"rail_position": 3,
+"collection_position": 3,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:bulb-vase:green",
+"collection_name": "Decorative Accents",
+"is_rail_item": true,
+"rail_name": "Brown, in objects",
+"rail_position": 4,
+"collection_position": 4,
+"annotation": ""
+},
+{
+"product_uid": "audo-copenhagen:aer-vase:grey-glass-low",
+"collection_name": "Decorative Accents",
+"is_rail_item": true,
+"rail_name": "Brown, in objects",
+"rail_position": 5,
+"collection_position": 5,
+"annotation": ""
+},
+{
+"product_uid": "ferm-living:bowl-candle-holder:large-sand",
+"collection_name": "Decorative Accents",
+"is_rail_item": true,
+"rail_name": "Brown, in objects",
+"rail_position": 6,
+"collection_position": 6,
+"annotation": ""
+},
+{
+"product_uid": "ferm-living:bowl-candle-holder-large-ceramic:sand",
+"collection_name": "Decorative Accents",
+"is_rail_item": true,
+"rail_name": "Brown, in objects",
+"rail_position": 7,
+"collection_position": 7,
+"annotation": ""
+},
+{
+"product_uid": "lulu-and-georgia:cairns-vase:default-title",
+"collection_name": "Decorative Accents",
+"is_rail_item": true,
+"rail_name": "Brown, in objects",
+"rail_position": 8,
+"collection_position": 8,
+"annotation": ""
+},
+{
+"product_uid": "misette:colorblock-confetti-glass-vase:multicolor",
+"collection_name": "Decorative Accents",
+"is_rail_item": true,
+"rail_name": "Brown, in objects",
+"rail_position": 9,
+"collection_position": 9,
+"annotation": ""
+},
+{
+"product_uid": "audo-copenhagen:echasse-vase:smoked-s",
+"collection_name": "Decorative Accents",
+"is_rail_item": true,
+"rail_name": "Brown, in objects",
+"rail_position": 10,
+"collection_position": 10,
+"annotation": ""
+},
+{
+"product_uid": "anissa-kermiche:love-handles-ceramic-vase:gray",
+"collection_name": "Decorative Accents",
+"is_rail_item": true,
+"rail_name": "Brown, in objects",
+"rail_position": 11,
+"collection_position": 11,
+"annotation": ""
+},
+{
+"product_uid": "maison-balzac:pomponette-vase:indigo",
+"collection_name": "Decorative Accents",
+"is_rail_item": true,
+"rail_name": "Brown, in objects",
+"rail_position": 12,
+"collection_position": 12,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:brass-octagonal-tray:brass",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 13,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:cruz-vase:black-clay",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 14,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:east-fork-x-anfora-contour-vase:small-utah",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 15,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:east-fork-x-anfora-slope-vase:small-utah",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 16,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:essential-ceramic-vase:terracotta",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 17,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:essential-metal-candle-holders-set-of-2:terracotta",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 18,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:forged-iron-ball-candle-holders:forged-iron-6in",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 19,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:forged-iron-flower-candle-holder:forged-iron",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 20,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:hadley-tray:olive",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 21,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:notched-iron-taper-holder:forged-iron",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 22,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:painted-teardrop-vase:nude-olive",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 23,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:rattan-pedestal-bowl:natural-rattan",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 24,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:river-rock-round-ikebana-vase:grey-river-stone",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 25,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:sculptural-wood-taper-holder:small-walnut",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 26,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:sculptural-wood-tray:solid-walnut",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 27,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:splatter-low-bowl:terracotta-cream",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 28,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:thyra-vase:marbled-brown",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 29,
+"annotation": ""
+},
+{
+"product_uid": "east-fork:urbino-iron-candleholders:cast-iron",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 30,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:essential-ceramic-vase:olive-small",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 31,
+"annotation": ""
+},
+{
+"product_uid": "hay:flare-glass-candle-holder:light-pink",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 32,
+"annotation": ""
+},
+{
+"product_uid": "ferm-living:newel-modular-candle-holder-set-of-6:travertine",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 33,
+"annotation": ""
+},
+{
+"product_uid": "maison-balzac:pomponette-vase:pink",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 34,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:red-travertine-tray:default-title",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 35,
+"annotation": ""
+},
+{
+"product_uid": "jonathan-adler:salvador-vase:unglazed-porcelain",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 36,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:simple-candle-holder:maple-set-of-3",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 37,
+"annotation": ""
+},
+{
+"product_uid": "hay:splash-glass-vase:green",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 38,
+"annotation": ""
+},
+{
+"product_uid": "hay:wavy-candle-holder:jade-light-blue",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 39,
+"annotation": ""
+},
+{
+"product_uid": "hawkins-new-york:simple-marble-bowl:green-marble",
+"collection_name": "Decorative Accents",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 40,
+"annotation": ""
+},
+{
+"product_uid": "boy-smells:citrush-gold-eau-de-parfum:50ml",
+"collection_name": "Fragrance",
+"is_rail_item": true,
+"rail_name": "Smell like fall first",
+"rail_position": 1,
+"collection_position": 1,
+"annotation": ""
+},
+{
+"product_uid": "boy-smells:citrush-gold-travel-spray:10ml",
+"collection_name": "Fragrance",
+"is_rail_item": true,
+"rail_name": "Smell like fall first",
+"rail_position": 2,
+"collection_position": 2,
+"annotation": ""
+},
+{
+"product_uid": "vacation-inc:gelee-by-vacation-eau-de-toilette-30ml:orange-geleebergamotclovesaffronpatchouli-30ml-edt",
+"collection_name": "Fragrance",
+"is_rail_item": true,
+"rail_name": "Smell like fall first",
+"rail_position": 3,
+"collection_position": 3,
+"annotation": ""
+},
+{
+"product_uid": "vacation-inc:vacation-eau-de-toilette-30ml:coconutbananapineapplepool-water-30ml-edt",
+"collection_name": "Fragrance",
+"is_rail_item": true,
+"rail_name": "Smell like fall first",
+"rail_position": 4,
+"collection_position": 4,
+"annotation": ""
+},
+{
+"product_uid": "d-s-and-durga:big-sur-after-rain:eucalyptuscoastal-rain-7oz",
+"collection_name": "Fragrance",
+"is_rail_item": true,
+"rail_name": "Smell like fall first",
+"rail_position": 5,
+"collection_position": 5,
+"annotation": ""
+},
+{
+"product_uid": "d-s-and-durga:big-sur-eucalyptus:big-sur-eucalyptus-50-ml",
+"collection_name": "Fragrance",
+"is_rail_item": true,
+"rail_name": "Smell like fall first",
+"rail_position": 6,
+"collection_position": 6,
+"annotation": ""
+},
+{
+"product_uid": "sol-de-janeiro:cheirosa-62-jelly-perfume-balm:pistachiosalted-caramelvanilla-solid-balm",
+"collection_name": "Fragrance",
+"is_rail_item": true,
+"rail_name": "Smell like fall first",
+"rail_position": 7,
+"collection_position": 7,
+"annotation": ""
+},
+{
+"product_uid": "sol-de-janeiro:cheirosa-62-perfume-mist-240ml:pistachio-salted-caramel-vanilla-240ml-mist",
+"collection_name": "Fragrance",
+"is_rail_item": true,
+"rail_name": "Smell like fall first",
+"rail_position": 8,
+"collection_position": 8,
+"annotation": ""
+},
+{
+"product_uid": "ellis-brooklyn:memoir-fragrance-discovery-set:memoir-fragrance-discovery-set-9-x-1-5ml",
+"collection_name": "Fragrance",
+"is_rail_item": true,
+"rail_name": "Smell like fall first",
+"rail_position": 9,
+"collection_position": 9,
+"annotation": ""
+},
+{
+"product_uid": "ellis-brooklyn:marshmallows-perfume-mist-240ml:marshmallowpeach-skinmilky-musks-240ml-mist",
+"collection_name": "Fragrance",
+"is_rail_item": true,
+"rail_name": "Smell like fall first",
+"rail_position": 10,
+"collection_position": 10,
+"annotation": ""
+},
+{
+"product_uid": "dedcool:mineral-milk-fragrance-1-7oz:golden-nectarcoastal-lavenderamber-milk-1-7oz-edp",
+"collection_name": "Fragrance",
+"is_rail_item": true,
+"rail_name": "Smell like fall first",
+"rail_position": 11,
+"collection_position": 11,
+"annotation": ""
+},
+{
+"product_uid": "henry-rose:queens-and-monsters-travel-spray:queens-and-monsters-travel-spray-8ml",
+"collection_name": "Fragrance",
+"is_rail_item": true,
+"rail_name": "Smell like fall first",
+"rail_position": 12,
+"collection_position": 12,
+"annotation": ""
+},
+{
+"product_uid": "sol-de-janeiro:cheirosa-62-perfume-mist-90ml:pistachio-salted-caramel-vanilla-90ml-mist",
+"collection_name": "Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 13,
+"annotation": ""
+},
+{
+"product_uid": "sol-de-janeiro:cheirosa-91-perfume-mist:rio-pink-rosepassionfruithoney-caramel-perfume-mist",
+"collection_name": "Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 14,
+"annotation": ""
+},
+{
+"product_uid": "boy-smells:citrush-eau-de-parfum-50ml:citruswoody-50ml-edp",
+"collection_name": "Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 15,
+"annotation": ""
+},
+{
+"product_uid": "boy-smells:citrush-gold-eau-de-parfum-50ml:citrusgourmand-50ml-edp",
+"collection_name": "Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 16,
+"annotation": ""
+},
+{
+"product_uid": "d-s-and-durga:coriander-pocket-perfume-10ml:mediterranean-sea-breezecoriander-10ml-roll-on",
+"collection_name": "Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 17,
+"annotation": ""
+},
+{
+"product_uid": "d-s-and-durga:debaser-pocket-perfume-10ml:figgreen-10ml-oil-roll-on",
+"collection_name": "Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 18,
+"annotation": ""
+},
+{
+"product_uid": "d-s-and-durga:debaser-in-bloom-eau-de-parfum-50ml:figgardeniawhite-currantcream-50ml-edp",
+"collection_name": "Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 19,
+"annotation": ""
+},
+{
+"product_uid": "d-s-and-durga:i-don-t-know-what:i-don-t-know-what-50-ml",
+"collection_name": "Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 20,
+"annotation": ""
+},
+{
+"product_uid": "d-s-and-durga:i-don-t-know-what-pocket-spray:i-don-t-know-what-10-ml",
+"collection_name": "Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 21,
+"annotation": ""
+},
+{
+"product_uid": "ellis-brooklyn:miami-nectar-eau-de-parfum-50ml:tropical-floral-50ml-edp",
+"collection_name": "Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 22,
+"annotation": ""
+},
+{
+"product_uid": "d-s-and-durga:portable-fireplace:smokeoak-ashcedar-7oz",
+"collection_name": "Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 23,
+"annotation": ""
+},
+{
+"product_uid": "d-s-and-durga:rose-atlantic-pocket-perfume-10ml:salt-spray-rosecoastal-10ml-oil-roll-on",
+"collection_name": "Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 24,
+"annotation": ""
+},
+{
+"product_uid": "ellis-brooklyn:salt-eau-de-parfum-50ml:aquaticsaltmusk-50ml-edp",
+"collection_name": "Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 25,
+"annotation": ""
+},
+{
+"product_uid": "boy-smells:solar-drip-eau-de-parfum-50ml:citrusfresh-50ml-edp",
+"collection_name": "Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 26,
+"annotation": ""
+},
+{
+"product_uid": "ellis-brooklyn:sun-fruit-edp-travel-spray-10ml:figbergamotcoconut-10ml-travel",
+"collection_name": "Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 27,
+"annotation": ""
+},
+{
+"product_uid": "p-f-candle-co:teakwood-and-tobacco-car-fragrance-2-pack:woody-car-clip",
+"collection_name": "Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 28,
+"annotation": ""
+},
+{
+"product_uid": "dedcool:xtra-milk-fragrance-1-7oz:bergamotwhite-muskamber-1-7oz-edp",
+"collection_name": "Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 29,
+"annotation": ""
+},
+{
+"product_uid": "dedcool:xtra-milk-travel-spray-15ml:bergamotwhite-muskamber-15ml-travel",
+"collection_name": "Fragrance",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 30,
+"annotation": ""
+},
+{
+"product_uid": "salt-and-stone:body-cream:saffron-and-cedar",
+"collection_name": "Bath & Body",
+"is_rail_item": true,
+"rail_name": "Heavier creams start now",
+"rail_position": 1,
+"collection_position": 1,
+"annotation": ""
+},
+{
+"product_uid": "salt-and-stone:body-mist:saffron-and-cedar",
+"collection_name": "Bath & Body",
+"is_rail_item": true,
+"rail_name": "Heavier creams start now",
+"rail_position": 2,
+"collection_position": 2,
+"annotation": ""
+},
+{
+"product_uid": "flamingo-estate:jasmine-damask-rose-body-wash:jasmine-damask-rose",
+"collection_name": "Bath & Body",
+"is_rail_item": true,
+"rail_name": "Heavier creams start now",
+"rail_position": 3,
+"collection_position": 3,
+"annotation": ""
+},
+{
+"product_uid": "necessaire:the-body-wash-multi-enzyme:olibanum-500-ml",
+"collection_name": "Bath & Body",
+"is_rail_item": true,
+"rail_name": "Heavier creams start now",
+"rail_position": 4,
+"collection_position": 4,
+"annotation": ""
+},
+{
+"product_uid": "necessaire:the-hand-cream-multi-butter:fragrance-free",
+"collection_name": "Bath & Body",
+"is_rail_item": true,
+"rail_name": "Heavier creams start now",
+"rail_position": 5,
+"collection_position": 5,
+"annotation": ""
+},
+{
+"product_uid": "osea:undaria-algae-body-butter:6-7-oz",
+"collection_name": "Bath & Body",
+"is_rail_item": true,
+"rail_name": "Heavier creams start now",
+"rail_position": 6,
+"collection_position": 6,
+"annotation": ""
+},
+{
+"product_uid": "osea:undaria-algae-body-lotion:scented-5-fl-oz",
+"collection_name": "Bath & Body",
+"is_rail_item": true,
+"rail_name": "Heavier creams start now",
+"rail_position": 7,
+"collection_position": 7,
+"annotation": ""
+},
+{
+"product_uid": "first-aid-beauty:after-shower-nourishing-body-oil:jojoba-seed-grapeseed-oil",
+"collection_name": "Bath & Body",
+"is_rail_item": true,
+"rail_name": "Heavier creams start now",
+"rail_position": 8,
+"collection_position": 8,
+"annotation": ""
+},
+{
+"product_uid": "kosas:chemistry-deodorant:beachy-clean",
+"collection_name": "Bath & Body",
+"is_rail_item": true,
+"rail_name": "Heavier creams start now",
+"rail_position": 9,
+"collection_position": 9,
+"annotation": ""
+},
+{
+"product_uid": "kosas:chemistry-deodorant:serene-clean",
+"collection_name": "Bath & Body",
+"is_rail_item": true,
+"rail_name": "Heavier creams start now",
+"rail_position": 10,
+"collection_position": 10,
+"annotation": ""
+},
+{
+"product_uid": "sol-de-janeiro:glowmotions-glow-body-oil:copacabana-bronze",
+"collection_name": "Bath & Body",
+"is_rail_item": true,
+"rail_name": "Heavier creams start now",
+"rail_position": 11,
+"collection_position": 11,
+"annotation": ""
+},
+{
+"product_uid": "sol-de-janeiro:glowmotions-glow-body-oil:rio-sunset",
+"collection_name": "Bath & Body",
+"is_rail_item": true,
+"rail_name": "Heavier creams start now",
+"rail_position": 12,
+"collection_position": 12,
+"annotation": ""
+},
+{
+"product_uid": "salt-and-stone:body-oil:santal-and-vetiver",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 13,
+"annotation": ""
+},
+{
+"product_uid": "salt-and-stone:body-wash:black-rose-and-oud",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 14,
+"annotation": ""
+},
+{
+"product_uid": "salt-and-stone:hand-cream:santal-and-vetiver",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 15,
+"annotation": ""
+},
+{
+"product_uid": "osea:undaria-algae-body-oil:5-fl-oz",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 16,
+"annotation": ""
+},
+{
+"product_uid": "salt-and-stone:aluminum-free-deodorant:santal-and-vetiver",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 17,
+"annotation": ""
+},
+{
+"product_uid": "phlur:beach-skin-body-mist:solar-floralsalted-tiarecoconut-milk-full-size-body-mist",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 18,
+"annotation": ""
+},
+{
+"product_uid": "naturium:kp-body-scrub-and-mask:aha-bha-pha-exfoliating-body-scrub",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 19,
+"annotation": ""
+},
+{
+"product_uid": "first-aid-beauty:kp-bump-eraser-body-scrub-10-aha:2-oz",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 20,
+"annotation": ""
+},
+{
+"product_uid": "first-aid-beauty:kp-bump-eraser-body-scrub-10-aha:8-oz",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 21,
+"annotation": ""
+},
+{
+"product_uid": "flamingo-estate:mediterranean-rosemary-and-clary-sage-hand-soap:8oz",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 22,
+"annotation": ""
+},
+{
+"product_uid": "phlur:paradise-nectar-body-mist:tropical-solar-full-size-body-mist",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 23,
+"annotation": ""
+},
+{
+"product_uid": "sol-de-janeiro:rio-deo-aluminum-free-deodorant-cheirosa-62:2oz-57g",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 24,
+"annotation": ""
+},
+{
+"product_uid": "flamingo-estate:roma-heirloom-tomato-hand-soap:8oz",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 25,
+"annotation": ""
+},
+{
+"product_uid": "megababe:rosy-pits-daily-deodorant:default-title",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 26,
+"annotation": ""
+},
+{
+"product_uid": "necessaire:the-body-serum:0-5-hyaluronic-acid-fragrance-free-150-ml",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 27,
+"annotation": ""
+},
+{
+"product_uid": "necessaire:the-deodorant:eucalyptus-75-g-2-5-oz",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 28,
+"annotation": ""
+},
+{
+"product_uid": "naturium:the-glow-getter-body-oil:the-glow-getter-body-oil",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 29,
+"annotation": ""
+},
+{
+"product_uid": "naturium:the-glow-getter-multi-oil-body-scrub:the-glow-getter-multi-oil-body-scrub",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 30,
+"annotation": ""
+},
+{
+"product_uid": "naturium:the-glow-getter-multi-oil-hydrating-body-wash:16-9-fl-oz",
+"collection_name": "Bath & Body",
+"is_rail_item": false,
+"rail_name": null,
+"rail_position": null,
+"collection_position": 31,
+"annotation": ""
+}
+]

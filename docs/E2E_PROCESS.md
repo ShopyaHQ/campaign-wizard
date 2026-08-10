@@ -1,5 +1,5 @@
 # END-TO-END CAMPAIGN PROCESS — wizard + CollectionCuration (proposed revision, 2026-08-09)
-# Incorporates: category-constrained 6/12 gendered collections · >=50 hard floor · 200+ brand
+# Incorporates: category-constrained 6/12 gendered collections · >=50 hard floor (render_003 v0.7.0; the 0.6.0 24-floor was an accidental regression, reversed by owner Decision 1 2026-08-10) · 200+ brand
 # roster · rails as first-class · SEO content into Sanity S5 · seams contract & six-stage
 # framework · engine truth pipeline · v2 builder · naming conventions · review-book r-series.
 # STATUS: APPROVED IN DIRECTION 2026-08-09 with 12 structural clarifications applied below.
@@ -77,13 +77,13 @@ HARD GATE: no approved spec -> no curation.
 
 ## PHASE 5 — CURATION & INVENTORY REALITY  (framework stage 4; engine-owned; owner gate)
 HANDOFF wizard->engine: curation brief per collection (category bounds, brand seeds,
-avoid_terms, targets: 12 pins + >=50 dependable in_stock unique body).
+avoid_terms, targets: 12 pins + >=50 dependable in_stock unique body (render_003 v0.7.0).
 Engine work: mine existing truth FIRST (reuse report: pins / memberships / uniques counted
 separately); targeted sourcing through roster channels; ALL writes via product_truth.py
 behind the PDP gate; identity repair; every attempt updates the roster method log; human
 fallback = ONE batched residual checklist, never a stop.
 HANDOFF engine->wizard: regenerated exports/current_truth.jsonl + per-collection depth report
-(dependable in-stock vs >=50 HARD floor; low-stock separate, never counted; natural ceiling
+(dependable in-stock vs the >=50 HARD floor; low-stock separate, never counted; natural ceiling
 + channel-failure vs thesis-failure classification).
 MILESTONE M5: INVENTORY REALITY ACCEPTED (owner: accept / trim / rescope per collection).
 
@@ -153,7 +153,7 @@ cannot execute.
 2. GENDER — canonically owned by SHOPYA_CONTENT_CHARTER.yaml (no mirrored pairs; Fashion picks
    >=6 women's + >=6 men's independently on strength; other verticals gender only where
    taxonomy/assortment/behavior justify; decisions reported explicitly). Referenced here.
-3. FLOOR — the >=50 dependable in_stock unique SELLABLE floor and its floor-failure protocol
+3. FLOOR — the >=50 dependable in_stock unique SELLABLE hard floor and its floor-failure protocol
    are owned by campaign charter render_003. Referenced here; never restated with a competing
    number.
 4. SOURCE / MERCHANT ROSTER (renamed from brand roster; engine file name may persist for
@@ -216,7 +216,7 @@ BEAUTY: unified by default; Men's Grooming remains a later candidate on evidence
 ## CAMPAIGN OUTPUT REQUIREMENT (folded from PHASE1_CAMPAIGN_OUTPUT_REQUIREMENT.md, 2026-08-09)
 A completed campaign = FOUR parallel outputs across Default + the surfaced verticals:
 STRATEGY (premise + vertical interpretations) · MERCHANDISING (selected category collections
-from docs/CATEGORY_TAXONOMY.md — >=6 selections per surfaced vertical; 12 pins; >=50
+from docs/CATEGORY_TAXONOMY.md — >=6 selections per surfaced vertical; 12 pins; >=50 floor
 dependable in_stock unique floor; rails per the three-object model) · EDITORIAL/CONTENT
 (>=1 candidate opportunity per selected collection or explicit no-opportunity finding;
 content floor scales with collections — one paired concept per launched collection; 3-5

@@ -1,7 +1,7 @@
 run:
   run_id: cmp_01KZCD765E6NNW2TZR1AFHQMWG
   spec_version: 1.6.0
-  charter_version: 0.5.0
+  charter_version: 0.7.0
   created_at: '2026-08-06T20:46:13Z'
   note: Acceptance run — v1 definition of done test.
   migration:
@@ -27,6 +27,29 @@ run:
       hash-bound proof.'
     proof_invalidated:
       validation_attempts_stamped: 3
+      seam6_execution_status: ready
+      superseded:
+      - products_csv
+      - execution_manifest
+  - from_spec_version: 1.6.0
+    to_spec_version: 1.6.0
+    from_charter_version: 0.5.0
+    to_charter_version: 0.6.0
+    at: '2026-08-10T10:17:45Z'
+    by: product_owner
+    note: 'Owner operating-model lock 2026-08-10: charter 0.5.0->0.6.0 (render_003
+      layered depth: publishable floor 24 / >50 health target; truth_refresh_001).'
+  - from_spec_version: 1.6.0
+    to_spec_version: 1.6.0
+    from_charter_version: 0.6.0
+    to_charter_version: 0.7.0
+    at: '2026-08-10T11:10:24Z'
+    by: product_owner
+    note: 'Owner Decision 1, 2026-08-10: render_003 restored to HARD >=50 (charter
+      0.6.0->0.7.0; the 24-floor was an accidental regression). A2 obligations: the
+      b006 attempt''s proof anchors a superseded (diagnostic) build.'
+    proof_invalidated:
+      validation_attempts_stamped: 1
       seam6_execution_status: ready
       superseded:
       - products_csv
@@ -753,6 +776,47 @@ owner_decisions:
       living campaign docs = review_book + three_layer_map_v2 + placement map + content
       program + default_composition + naming_and_assembly.'
     status: owner_confirmed
+  almost_fall_universe_confirmed:
+    status: owner_confirmed
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-10T10:17:45Z'
+    value:
+      collections: 43
+      basis: 43 selected taxonomy categories remain the approved Almost Fall collection
+        universe
+    note: 'Owner directive 2026-08-10 (fulfillment pass): ''The current 43 selected
+      taxonomy categories remain the approved Almost Fall collection universe. Do
+      not collapse them into a small campaign simply because fulfillment is incomplete.''
+      Fulfillment may progress unevenly; collections publish as they clear the 24
+      floor; verticals/selection not reopened this pass.'
+  final_campaign_spec_approved:
+    status: owner_confirmed
+    decided: true
+    decided_by: product_owner
+    decided_at: '2026-08-10T11:21:12Z'
+    value:
+      spec: r007 as amended by r008
+      amendments:
+      - A1 travel sixth selection = shared tech.power placement (43 unique durable
+        collections / 44 vertical selections-placements; second rail placement remains
+        technically blocked, spec preserved, no duplicate collection)
+      - 'A2 gearcare rail copy replaced (no comparative cheapness framing): Fix last
+        year''s gear first — wash, patch and reproof what you already own; QA gap
+        logged for next hardening pass'
+      - 'A3 coats rail copy replaced (no nationwide temperature assumption): Coats
+        you can''t wear yet — trenches and wool for when the weather catches up'
+      - A4 four gap pieces brought to prompt-ready minimum fields (FC4 dresses, FC5
+        knitwear, MC1 flannel, TC5 headphones); broader coverage stays opportunity-level
+      scope: 'campaign judgment only: premise/dek/exclusions, six interpretations,
+        43-collection universe/44 placements, base+story rail program, naming/copy
+        direction, content/SEO program, Default composition, seam intent'
+      excludes: final product fulfillment rows
+    note: 'Owner 2026-08-10: ''With those amendments, I approve the Almost Fall final
+      campaign specification for CollectionCuration fulfillment.'' Proceed through
+      the approved fulfillment sequence (roster>=200 -> fulfill >=50 -> assembly ->
+      execution package -> compact exceptions/readiness card) without another owner
+      checkpoint unless a material exception occurs. No automatic launch.'
 artifacts:
   frame:
     path: frame.yaml
@@ -859,14 +923,16 @@ artifacts:
     superseded_at: null
     supersession_reason: null
   products_csv:
-    path: execution/almost-fall-2026__execution__b003__20260807T125705Z.csv
-    written_at: '2026-08-07T12:57:37Z'
-    sha256: 3a55ff3a2886fc2bec345e97c928e206b9045a1d779feeb6a5f0e8264a762793
+    path: execution/almost-fall-2026__execution__b006__20260810T104341Z.csv
+    written_at: '2026-08-10T10:43:41Z'
+    sha256: 4d227fabac0e51e1250f2cfb0512b5d9cede0f6015ba3c645f9ac2e5925ec341
     status: superseded
-    superseded_by: null
-    superseded_at: '2026-08-10T09:37:01Z'
-    supersession_reason: 'canon migration 1.5.0/0.4.0 -> 1.6.0/0.5.0: bound proof
-      invalid under current canon; regenerate via validate-execution'
+    superseded_by: pending_b007_under_hard50
+    superseded_at: '2026-08-10T11:10:24Z'
+    supersession_reason: 'Owner Decision 1 (2026-08-10): hard-50 floor restored (render_003
+      v0.7.0); b006 was validated under the accidental 0.6.0 24-floor and is reclassified
+      DIAGNOSTIC / NON-LAUNCHABLE. CSV preserved as partial-fulfillment evidence;
+      successor build lands after fulfillment to >=50.'
   execution_manifest:
     path: execution/almost-fall-2026__execution-manifest__b003__20260807T125705Z.yaml
     written_at: '2026-08-07T12:57:37Z'
@@ -958,8 +1024,8 @@ artifacts:
     supersession_reason: depth additions absorbed into v2 selections
   campaign_review_book:
     path: review_book.md
-    written_at: '2026-08-10T09:54:26Z'
-    sha256: f3c35164a8212cf76235241c95338d8e8a3548b3ea75c8968a2403a3f4f79160
+    written_at: '2026-08-10T11:21:59Z'
+    sha256: 56bf926945e3d0afca7407cb984552a9065569878b0f6c17dfd6d6746fd35eed
     status: current
     superseded_by: null
     superseded_at: null
@@ -1073,6 +1139,44 @@ validation_attempts:
   failures:
   - builder_exit: 1
     stderr_tail: ''
+- attempted_at: '2026-08-10T10:43:41Z'
+  result: passed
+  builder_argv:
+  - /Users/williamclark/Desktop/mac_projects/shopya-campaign-wizard/scripts/build_execution_csv.py
+  - --campaign
+  - almost-fall-2026
+  - --campaign-name
+  - Almost Fall
+  - --build
+  - b006
+  - --judgment
+  - campaigns/almost-fall-2026/runs/cmp_01KZCD765E6NNW2TZR1AFHQMWG/execution/almost-fall-2026__curated__b006.json
+  - --out
+  - /Users/williamclark/Desktop/mac_projects/shopya-campaign-wizard/campaigns/almost-fall-2026/runs/cmp_01KZCD765E6NNW2TZR1AFHQMWG/execution/almost-fall-2026__execution__b006__20260810T104341Z.csv
+  allow_stale_used: false
+  legacy_replay_used: false
+  production: true
+  builder_stdout_tail: "/Users/williamclark/Desktop/mac_projects/shopya-campaign-wizard/campaigns/almost-fall-2026/runs/cmp_01KZCD765E6NNW2TZR1AFHQMWG/execution/almost-fall-2026__execution__b006__20260810T104341Z.csv:\
+    \ 359 rows\n  Bath & Body              31 members (12 rail + 19 body); 26 floor-eligible\
+    \ sellable [deepening toward >50]\n  Candles & Home Fragrance 26 members (12 rail\
+    \ + 14 body); 24 floor-eligible sellable [deepening toward >50]\n  Decorative\
+    \ Accents       40 members (12 rail + 28 body); 35 floor-eligible sellable [deepening\
+    \ toward >50]\n  Dinnerware & Serveware   30 members (12 rail + 18 body); 26 floor-eligible\
+    \ sellable [deepening toward >50]\n  Fragrance                30 members (12 rail\
+    \ + 18 body); 28 floor-eligible sellable [deepening toward >50]\n  Women's Coats\
+    \ & Trenches 37 members (12 rail + 25 body); 25 floor-eligible sellable [deepening\
+    \ toward >50]\n  Women's Dresses          48 members (12 rail + 36 body); 27 floor-eligible\
+    \ sellable [deepening toward >50]\n  Women's Handbags         46 members (12 rail\
+    \ + 34 body); 37 floor-eligible sellable [deepening toward >50]\n  Women's Jackets\
+    \          35 members (12 rail + 23 body); 26 floor-eligible sellable [deepening\
+    \ toward >50]\n  Women's Jeans            36 members (12 rail + 24 body); 26 floor-eligible\
+    \ sellable [deepening toward >50]\n  QA: judgment purity, engine-vouched uids,\
+    \ gate-clean PDPs, rail availability, grain 12 rail + >=24 publishable floor,\
+    \ positions — ALL PASS\n"
+  output_sha256: 4d227fabac0e51e1250f2cfb0512b5d9cede0f6015ba3c645f9ac2e5925ec341
+  failures: []
+  invalidated_at: '2026-08-10T11:10:24Z'
+  invalidated_by_decision: canon_migration
 collection_freeze:
   snapshot: []
   exceptions: []
