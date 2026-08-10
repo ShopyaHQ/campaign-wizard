@@ -1,0 +1,18 @@
+{
+ "contract_version": "1.0.0",
+ "campaign_id": "almost-fall-2026",
+ "run_ref": "cmp_01KZCD765E6NNW2TZR1AFHQMWG",
+ "category_id": "m.knitwear",
+ "required_depth": 50,
+ "inclusion_logic": "Knitwear: sweaters, cardigans. Dependable in_stock only; every member canonical-PDP verified; distinct sellable identity (variants/colorways collapse).",
+ "exclusion_logic": "Excluded: sweatshirts. Campaign exclusions: no back-to-school-coded items; no rumored/pre-order/launch-cycle-gated products; no off-thesis padding — shortfall is reported, never padded.",
+ "avoid_terms": [
+  "back-to-school framing",
+  "clichéd cosy/pumpkin autumn framing",
+  "discount-led or sale-led framing",
+  "rumored/pre-order products as catalog items"
+ ],
+ "campaign_context": "Almost Fall 2026: fashion has moved into fall before the weather has; the campaign serves wanting-ahead (save for the season ahead) plus fall signals wearable now. Durable category collection selected per docs/CATEGORY_TAXONOMY.md and three_layer_map_v2; depth floor per charter render_003.",
+ "gender": "men",
+ "foundation_shortfall_acknowledged": true
+}
