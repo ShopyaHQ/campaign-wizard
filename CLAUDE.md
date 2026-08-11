@@ -14,7 +14,13 @@ In this order. If two disagree, the higher one wins.
 1. **`prd.md`** — the normative product & end-to-end operating model: lifecycle, owner
    checkpoints, structured campaign objects, repo boundaries, research model, revision/approval
    semantics, inter-repo handoffs, required deliverables, and system invariants. It references
-   hard numbers by Charter rule ID; it does not restate them.
+   hard numbers by Charter rule ID; it does not restate them. **It states what the product MUST
+   become; not all of it is built yet.** For what is actually implemented today vs. still target,
+   read prd.md §22 (implementation-mapping appendix) — and treat
+   `schemas/workflow_state.schema.yaml` as the authority for the process that currently runs. Do
+   not assume a prd.md mechanism (Curation Receipt ingestion, structured `campaign_spec` revisions,
+   typed/hash-bound approvals, a logged research runner, deterministic curation-request generation)
+   exists in code until §22 or the schema confirms it.
 2. **`SHOPYA_CAMPAIGN_CHARTER.yaml`** — product facts and approved rules (hard runtime/policy
    values), each with provenance and a status. Never assert product behaviour it does not record.
    A claim marked `proposed` or `unknown` is not a fact.
