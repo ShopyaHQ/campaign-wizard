@@ -22,7 +22,7 @@
 Never the display name directly (punctuation, drift). Lowercase, kebab-case, ASCII,
 hyphens only, year suffix when time-bound: almost-fall-2026, holiday-hosting-2026.
 
-## Directory model (LOCKED; implementation is next-pass — see NEXT_PASS_SCOPE)
+## Directory model (LOCKED; implemented 2026-08-07)
 campaigns/<campaign_id>/campaign.yaml + runs/<run_id>/... expresses the real domain model
 (campaign -> one or more runs -> artifacts/builds). Unnamed kickoffs live in
 campaigns/_drafts/<run_id>/ and are PROMOTED once campaign_id locks — a controlled

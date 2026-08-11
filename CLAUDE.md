@@ -11,16 +11,22 @@ pathways.
 
 In this order. If two disagree, the higher one wins.
 
-1. **`SHOPYA_CAMPAIGN_CHARTER.yaml`** — product facts and approved rules, each with provenance
-   and a status. Never assert product behaviour it does not record. A claim marked `proposed`
-   or `unknown` is not a fact.
-2. **`schemas/workflow_state.schema.yaml`** — the process specification. States, transitions,
-   entry prerequisites, the predicate vocabulary, `settable_paths`, and the refusals. **Read it
-   rather than assuming a process.** It changes; nothing else should restate its contents.
-3. **`schemas/*.schema.yaml`** — per-artifact structure.
-4. **`schemas/interpretation_rules.yaml`** — how owner input may be normalised, and the
+1. **`prd.md`** — the normative product & end-to-end operating model: lifecycle, owner
+   checkpoints, structured campaign objects, repo boundaries, research model, revision/approval
+   semantics, inter-repo handoffs, required deliverables, and system invariants. It references
+   hard numbers by Charter rule ID; it does not restate them.
+2. **`SHOPYA_CAMPAIGN_CHARTER.yaml`** — product facts and approved rules (hard runtime/policy
+   values), each with provenance and a status. Never assert product behaviour it does not record.
+   A claim marked `proposed` or `unknown` is not a fact.
+3. **`schemas/workflow_state.schema.yaml`** — the machine process specification. States,
+   transitions, entry prerequisites, the predicate vocabulary, `settable_paths`, and the refusals.
+   **Read it rather than assuming a process.** It changes; nothing else should restate its contents.
+4. **`schemas/*.schema.yaml`** + the two versioned cross-repo contracts
+   (`shopya-collection-curation/{curation_request_schema,truth_export_schema}.yaml`) — per-artifact
+   and machine handoff structure.
+5. **`schemas/interpretation_rules.yaml`** — how owner input may be normalised, and the
    interpretation-status vocabulary.
-5. **`SHOPYA_CONTENT_CHARTER.yaml`** — approved editorial, voice and merchandising rules, and
+6. **`SHOPYA_CONTENT_CHARTER.yaml`** — approved editorial, voice and merchandising rules, and
    the canonical three-object model (collections own taxonomy · rails own editorial mixing ·
    content owns search/editorial acquisition). Numeric technical requirements (e.g. the >=50
    collection floor) live in the campaign charter and are referenced here, not redefined.
@@ -72,26 +78,28 @@ availability, variants, provenance, truth export. The Campaign Wizard owns CAMPA
 (which of those belong in this campaign, where, and why): premise, collection/rail/content
 architecture, pins/order, copy, approvals, the execution CSV. The wizard consumes product truth
 READ-ONLY and NEVER authors it; the engine NEVER makes campaign judgments. Full contract:
-docs/E2E_PROCESS.md and the two versioned handoff schemas
+prd.md (§2 responsibilities, §9–§13 handoffs) and the two versioned handoff schemas
 (shopya-collection-curation/{curation_request_schema,truth_export_schema}.yaml).
 
 ## Process, output model, naming — canonical homes
 
-- What a completed campaign IS (four parallel outputs, the six approval gates, fulfillment,
-  the final execution package): docs/E2E_PROCESS.md — orchestration that references rule IDs.
+- What a completed campaign IS (lifecycle, owner checkpoints, structured objects, deliverables,
+  invariants): prd.md — the product/E2E authority.
 - The three-object model, merchandising, editorial/SEO, voice/anti-slop: SHOPYA_CONTENT_CHARTER.yaml.
-- The >=50 collection-depth floor and other numeric/technical contracts: campaign charter (render_003).
+- The >=50 collection-depth floor, rail pins, foundation readiness and other numeric/technical
+  contracts: campaign charter (render_003, render_002, foundation_001).
 - Naming/identity/build/review conventions: docs/NAMING_CONVENTIONS.md.
 Do not restate those rules here; this file points at their one home.
 
 ## Documents: the locked set
 
-Top-level canon is SEVEN wizard docs: CLAUDE.md, SHOPYA_CAMPAIGN_CHARTER.yaml,
-SHOPYA_CONTENT_CHARTER.yaml, docs/E2E_PROCESS.md, docs/CATEGORY_TAXONOMY.md,
-docs/NAMING_CONVENTIONS.md, docs/NEXT_PASS_SCOPE.md. Creating any new top-level document
-requires explicit owner approval. Iteration goes INTO the canonical doc (version bump) or the
-campaign's review_book.md — never a sibling file. The /explore seams contract's source of truth
-is the FRONTEND repo (agent_knowledge/…) — reference it; never duplicate it here.
+Top-level canon is SEVEN wizard docs: CLAUDE.md, prd.md, SHOPYA_CAMPAIGN_CHARTER.yaml,
+SHOPYA_CONTENT_CHARTER.yaml, docs/CATEGORY_TAXONOMY.md, docs/NAMING_CONVENTIONS.md,
+docs/NEXT_PASS_SCOPE.md. (docs/E2E_PROCESS.md is retired to a tombstone pointer, not authority.)
+Creating any new top-level document requires explicit owner approval. Iteration goes INTO the
+canonical doc (version bump) or the campaign's review_book.md — never a sibling file. The /explore
+seams contract's source of truth is the FRONTEND repo (agent_knowledge/…) — reference it; never
+duplicate it here.
 
 ## Scope
 
@@ -102,7 +110,7 @@ reported as implemented.
 ## Archived documents
 
 `docs/archive/` holds superseded instructions, preserved as history. They are **not
-authoritative** and must not be followed. See that directory's `README.md`.
+authoritative** and must not be followed.
 
 ## Start
 

@@ -16,12 +16,24 @@
 # Proposed and inferred claims are NEVER silently promoted to product truth.
 
 charter:
-  version: 0.7.0
+  version: 0.8.0
   status: approved
   approved_by: product_owner
-  approved_at: 2026-08-10T00:00:00Z
-  supersedes: 0.6.0
+  approved_at: 2026-08-11T00:00:00Z
+  supersedes: 0.7.0
   changelog:
+    0.8.0: >
+      Owner-authorized PRD promotion (2026-08-11). New rule foundation_001 makes the >=200
+      working Source/Merchant profile foundation a HARD production-fulfillment gate: a working
+      profile is a registered source identity plus a demonstrated repeatable method producing
+      truth that clears the PDP/product-truth gate (discovery-only never counts); production
+      CollectionCuration fulfillment is blocked until it passes; there is NO normal production
+      waiver (the former caller-authored foundation_shortfall_acknowledged bypass is removed
+      from the target product model); no transient roster count lives in the rule; useful
+      category/vertical/price-tier coverage stays a quality objective unless separately made
+      hard with measurable definitions. Authored as part of the authority migration in which
+      docs/prd.md becomes the normative product/E2E SSOT and docs/E2E_PROCESS.md is retired to
+      a tombstone. No numeric depth/render rule changed; render_001/002/003 unaffected.
     0.7.0: >
       Owner Decision 1, 2026-08-10 (r006): render_003 RESTORED to the HARD >=50
       launched-collection requirement (50 dependable in_stock unique sellable products;
@@ -752,6 +764,25 @@ claims:
             restored (owner Decision 1, 2026-08-10). A curation/readiness gate, not a frontend
             rendering constraint — do not conflate with render_001/render_002."
 
+  - id: foundation_001
+    category: foundation_readiness
+    claim: "Production CollectionCuration fulfillment may begin only when the global Source/Merchant Roster holds at least 200 WORKING profiles. A working profile is a registered source identity (brand + storefront URL) PLUS a demonstrated repeatable non-discovery method (static_html / json_ld / platform_json / browser_agent, alone or combined) that has produced at least one PDP-gate-clean verified truth row — i.e. repeatable method truth, not a merchant merely observed once, and never a discovery-only method (og_meta / search_snippet alone). Below 200 working profiles, production curation requests are BLOCKED. There is no normal production waiver: the former caller-authored foundation_shortfall_acknowledged bypass is removed from the target product model. Any extraordinary production waiver, if ever introduced, must be an explicit typed owner-governance exception bound to a specific run/spec revision — not a request boolean."
+    status: approved_rule
+    approved_in_version: 0.8.0
+    sources:
+      - {path: shopya-collection-curation/tools/foundation_readiness.py, reference: "roster_working_profiles >= 200 machine check (READY/NOT READY)"}
+      - {path: shopya-collection-curation/tools/validate_curation_request.py, reference: "request-boundary enforcement point"}
+      - {path: prd.md, reference: "§7 foundation readiness; §11 production fulfillment gate"}
+    basis: ["Owner directive 2026-08-11 (PRD promotion): foundation readiness is a hard production gate with no normal waiver"]
+    requires_owner_confirmation: false
+    notes: "No transient roster count belongs in this rule (a current count is a readiness-report
+            output, not canon). Useful coverage across vertical/category/price tiers remains a
+            roster-quality objective and audit dimension, NOT an undefined hard quota, unless a
+            future owner ruling makes specific coverage measurable and hard. The current codebase
+            still exposes foundation_shortfall_acknowledged as a transitional bypass; removing that
+            normal-production bypass is a post-promotion implementation step (prd.md §23 step 7),
+            not a canon change made here."
+
   - id: truth_refresh_001
     category: product_truth
     claim: "Shopya is a dynamic discovery product: collections and rails must feel current, changing and culturally relevant across the breadth of the taxonomy. CollectionCuration therefore CONTINUOUSLY refreshes inventory across categories and subcategories as a persistent system; campaigns apply a timely editorial lens over that evolving product truth. A campaign never scrapes the product universe from scratch as a matter of course. Ownership boundary (restating CLAUDE.md's cardinal rule as a product fact): CollectionCuration answers what products exist and what is true about them now; Campaign Wizard answers which of those belong in this campaign, where, and why — and consumes product truth READ-ONLY."
@@ -770,7 +801,7 @@ claims:
     status: implemented
     sources:
       - {path: scripts/build_csv.py, reference: "FLOOR = 12; 'BELOW THE RENDER FLOOR ... would silently vanish'"}
-      - {path: .claude/skills/new-campaign/references/render_rules.md, reference: "line 52 'Below the render cap the feed resolves empty and is silently dropped'"}
+      - {path: docs/archive/2026-08-06_skill-v1/skills/new-campaign/references/render_rules.md, reference: "line 52 'Below the render cap the feed resolves empty and is silently dropped' (active copy removed in 2026-08-11 decontamination; identical line preserved in archive)"}
     basis: []
     requires_owner_confirmation: false
     notes: "RESOLVED by owner ruling. Correction is implementation-sequence step 11; the claim
@@ -868,11 +899,11 @@ claims:
     claim: "Canonical curation UID rule is slug(brand):slug(product_name):slug(colorway); the stable parent key is external_id = slug(brand):slug(product). Variants carry curation_uid to join the observation log for price history."
     status: implemented
     sources:
-      - {path: shopya-collection-curation/CURATION_PROTOCOL.md, reference: "line 197 UID RULE"}
-      - {path: shopya-collection-curation/INGEST_CONTRACT.md, reference: "lines 23, 33, 53"}
+      - {path: shopya-collection-curation/tools/sellable_identity.py, reference: "canonical sellable_product_uid computation (UID rule now lives in code)"}
+      - {path: shopya-collection-curation/tools/product_truth.py, reference: "single write path; curation_uid join for the observation log"}
     basis: []
     requires_owner_confirmation: false
-    notes: "Sibling-repo contract. Observations append via a single write path."
+    notes: "Sibling-repo contract. Observations append via a single write path (tools/pdp_append.py -> tools/product_truth.py). Original provenance docs CURATION_PROTOCOL.md / INGEST_CONTRACT.md removed in 2026-08-11 decontamination; the rule is embodied in the cited code."
 
   - id: constraint_repo_005
     category: governance

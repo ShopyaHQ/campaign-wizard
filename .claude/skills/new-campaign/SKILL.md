@@ -15,9 +15,10 @@ within a pass — that is exactly what happened to the version now in `docs/arch
 ## Do this
 
 1. **Read `CLAUDE.md`.** It sets the authority order and the two rules that are always true.
-2. **Read `schemas/workflow_state.schema.yaml`.** It is the only process authority: the states,
-   their entry prerequisites, the legal transitions, the predicate vocabulary, `settable_paths`,
-   and the refusals. Do not infer the process from anywhere else.
+2. **Read `prd.md`** for the product/E2E model (lifecycle, owner checkpoints, structured objects,
+   handoffs, invariants), and **`schemas/workflow_state.schema.yaml`** for the machine process: the
+   states, their entry prerequisites, the legal transitions, the predicate vocabulary,
+   `settable_paths`, and the refusals. Do not infer the process from anywhere else.
 3. **Start or resume a run.**
    - `python3 scripts/run.py new` — a fresh campaign
    - `python3 scripts/run.py status --run <run_id>` — where an existing run stands and which

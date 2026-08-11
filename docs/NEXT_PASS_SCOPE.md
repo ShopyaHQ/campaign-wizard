@@ -151,8 +151,9 @@ products, preserving product truth and campaign visual direction.
 
 ## ELEVATED (owner, 2026-08-07): PDP resolution tool — now an ACTIVE separate workstream
 The product_url/verification_url separation and engine-owned verification interface items above
-are no longer next-pass: spun out into a dedicated CollectionCuration session (see
-shopya-collection-curation/SCRAPER_TOOL_KICKOFF.md). Almost Fall paused pending b004.
+are no longer next-pass: spun out into a dedicated CollectionCuration workstream, now the standing
+engine doc shopya-collection-curation/PDP_RESOLUTION_PROTOCOL.md (its kickoff doc was folded in and
+removed in the 2026-08-11 decontamination). Almost Fall paused pending b004.
 
 ## Proposed SSOT updates awaiting owner ruling (moved from PROPOSED_SSOT_UPDATES.md, 2026-08-09)
 1. Channel-failure vs thesis-failure classification as a formal rule (owner has applied it in
