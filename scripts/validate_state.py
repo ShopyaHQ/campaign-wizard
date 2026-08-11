@@ -683,7 +683,7 @@ class Validator:
         return out
 
     # ---------- always-on invariants ----------
-    def invariants(self):
+    def invariants(self, to=None):
         ctx = "invariant"
         self.p_versions_pinned([], ctx)
         self.p_versions_unchanged([], ctx)
@@ -758,33 +758,49 @@ class Validator:
                           "artifact %r is registered but missing on disk" % key,
                           "artifacts.%s.path" % key, "<exists>", p)
 
-        # A2 (2026-08-10): status/proof coherence. 'validated' is a machine-checkable claim:
-        # it holds ONLY while the last non-invalidated passing validation attempt is a
-        # production build hash-bound to the CURRENT products_csv. A migrated run whose
-        # traversed proof fails the current canon may not remain semantically post-VALIDATED
-        # on it (run.py migrate stamps such proof invalid and downgrades this status; this
-        # invariant catches any state that dodged the writer).
-        if et.get("seam6_execution_status") == "validated":
-            live = [x for x in (self.state.get("validation_attempts") or [])
-                    if x.get("result") == "passed" and not x.get("invalidated_at")]
-            csv_rec = self.artifact_record("products_csv") or {}
-            lastp = live[-1] if live else None
-            bound = (lastp is not None
-                     and lastp.get("production") is True
-                     and lastp.get("output_sha256")
-                     and lastp.get("output_sha256") == csv_rec.get("sha256")
-                     and csv_rec.get("status", "current") == "current"
-                     and not lastp.get("allow_stale_used")
-                     and not lastp.get("legacy_replay_used"))
-            if not bound:
+        # A2 (2026-08-10, keyed on workflow.state 2026-08-11 per prd.md §16.5): post-validation
+        # state/proof coherence. A run whose WORKFLOW STATE is post-validation (VALIDATED or
+        # CAMPAIGN_APPROVED) is CLAIMING there is a current valid production execution package;
+        # it must therefore still hold current valid production proof — the same proof the entry
+        # gate required. Keying this on workflow.state (not the downgradable
+        # execution_tracking.seam6_execution_status string) closes the resting-state hole: a
+        # migrate/reopen that invalidates proof and downgrades the status to 'ready' MUST also
+        # move the workflow state out of the post-validation set (via the sanctioned reopen
+        # edge), or this fires. SEAM6_READY and every pre-VALIDATED state are exempt, so a
+        # correctly reopened run is coherent in its downgraded state.
+        POST_VALIDATION = {"VALIDATED", "CAMPAIGN_APPROVED"}
+        wf_state = (self.state.get("workflow") or {}).get("state")
+        # The ONLY transition that exempts the departing state's coherence is a sanctioned
+        # execution-REOPEN edge out of the post-validation state (VALIDATED/CAMPAIGN_APPROVED ->
+        # SEAM6_READY, transition_type: reopen). That edge is exactly what resolves the stale
+        # proof, and check_reopen() independently enforces its obligations (proof invalidated,
+        # artifacts superseded, decision recorded). Everything else still applies the check:
+        #   - a bare validate (no --to): a resting post-validation state;
+        #   - a FORWARD transition (VALIDATED -> CAMPAIGN_APPROVED, CAMPAIGN_APPROVED -> LIVE):
+        #     current proof IS required; the LIVE gate is NOT a substitute for this invariant.
+        # Tie the exemption to the schema's own reopen classification, not to target-state names.
+        exempt_reopen = False
+        if to is not None and wf_state in POST_VALIDATION:
+            t = self.find_transition(wf_state, to)
+            exempt_reopen = bool(t) and t.get("transition_type") == "reopen"
+        if wf_state in POST_VALIDATION and not exempt_reopen:
+            # Reuse the SINGLE definition of current valid production proof (the same predicates
+            # that gate SEAM6_READY -> VALIDATED). Each records its own specific failure; we add
+            # the coherence refusal so the incoherent resting state is named explicitly.
+            ctx2 = "invariant[%s coherence]" % wf_state
+            proof_ok = (self.p_last_validation_passed([], ctx2)
+                        and self.p_validation_binds_products_csv([], ctx2))
+            if not proof_ok:
                 self.fail("stale_execution_proof",
-                          "seam6_execution_status is 'validated' but the last non-invalidated "
-                          "passing validation attempt is not a production build hash-bound to "
-                          "the current products_csv — regenerate via validate-execution "
-                          "(canon migration stamps such stale proof invalid)",
-                          "execution_tracking.seam6_execution_status",
-                          "a live hash-bound production pass",
-                          "unbound or invalidated proof")
+                          "workflow.state is %r but the run holds no current valid production "
+                          "execution proof (a non-invalidated passing production build hash-bound "
+                          "to the current products_csv). A run may not rest in a post-validation "
+                          "state on invalidated or superseded proof — regenerate via "
+                          "validate-execution, or move out of the post-validation state through "
+                          "the sanctioned reopen edge (%s -> SEAM6_READY)." % (wf_state, wf_state),
+                          "workflow.state",
+                          "current valid production execution proof for a post-validation state",
+                          "unbound, invalidated, or superseded proof")
 
     # ---------- artifact structural validation (separate phase) ----------
     def check_artifacts(self):
@@ -1002,7 +1018,7 @@ def main():
     v = Validator(a.state, a.schema, a.charter, a.runs_dir, a.run_dir)
     cur = v.state.get("workflow", {}).get("state")
     if a.phase in ("all", "state"):
-        v.invariants()
+        v.invariants(a.to)
     if a.phase in ("all", "artifacts"):
         v.check_artifacts()
     if a.phase in ("all", "transition"):

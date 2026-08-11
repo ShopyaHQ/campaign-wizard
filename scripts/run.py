@@ -469,6 +469,16 @@ def cmd_migrate(a):
             print("  OBLIGATION: no live proof remains — seam6_execution_status downgraded to "
                   "%r; stale execution artifacts superseded; run validate-execution to "
                   "regenerate" % et.get("seam6_execution_status"))
+            # prd.md §16.5: a run whose workflow.state is post-validation may not rest on
+            # invalidated proof. Migration does not silently transition state (state changes go
+            # through the sanctioned reopen edge); it flags that the run is now incoherent and
+            # will be REFUSED by the validator until reopened out of the post-validation state.
+            wf_state = (s.get("workflow") or {}).get("state")
+            if wf_state in ("VALIDATED", "CAMPAIGN_APPROVED"):
+                print("  OBLIGATION: workflow.state is still %r with no live proof — the run "
+                      "will now be REFUSED (stale_execution_proof) until it is reopened via "
+                      "`run.py reopen --to SEAM6_READY` and regenerated. Migration does not "
+                      "move the workflow state on its own." % wf_state)
 
 
 def cmd_validate_execution(a):

@@ -240,6 +240,12 @@ def main():
             s["execution_tracking"]["seam6_execution_status"] = "executed"
             s["collection_freeze"] = {"snapshot": [{"collection_id": "c1", "frozen_at": "z",
                                                     "sha256": "x"}], "exceptions": []}
+            # A real pre-LIVE CAMPAIGN_APPROVED run necessarily still carries the current bound
+            # passing validation proof it reached VALIDATED with (prd.md §16.5: a post-validation
+            # state must be supported by current valid execution proof, not only the verification
+            # record). Without it, the post-validation coherence invariant correctly refuses.
+            s["validation_attempts"] = [{"attempted_at": "t", "result": "passed",
+                                         "production": True, "output_sha256": sha, "failures": []}]
             return s
         # ADVERSARIAL: asserting post_cache_verified=true with no computed record cannot reach LIVE.
         s = live_base()

@@ -234,9 +234,14 @@ def main():
                for k in ("products_csv", "execution_manifest")))
         ok("  obligation recorded on the migration record",
            after["run"]["migration"][-1].get("proof_invalidated") is not None)
+        # prd.md §16.5 (fix 2026-08-11): the migrated run is STILL at CAMPAIGN_APPROVED (migrate
+        # invalidates proof + downgrades status but does not transition state). A post-validation
+        # state resting on invalidated proof is INCOHERENT and must be REFUSED — it is only made
+        # coherent by reopening out of the post-validation state (see the A3 case below). This
+        # assertion previously (wrongly) expected PASS, codifying the resting-state defect.
         rc, out = validate(os.path.join(rdir2, "state.yaml"))
-        ok("  migrated run validates clean under current canon (not semantically "
-           "post-VALIDATED)", rc == 0, out)
+        ok("  migrated run STILL at CAMPAIGN_APPROVED with invalidated proof is REFUSED "
+           "(stale_execution_proof)", rc != 0 and "stale_execution_proof" in out, out)
 
         # Migration must NOT touch live, bound, production proof.
         rid3 = "cmp_TESTMIGRATE0000000000000002"
@@ -265,6 +270,121 @@ def main():
         s = approved_state()   # bound production pass -> coherent
         rc, out = validate(write(os.path.join(tmp, "m2.yaml"), s))
         ok("'validated' status with live bound production proof passes", rc == 0, out)
+
+        print("\n-- A3: post-validation coherence keyed on workflow.state (prd.md §16.5) --")
+        # The resting-state defect: a post-validation workflow state must hold current valid
+        # production proof REGARDLESS of the downgradable seam6_execution_status string.
+
+        def stale_proof(state):
+            """A run at `state` whose proof has been invalidated + superseded and whose
+            execution status was downgraded to 'ready' — the exact shape a migrate/reopen
+            leaves behind. campaign_approved is NOT invalidated (this is a RESTING state, not
+            a re-entry attempt), isolating the coherence check from stale_decision_after_reopen."""
+            s = approved_state()
+            s["workflow"]["state"] = state
+            for key in ("products_csv", "execution_manifest"):
+                s["artifacts"][key]["status"] = "superseded"
+                s["artifacts"][key]["supersession_reason"] = "canon_migration"
+            s["validation_attempts"][0]["invalidated_at"] = "t2"
+            s["validation_attempts"][0]["invalidated_by_decision"] = "canon_migration"
+            s["execution_tracking"]["seam6_execution_status"] = "ready"  # disarms the OLD guard
+            return s
+
+        rc, out = validate(write(os.path.join(tmp, "a3_val.yaml"), stale_proof("VALIDATED")))
+        ok("VALIDATED + no current proof (status downgraded) is REFUSED",
+           rc != 0 and "stale_execution_proof" in out, out)
+
+        rc, out = validate(write(os.path.join(tmp, "a3_ca.yaml"), stale_proof("CAMPAIGN_APPROVED")))
+        ok("CAMPAIGN_APPROVED + no current proof (status downgraded) is REFUSED",
+           rc != 0 and "stale_execution_proof" in out, out)
+
+        # CAMPAIGN_APPROVED + only the current CSV superseded (attempt still 'passed', status
+        # still 'validated') — the binding predicate must reject a superseded anchor.
+        s = approved_state()
+        s["artifacts"]["products_csv"]["status"] = "superseded"
+        s["artifacts"]["execution_manifest"]["status"] = "superseded"
+        rc, out = validate(write(os.path.join(tmp, "a3_super.yaml"), s))
+        ok("CAMPAIGN_APPROVED + superseded current CSV is REFUSED",
+           rc != 0 and ("stale_execution_proof" in out or "stale_artifact_treated_as_current" in out),
+           out)
+
+        # Sanctioned reopen: workflow.state moved OUT to SEAM6_READY, proof invalidated. The
+        # coherence invariant must NOT fire — a correctly reopened run is valid in its
+        # downgraded state, and SEAM6_READY must not require validation proof.
+        s = stale_proof("SEAM6_READY")
+        s["invalidated"] = ["campaign_approved"]
+        rc, out = validate(write(os.path.join(tmp, "a3_reopened.yaml"), s))
+        ok("reopened SEAM6_READY with stale proof invalidated is coherent (PASS)",
+           rc == 0, out)
+
+        # Genuine current bound proof in VALIDATED -> PASS.
+        s = approved_state(); s["workflow"]["state"] = "VALIDATED"
+        rc, out = validate(write(os.path.join(tmp, "a3_goodval.yaml"), s))
+        ok("VALIDATED with genuine current bound production proof passes", rc == 0, out)
+
+        # Genuine current proof + execution approval in CAMPAIGN_APPROVED -> PASS.
+        rc, out = validate(write(os.path.join(tmp, "a3_goodca.yaml"), approved_state()))
+        ok("CAMPAIGN_APPROVED with genuine current proof + approval passes", rc == 0, out)
+
+        print("\n-- A4: the §16.5 exemption is ONLY the sanctioned reopen edge, not any exit --")
+        # The exemption must be tied to transition_type: reopen, NOT to "target leaves the
+        # post-validation set". A forward transition out of a post-validation state (notably
+        # CAMPAIGN_APPROVED -> LIVE) must STILL require current proof — the LIVE gate is not a
+        # substitute for the §16.5 invariant.
+
+        # 1. stale CAMPAIGN_APPROVED proposing --to LIVE (forward) -> REFUSED by §16.5 itself.
+        rc, out = validate(write(os.path.join(tmp, "a4_ca_live.yaml"),
+                                 stale_proof("CAMPAIGN_APPROVED")), "LIVE")
+        ok("stale CAMPAIGN_APPROVED --to LIVE is REFUSED by stale_execution_proof (not just the "
+           "LIVE gate)", rc != 0 and "stale_execution_proof" in out, out)
+
+        # 2. stale post-validation + a non-reopen forward target (VALIDATED -> CAMPAIGN_APPROVED)
+        #    -> REFUSED by §16.5.
+        rc, out = validate(write(os.path.join(tmp, "a4_val_ca.yaml"),
+                                 stale_proof("VALIDATED")), "CAMPAIGN_APPROVED")
+        ok("stale VALIDATED --to CAMPAIGN_APPROVED (forward) is REFUSED by stale_execution_proof",
+           rc != 0 and "stale_execution_proof" in out, out)
+
+        def fully_reopened(state):
+            """`state` (post-validation) with EVERY reopen obligation for its -> SEAM6_READY edge
+            met, per the schema's per-edge `invalidates` / `supersedes_artifacts`. This is the
+            state as it exists WHILE the reopen transition to SEAM6_READY is being validated
+            (workflow.state still the source). The two edges differ:
+              CAMPAIGN_APPROVED -> SEAM6_READY (reopen_execution_post_approval): invalidates
+                campaign_approved + seam6_execution_status + validation_attempts + verification;
+                supersedes products_csv + execution_manifest.
+              VALIDATED -> SEAM6_READY (reopen_seam6_execution): invalidates campaign_approved +
+                seam6_execution_status; no artifact supersession obligation."""
+            s = approved_state()
+            s["workflow"]["state"] = state
+            if state == "CAMPAIGN_APPROVED":
+                decision = "reopen_execution_post_approval"
+                inval = ["campaign_approved", "execution_tracking.seam6_execution_status",
+                         "validation_attempts", "verification"]
+                for key in ("products_csv", "execution_manifest"):
+                    s["artifacts"][key]["status"] = "superseded"
+                    s["artifacts"][key]["supersession_reason"] = "post-approval reopen"
+            else:  # VALIDATED
+                decision = "reopen_seam6_execution"
+                inval = ["campaign_approved", "execution_tracking.seam6_execution_status"]
+            s["owner_decisions"][decision] = {
+                "status": "owner_confirmed", "decided": True, "decided_by": "product_owner",
+                "decided_at": "t", "value": {"reason": "regenerate stale execution"}}
+            s["invalidated"] = inval
+            s["validation_attempts"][0]["invalidated_at"] = "t2"
+            s["validation_attempts"][0]["invalidated_by_decision"] = decision
+            s["execution_tracking"]["seam6_execution_status"] = "ready"
+            return s
+
+        # 3. stale CAMPAIGN_APPROVED + sanctioned reopen --to SEAM6_READY, all obligations -> PASS.
+        rc, out = validate(write(os.path.join(tmp, "a4_ca_reopen.yaml"),
+                                 fully_reopened("CAMPAIGN_APPROVED")), "SEAM6_READY")
+        ok("stale CAMPAIGN_APPROVED --to SEAM6_READY with all reopen obligations PASSES", rc == 0, out)
+
+        # 4. stale VALIDATED + sanctioned reopen --to SEAM6_READY, all obligations -> PASS.
+        rc, out = validate(write(os.path.join(tmp, "a4_val_reopen.yaml"),
+                                 fully_reopened("VALIDATED")), "SEAM6_READY")
+        ok("stale VALIDATED --to SEAM6_READY with all reopen obligations PASSES", rc == 0, out)
 
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
