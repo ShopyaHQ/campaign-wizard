@@ -12,7 +12,9 @@
 
 schema:
   name: workflow_state
-  version: 1.6.0
+  version: 1.7.0   # 1.7.0: run-level run_mode (production|diagnostic), immutable, minted at NEW.
+                   # Fresh vNext runs require it; historical runs stay readable under their pin
+                   # (Model B current-canon: a pre-1.7.0 run migrates before it can transition).
   charter_min_version: 0.2.0
   state_file_path: "campaigns/<run_id>/state.yaml"
   notes: >
@@ -73,6 +75,17 @@ state_file:
       immutable_until_state: REVIEWED
       migration_required_to_change: true
       charter_ref: governance_001
+    run_mode:
+      type: enum
+      values: [production, diagnostic]
+      minted_at_state: NEW
+      immutable: true
+      desc: >
+        Run-level authority identity, set once at NEW and IMMUTABLE for the life of the run.
+        production = a normal fulfilment-bound run; diagnostic = a sanctioned below-Foundation
+        diagnostic run whose artifacts can never satisfy production gates. A Curation Request
+        inherits this mode and may never self-declare greater authority. Migration does NOT
+        change it. It is not in settable_paths, so run.py set cannot mutate it.
     created_at: {type: timestamp}
 
   identity:
@@ -832,6 +845,11 @@ refusals:
   spec_version_changed_mid_run:
     charter_ref: governance_001
     message: "spec_version is pinned for the life of the run. Refusing."
+  run_mode_mutated:
+    message: "run.run_mode is a run-level identity, immutable after NEW. It differs from the
+              value pinned at NEW. Refusing — a run cannot change its authority mode."
+  run_mode_invalid:
+    message: "run.run_mode must be one of {production, diagnostic}. Refusing."
   charter_version_changed_without_migration:
     charter_ref: governance_001
     message: "charter_version changed with no migration record. A new charter does not

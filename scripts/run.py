@@ -146,9 +146,12 @@ def cmd_new(a):
     os.makedirs(d, exist_ok=False)
     spec_v = schema["schema"]["version"]
     chart_v = charter["charter"]["version"]
+    # run_mode is a run-level identity, set ONCE here and immutable. Normal /new-campaign
+    # is production; --diagnostic creates a sanctioned below-Foundation diagnostic run.
+    run_mode = "diagnostic" if getattr(a, "diagnostic", False) else "production"
     st = {
         "run": {"run_id": rid, "spec_version": spec_v, "charter_version": chart_v,
-                "created_at": now()},
+                "run_mode": run_mode, "created_at": now()},
         "identity": {
             "campaign_id": {"value": None, "status": None, "confirmed_by_owner": False,
                             "externally_referenced": False, "first_external_reference": None},
@@ -158,6 +161,7 @@ def cmd_new(a):
                                   "transition_type": "forward",
                                   "pinned_spec_version": spec_v,
                                   "pinned_charter_version": chart_v,
+                                  "pinned_run_mode": run_mode,
                                   "decision_ref": None}]},
         "owner_decisions": {},
         "artifacts": {},
@@ -177,6 +181,7 @@ def cmd_new(a):
     rc, out, err = call_validator(state_path(rid))
     print(out or err)
     print("run_id        %s" % rid)
+    print("run_mode      %s   (immutable)" % run_mode)
     print("spec_version  %s   (pinned)" % spec_v)
     print("charter_ver   %s   (pinned, status %s)" % (chart_v, charter["charter"]["status"]))
     print("state file    %s" % os.path.relpath(state_path(rid), ROOT))
@@ -822,7 +827,10 @@ def main():
     ap = argparse.ArgumentParser(description="Campaign run interface.")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    p = sub.add_parser("new");  p.add_argument("--note"); p.set_defaults(f=cmd_new)
+    p = sub.add_parser("new");  p.add_argument("--note")
+    p.add_argument("--diagnostic", action="store_true",
+                   help="create a sanctioned diagnostic run (default: production); immutable")
+    p.set_defaults(f=cmd_new)
     p = sub.add_parser("list"); p.set_defaults(f=cmd_list)
     p = sub.add_parser("status"); p.add_argument("--run", required=True); p.set_defaults(f=cmd_status)
 

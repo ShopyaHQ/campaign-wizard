@@ -231,6 +231,46 @@ class Validator:
                 ok = False
         return ok
 
+    def p_run_mode(self, a, ctx):
+        """run.run_mode is a run-level identity: present, one of {production, diagnostic},
+        and IMMUTABLE (equal to the value pinned at NEW). Version-gated so historical
+        pre-1.7.0 runs (which never had run_mode) remain readable under their own pin —
+        Model B: such a run must migrate to the current canon before it can transition."""
+        run = self.state.get("run") or {}
+        # Only fresh vNext runs (spec >= 1.7.0 on the loaded canon) are required to carry it.
+        canon = (self.schema.get("schema") or {}).get("version") or "0.0.0"
+        pinned_spec = run.get("spec_version") or "0.0.0"
+
+        def _ge(v, base):
+            def t(s):
+                return [int(x) for x in str(s).split(".")]
+            return t(v) >= t(base)
+
+        requires_mode = _ge(canon, "1.7.0") and _ge(pinned_spec, "1.7.0")
+        mode = run.get("run_mode")
+        if mode is None:
+            if requires_mode:
+                self.fail("prerequisites_unmet",
+                          "%s: run.run_mode is required for vNext runs (>=1.7.0) and is absent"
+                          % ctx, "run.run_mode", "production|diagnostic", MISSING)
+                return False
+            return True   # historical run predating run_mode — readable, not judged on it
+        if mode not in ("production", "diagnostic"):
+            self.fail("run_mode_invalid",
+                      "%s: run.run_mode %r is not production|diagnostic" % (ctx, mode),
+                      "run.run_mode", "production|diagnostic", mode)
+            return False
+        # immutability: must equal the value pinned at NEW
+        hist = self.state.get("workflow", {}).get("history") or []
+        pinned = next((h for h in hist if h.get("to") == "NEW"), None)
+        was = (pinned or {}).get("pinned_run_mode")
+        if was is not None and mode != was:
+            self.fail("run_mode_mutated",
+                      "%s: run.run_mode is %r but was pinned %r at NEW — run_mode is immutable"
+                      % (ctx, mode, was), "run.run_mode", was, mode)
+            return False
+        return True
+
     def p_version_not_withdrawn(self, a, ctx):
         ch = self.charter.get("charter") or {}
         if "withdrawn_versions" not in ch:
@@ -689,6 +729,7 @@ class Validator:
         self.p_versions_unchanged([], ctx)
         self.p_canon_matches_or_migrated([], ctx)
         self.p_version_not_withdrawn([], ctx)
+        self.p_run_mode([], ctx)
 
         run_id = (self.state.get("run") or {}).get("run_id")
         for other, doc in self._sibling_states():

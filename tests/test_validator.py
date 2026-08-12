@@ -76,7 +76,8 @@ FRAME = {
 
 BASE = {
     "run": {"run_id": "cmp_01J0000000000000000000000A", "spec_version": None,
-            "charter_version": None, "created_at": "2026-08-06T15:00:00Z"},
+            "charter_version": None, "run_mode": "production",
+            "created_at": "2026-08-06T15:00:00Z"},
     "identity": {"campaign_id": {"value": None, "status": None, "confirmed_by_owner": False,
                                  "externally_referenced": False, "first_external_reference": None},
                  "display_name": None},

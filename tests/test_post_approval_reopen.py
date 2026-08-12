@@ -62,7 +62,7 @@ def main():
             """A run at CAMPAIGN_APPROVED with a bound production validation pass."""
             s = {
                 "run": {"run_id": "cmp_TESTREOPEN0000000000000000", "spec_version": spec_v,
-                        "charter_version": chart_v, "created_at": "t"},
+                        "charter_version": chart_v, "run_mode": "production", "created_at": "t"},
                 "identity": {"campaign_id": {"value": "test-reopen-2026", "status": "confirmed",
                                              "confirmed_by_owner": True,
                                              "externally_referenced": False,

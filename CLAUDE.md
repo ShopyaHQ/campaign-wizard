@@ -121,6 +121,20 @@ authoritative** and must not be followed.
 ## Start
 
 ```
-python3 scripts/run.py new        # begin a run
-python3 scripts/run.py status     # current state and its legal transitions
+python3 scripts/run.py new                    # begin a run (run_mode: production, immutable)
+python3 scripts/run.py new --diagnostic       # a sanctioned diagnostic run
+python3 scripts/run.py status                 # current state and its legal transitions
+python3 scripts/generate_curation_request.py --run <cmp_…> --category-id <id> --required-depth 50
 ```
+
+## Now implemented (this contract step)
+
+- **`run_mode`** is a run-level identity (`production`|`diagnostic`), set once at NEW and
+  IMMUTABLE (not in `settable_paths`; validator refuses mutation). A Curation Request inherits it.
+- **Deterministic Request v2 generation** — `scripts/generate_curation_request.py` is the one
+  sanctioned path; it reads the run, inherits `run_mode`, emits an immutable, canonically-hashed
+  Request v2 (contract 2.0.0). Engine validates/normalizes it; the request hash matches Engine's.
+- Still **target-only** (not built): structured `campaign_spec` / `research_brief` /
+  `research_ledger` / `campaign_directions`, Curation Receipt, the fulfillment lifecycle,
+  Truth Export v2, Wizard receipt ingestion. `spec_ref` binds to the current run until
+  `campaign_spec` exists (honest; not faked).
