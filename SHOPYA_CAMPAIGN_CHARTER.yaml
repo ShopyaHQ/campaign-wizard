@@ -16,12 +16,61 @@
 # Proposed and inferred claims are NEVER silently promoted to product truth.
 
 charter:
-  version: 0.4.0
+  version: 0.8.0
   status: approved
   approved_by: product_owner
-  approved_at: 2026-08-09T00:00:00Z
-  supersedes: 0.3.0
+  approved_at: 2026-08-11T00:00:00Z
+  supersedes: 0.7.0
   changelog:
+    0.8.0: >
+      Owner-authorized PRD promotion (2026-08-11). New rule foundation_001 makes the >=200
+      working Source/Merchant profile foundation a HARD production-fulfillment gate: a working
+      profile is a registered source identity plus a demonstrated repeatable method producing
+      truth that clears the PDP/product-truth gate (discovery-only never counts); production
+      CollectionCuration fulfillment is blocked until it passes; there is NO normal production
+      waiver (the former caller-authored foundation_shortfall_acknowledged bypass is removed
+      from the target product model); no transient roster count lives in the rule; useful
+      category/vertical/price-tier coverage stays a quality objective unless separately made
+      hard with measurable definitions. Authored as part of the authority migration in which
+      docs/prd.md becomes the normative product/E2E SSOT and docs/E2E_PROCESS.md is retired to
+      a tombstone. No numeric depth/render rule changed; render_001/002/003 unaffected.
+    0.7.0: >
+      Owner Decision 1, 2026-08-10 (r006): render_003 RESTORED to the HARD >=50
+      launched-collection requirement (50 dependable in_stock unique sellable products;
+      49 fails, 50 passes). The 0.6.0 return to a 24-publishable floor was an ACCIDENTAL
+      REGRESSION: it was applied on an explicit owner instruction whose framing ("keep the
+      existing layered model") incorrectly described the superseded 2026-08-07 layered model
+      as the standing rule, when the standing hardened rule was the 2026-08-09 hard-50
+      ruling. The owner has reconfirmed hard-50. The 24-floor wording is preserved below as
+      historical superseded evidence — not erased. Build b006 (validated under 0.6.0's
+      24-floor) is reclassified DIAGNOSTIC / NON-LAUNCHABLE. truth_refresh_001 and the
+      content-charter selection ladder / freshness hierarchy are unaffected (not
+      depth-numeric rules). Fulfillment order on spec approval: roster to >=200 working
+      profiles first, then fulfill approved collections to >=50.
+    0.6.0: >
+      Owner operating-model lock (directive 2026-08-10, pre-fulfillment). render_003 REVISED
+      to the layered depth model: technical rendering floor 1 (render_001) · rail pins 12
+      (render_002) · HARD PUBLISHABLE collection floor 24 dependable in_stock unique products
+      · >50 the PREFERRED healthy/mature target and an ongoing CollectionCuration objective —
+      explicitly NOT a launch quota and never license to pad; no-padding stays absolute and a
+      natural ceiling is reported rather than filled. This restores the owner's 2026-08-07
+      layered ruling (inventory_depth_model_approved) that the 0.4.0 hard-50 reading had
+      collapsed into a single launch gate. New claim truth_refresh_001 records the dynamic-
+      discovery product principle (engine continuously refreshes the product universe;
+      campaigns apply a timely editorial lens; wizard consumes truth read-only). The v1
+      product-selection ladder, freshness hierarchy and rail/body/reserve population
+      semantics are editorial/merchandising logic and live in SHOPYA_CONTENT_CHARTER.yaml
+      (1.1.0), referenced here, not restated.
+    0.5.0: >
+      Post-regression reconciliation (owner directive 2026-08-10). explore_002 REVISED: the
+      global four-feed campaign ceiling (owner ruling 2026-08-06) was already superseded by the
+      owner's Phase-1 ruling of 2026-08-07 (phase1_matrix_approved_rulings_r1_r5, R1: the
+      explore_feeds<=4 model is INVALID for the locked Phase-1 product, which requires >=3
+      product rails per required vertical; no new arbitrary global number). The charter now
+      matches that ruling: per-feed justification and per-activation declaration survive; the
+      global numeric cap is removed; NO replacement maximum is invented — practical per-surface
+      maximums are established from frontend/product evidence. The conflict was surfaced by the
+      Almost Fall r002 end-to-end regression. No other claim changed.
     0.4.0: >
       Owner rulings 2026-08-09. RULING 1 (collection depth): render_003 is REVERSED — every
       launched durable category collection now carries a HARD >=50 dependable in_stock unique
@@ -700,18 +749,51 @@ claims:
 
   - id: render_003
     category: render_contract
-    claim: "Every LAUNCHED durable category collection must contain at least 50 dependable in_stock UNIQUE products (the collection-depth hard floor). 49 fails, 50 passes. Variants of one product and duplicate product identities never inflate the count. Low-stock products are reported separately and NEVER satisfy the floor. No padding: a collection that cannot honestly reach 50 defensible products reports the shortfall and proposes a scope/category change for owner approval rather than filling off-thesis. This is a launch requirement (not a preferred target) enforced by the wizard's execution builder; render_001 (technical minimum 1) and render_002 (presentation quality 12) remain the separate rendering/first-paint contracts and are NOT collection-readiness floors."
+    claim: "Every LAUNCHED durable category collection must contain at least 50 dependable in_stock UNIQUE sellable products (the collection-depth hard floor). 49 fails, 50 passes. Variants of one product and duplicate product identities never inflate the count (engine-owned sellable_product_uid). Low-stock products are reported separately and NEVER satisfy the floor. No padding: a collection that cannot honestly reach 50 defensible products reports the shortfall and proposes a scope/category change for owner approval rather than filling off-thesis. This is a launch requirement (not a preferred target) enforced by the wizard's execution builder; render_001 (technical minimum 1) and render_002 (presentation quality 12) remain the separate rendering/first-paint contracts and are NOT collection-readiness floors."
     status: approved_rule
-    approved_in_version: 0.4.0
-    supersedes_claim: "0.2.0 render_003 ('There is NO universal >50-item collection expectation') and the interim 0.7.0-proposed content-charter 24 (2x-rail) hard floor."
+    approved_in_version: 0.7.0
+    supersedes_claim: "0.6.0 render_003 (layered 24-publishable/>50-health) — an ACCIDENTAL REGRESSION whose authorizing instruction misdescribed the superseded 2026-08-07 layered model as the standing rule; preserved as historical evidence in the 0.6.0 changelog. Also (as before) 0.2.0 ('no universal >50 expectation') and the interim 24 (2x-rail) floor."
     sources:
       - {path: scripts/build_execution_csv.py, reference: "members < 50 hard failure"}
       - {path: docs/E2E_PROCESS.md, reference: "FLOOR clarification; FLOOR FAILURE PROTOCOL"}
-    basis: ["Owner ruling 2026-08-09 (Ruling 1 — collection depth)"]
+    basis: ["Owner Decision 1, 2026-08-10 (r006 depth ruling): 'The hard launched-collection requirement is >=50 dependable in_stock unique sellable products' — reconfirming Owner Ruling 1 of 2026-08-09", "Owner ruling 2026-08-09 (Ruling 1 — collection depth)"]
     requires_owner_confirmation: false
-    notes: "The earlier reversal (0.2.0) tied the floor to the false 12-floor and was itself
-            corrected by owner ruling 2026-08-09. The >=50 floor is a curation/readiness gate,
-            not a frontend rendering constraint — do not conflate with render_001/render_002."
+    notes: "Full chronology, preserved: 0.2.0 no-floor -> 2026-08-07 layered 24/50 (decision
+            inventory_depth_model_approved) -> 0.4.0 HARD 50 (owner 2026-08-09) -> 0.6.0
+            accidental 24-layered regression (2026-08-10, misframed directive) -> 0.7.0 HARD 50
+            restored (owner Decision 1, 2026-08-10). A curation/readiness gate, not a frontend
+            rendering constraint — do not conflate with render_001/render_002."
+
+  - id: foundation_001
+    category: foundation_readiness
+    claim: "Production CollectionCuration fulfillment may begin only when the global Source/Merchant Roster holds at least 200 WORKING profiles. A working profile is a registered source identity (brand + storefront URL) PLUS a demonstrated repeatable non-discovery method (static_html / json_ld / platform_json / browser_agent, alone or combined) that has produced at least one PDP-gate-clean verified truth row — i.e. repeatable method truth, not a merchant merely observed once, and never a discovery-only method (og_meta / search_snippet alone). Below 200 working profiles, production curation requests are BLOCKED. There is no normal production waiver: the former caller-authored foundation_shortfall_acknowledged bypass is removed from the target product model. Any extraordinary production waiver, if ever introduced, must be an explicit typed owner-governance exception bound to a specific run/spec revision — not a request boolean."
+    status: approved_rule
+    approved_in_version: 0.8.0
+    sources:
+      - {path: shopya-collection-curation/tools/foundation_readiness.py, reference: "roster_working_profiles >= 200 machine check (READY/NOT READY)"}
+      - {path: shopya-collection-curation/tools/validate_curation_request.py, reference: "request-boundary enforcement point"}
+      - {path: prd.md, reference: "§7 foundation readiness; §11 production fulfillment gate"}
+    basis: ["Owner directive 2026-08-11 (PRD promotion): foundation readiness is a hard production gate with no normal waiver"]
+    requires_owner_confirmation: false
+    notes: "No transient roster count belongs in this rule (a current count is a readiness-report
+            output, not canon). Useful coverage across vertical/category/price tiers remains a
+            roster-quality objective and audit dimension, NOT an undefined hard quota, unless a
+            future owner ruling makes specific coverage measurable and hard. The current codebase
+            still exposes foundation_shortfall_acknowledged as a transitional bypass; removing that
+            normal-production bypass is a post-promotion implementation step (prd.md §23 step 7),
+            not a canon change made here."
+
+  - id: truth_refresh_001
+    category: product_truth
+    claim: "Shopya is a dynamic discovery product: collections and rails must feel current, changing and culturally relevant across the breadth of the taxonomy. CollectionCuration therefore CONTINUOUSLY refreshes inventory across categories and subcategories as a persistent system; campaigns apply a timely editorial lens over that evolving product truth. A campaign never scrapes the product universe from scratch as a matter of course. Ownership boundary (restating CLAUDE.md's cardinal rule as a product fact): CollectionCuration answers what products exist and what is true about them now; Campaign Wizard answers which of those belong in this campaign, where, and why — and consumes product truth READ-ONLY."
+    status: approved_rule
+    approved_in_version: 0.6.0
+    sources: []
+    basis: ["Owner operating-model lock 2026-08-10 (core inventory/content model)"]
+    requires_owner_confirmation: false
+    notes: "Editorial mechanics of currentness (v1 selection ladder, freshness hierarchy,
+            rail/body/reserve populations) live in SHOPYA_CONTENT_CHARTER.yaml — pointer, not
+            restatement. Future first-party ranking signals are docs/NEXT_PASS_SCOPE.md scope."
 
   - id: constraint_repo_001
     category: render_contract
@@ -719,7 +801,7 @@ claims:
     status: implemented
     sources:
       - {path: scripts/build_csv.py, reference: "FLOOR = 12; 'BELOW THE RENDER FLOOR ... would silently vanish'"}
-      - {path: .claude/skills/new-campaign/references/render_rules.md, reference: "line 52 'Below the render cap the feed resolves empty and is silently dropped'"}
+      - {path: docs/archive/2026-08-06_skill-v1/skills/new-campaign/references/render_rules.md, reference: "line 52 'Below the render cap the feed resolves empty and is silently dropped' (active copy removed in 2026-08-11 decontamination; identical line preserved in archive)"}
     basis: []
     requires_owner_confirmation: false
     notes: "RESOLVED by owner ruling. Correction is implementation-sequence step 11; the claim
@@ -817,11 +899,11 @@ claims:
     claim: "Canonical curation UID rule is slug(brand):slug(product_name):slug(colorway); the stable parent key is external_id = slug(brand):slug(product). Variants carry curation_uid to join the observation log for price history."
     status: implemented
     sources:
-      - {path: shopya-collection-curation/CURATION_PROTOCOL.md, reference: "line 197 UID RULE"}
-      - {path: shopya-collection-curation/INGEST_CONTRACT.md, reference: "lines 23, 33, 53"}
+      - {path: shopya-collection-curation/tools/sellable_identity.py, reference: "canonical sellable_product_uid computation (UID rule now lives in code)"}
+      - {path: shopya-collection-curation/tools/product_truth.py, reference: "single write path; curation_uid join for the observation log"}
     basis: []
     requires_owner_confirmation: false
-    notes: "Sibling-repo contract. Observations append via a single write path."
+    notes: "Sibling-repo contract. Observations append via a single write path (tools/pdp_append.py -> tools/product_truth.py). Original provenance docs CURATION_PROTOCOL.md / INGEST_CONTRACT.md removed in 2026-08-11 decontamination; the rule is embodied in the cited code."
 
   - id: constraint_repo_005
     category: governance
@@ -937,13 +1019,13 @@ claims:
 
   - id: explore_002
     category: explore_limits
-    claim: "Interim absolute guardrail: normal_range [1,4]; maximum_new_campaign_feeds 4. Four is a CEILING, not an entitlement — every feed must be justified by the activation architecture."
+    claim: "Every explore feed must be justified by the activation architecture, and every activation must DECLARE its explore_feeds count (0 for handoff seams). There is NO global numeric feed cap: the locked Phase-1 product model requires at least three product rails per required vertical, so the former four-feed campaign ceiling is obsolete. No replacement global maximum is asserted — practical per-surface maximums are established from frontend/product evidence when it exists, not invented."
     status: approved_rule
-    approved_in_version: 0.2.0
+    approved_in_version: 0.5.0
     sources: []
-    basis: ["Owner ruling 2026-08-06"]
+    basis: ["Owner ruling 2026-08-07 (run cmp_01KZCD765E6NNW2TZR1AFHQMWG decision phase1_matrix_approved_rulings_r1_r5, R1): the explore_feeds<=4 model is INVALID for Phase 1 — minimum 3 rails per vertical; no new arbitrary global number; audit establishes practical per-surface max", "Owner directive 2026-08-10: reconcile the charter with that existing ruling (post-regression correction pass)"]
     requires_owner_confirmation: false
-    notes: "After normalization: allowed_new_feeds = min(absolute_campaign_cap, proportional_page_cap)."
+    notes: "REVISED from 0.2.0 (normal_range [1,4] / maximum_new_campaign_feeds 4, owner ruling 2026-08-06 — superseded by the 2026-08-07 Phase-1 ruling). The declaration requirement survives; the cap does not. Conflict surfaced by the Almost Fall r002 regression."
 
   # ═══ 12 · CAMPAIGN-WORTHY BEHAVIOR ═══════════════════════════════
   - id: behavior_rule_001

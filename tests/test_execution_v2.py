@@ -55,9 +55,10 @@ def make_engine(tmp):
         n += 1; h.update(line)
 
     truth = []
-    # 50 distinct sellable products clear the collection-depth hard floor (render_003).
-    # The ENGINE stamps sellable_product_uid + floor_eligible; the builder consumes them.
-    for i in range(1, 51):
+    # 51 distinct sellable products: enough to exercise the 24 publishable floor AND the
+    # >50 HEALTHY reporting band (render_003 v0.6.0). The ENGINE stamps
+    # sellable_product_uid + floor_eligible; the builder consumes them.
+    for i in range(1, 52):
         uid = "brand-%02d:product-%02d:color" % (i, i)
         truth.append({
             "product_uid": uid, "brand": "Brand %02d" % i,
@@ -202,10 +203,15 @@ def main():
            r.returncode == 0 and "WARNING" in r.stdout)
 
         print("\n-- grain / collection-depth floor (engine sellable identity) --")
+        # render_003 v0.7.0: HARD >=50 floor restored (owner Decision 1 2026-08-10);
+        # 49 fails, 50 passes. The 24-floor interlude was an accidental regression.
         rows = judgment_rows(49)
         r, _ = run_build(tmp, eng, rows, extra=("--allow-stale",))
         ok("49 distinct sellable products refuses (need >=50)",
            r.returncode == 1 and "need >=50" in r.stdout)
+        rows = judgment_rows(50)
+        r, _ = run_build(tmp, eng, rows, extra=("--allow-stale",))
+        ok("50 distinct sellable products passes the hard floor", r.returncode == 0)
         # 50 members but one is low_stock (engine floor_eligible=False) -> 49 eligible -> refuses.
         rows = judgment_rows(49)
         rows.append({"product_uid": "low:product:color", "collection_name": "Test Coll",

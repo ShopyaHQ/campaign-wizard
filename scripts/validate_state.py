@@ -231,6 +231,46 @@ class Validator:
                 ok = False
         return ok
 
+    def p_run_mode(self, a, ctx):
+        """run.run_mode is a run-level identity: present, one of {production, diagnostic},
+        and IMMUTABLE (equal to the value pinned at NEW). Version-gated so historical
+        pre-1.7.0 runs (which never had run_mode) remain readable under their own pin —
+        Model B: such a run must migrate to the current canon before it can transition."""
+        run = self.state.get("run") or {}
+        # Only fresh vNext runs (spec >= 1.7.0 on the loaded canon) are required to carry it.
+        canon = (self.schema.get("schema") or {}).get("version") or "0.0.0"
+        pinned_spec = run.get("spec_version") or "0.0.0"
+
+        def _ge(v, base):
+            def t(s):
+                return [int(x) for x in str(s).split(".")]
+            return t(v) >= t(base)
+
+        requires_mode = _ge(canon, "1.7.0") and _ge(pinned_spec, "1.7.0")
+        mode = run.get("run_mode")
+        if mode is None:
+            if requires_mode:
+                self.fail("prerequisites_unmet",
+                          "%s: run.run_mode is required for vNext runs (>=1.7.0) and is absent"
+                          % ctx, "run.run_mode", "production|diagnostic", MISSING)
+                return False
+            return True   # historical run predating run_mode — readable, not judged on it
+        if mode not in ("production", "diagnostic"):
+            self.fail("run_mode_invalid",
+                      "%s: run.run_mode %r is not production|diagnostic" % (ctx, mode),
+                      "run.run_mode", "production|diagnostic", mode)
+            return False
+        # immutability: must equal the value pinned at NEW
+        hist = self.state.get("workflow", {}).get("history") or []
+        pinned = next((h for h in hist if h.get("to") == "NEW"), None)
+        was = (pinned or {}).get("pinned_run_mode")
+        if was is not None and mode != was:
+            self.fail("run_mode_mutated",
+                      "%s: run.run_mode is %r but was pinned %r at NEW — run_mode is immutable"
+                      % (ctx, mode, was), "run.run_mode", was, mode)
+            return False
+        return True
+
     def p_version_not_withdrawn(self, a, ctx):
         ch = self.charter.get("charter") or {}
         if "withdrawn_versions" not in ch:
@@ -342,7 +382,10 @@ class Validator:
         return True
 
     def p_sum_max(self, a, ctx):
-        """Sum numeric values at the path. Missing or non-numeric fails loudly."""
+        """Sum numeric values at the path. Missing or non-numeric fails loudly.
+        A null cap (A4, 2026-08-10) means NO ceiling: the declaration and numericity
+        requirements still apply in full, but no maximum is enforced — used where an owner
+        ruling removed an obsolete cap without inventing a replacement number."""
         path, cap = a[0], a[1]
         pairs = self.resolve_all(path)
         if not pairs or all(v is MISSING for _, v in pairs):
@@ -362,7 +405,7 @@ class Validator:
                 ok = False
             else:
                 total += val
-        if ok and total > cap:
+        if ok and cap is not None and total > cap:
             self.fail("prerequisites_unmet",
                       "%s: %s sums to %s, over the cap" % (ctx, path, total),
                       path, "<= %s" % cap, total)
@@ -469,6 +512,15 @@ class Validator:
                       % (ctx, did, d.get("status")),
                       "owner_decisions.%s.status" % did, "owner_confirmed", d.get("status"))
             return False
+        # A1 (2026-08-10): a decision invalidated by a reopen is not a live approval. It gates
+        # again only after the owner genuinely re-records it (record-decision clears the entry
+        # from state.invalidated on an owner_confirmed re-record).
+        if did in (self.state.get("invalidated") or []):
+            self.fail("stale_decision_after_reopen",
+                      "%s: owner decision %r was invalidated by a reopen and cannot gate a "
+                      "transition until re-recorded by the owner" % (ctx, did),
+                      "invalidated", "does not include %r" % did, did)
+            return False
         return True
 
     def p_pending_validation_passed(self, a, ctx):
@@ -554,6 +606,15 @@ class Validator:
         last = att[-1]
         stamped = last.get("output_sha256")
         rec = self.artifact_record("products_csv") or {}
+        # A1 (2026-08-10): a superseded products_csv can never anchor a live binding — the
+        # schema rule "a superseded artifact can never satisfy a gate" applies to hash
+        # anchors too, not only to artifact_exists.
+        if rec and rec.get("status", "current") != "current":
+            self.fail("stale_artifact_treated_as_current",
+                      "%s: products_csv is superseded — a superseded build cannot anchor a "
+                      "validation binding; regenerate via validate-execution" % ctx,
+                      "artifacts.products_csv.status", "current", rec.get("status"))
+            return False
         registered = rec.get("sha256")
         if not stamped or not registered or stamped != registered:
             self.fail("validation_failure_treated_as_transition",
@@ -581,6 +642,21 @@ class Validator:
         boolean. The record must report a pass, be bound by build_sha256 to the registered
         products_csv, and — for a human-observed result — name who observed it."""
         v = self.state.get("verification") or {}
+        # A1 (2026-08-10): a verification invalidated by a reopen is history, not proof.
+        if v.get("invalidated_at"):
+            self.fail("prerequisites_unmet",
+                      "%s: verification was invalidated by %r — a pre-reopen probe cannot "
+                      "satisfy LIVE; re-run verify-live against the regenerated build"
+                      % (ctx, v.get("invalidated_by_decision")),
+                      "verification.invalidated_at", None, v.get("invalidated_at"))
+            return False
+        vrec = self.artifact_record("products_csv") or {}
+        if vrec and vrec.get("status", "current") != "current":
+            self.fail("stale_artifact_treated_as_current",
+                      "%s: products_csv is superseded — verification cannot bind to a "
+                      "superseded build" % ctx,
+                      "artifacts.products_csv.status", "current", vrec.get("status"))
+            return False
         if v.get("result") != "pass" or v.get("post_cache_verified") is not True:
             self.fail("prerequisites_unmet",
                       "%s: verification is not a recorded pass (result=%r, post_cache_verified=%r)"
@@ -647,12 +723,13 @@ class Validator:
         return out
 
     # ---------- always-on invariants ----------
-    def invariants(self):
+    def invariants(self, to=None):
         ctx = "invariant"
         self.p_versions_pinned([], ctx)
         self.p_versions_unchanged([], ctx)
         self.p_canon_matches_or_migrated([], ctx)
         self.p_version_not_withdrawn([], ctx)
+        self.p_run_mode([], ctx)
 
         run_id = (self.state.get("run") or {}).get("run_id")
         for other, doc in self._sibling_states():
@@ -721,6 +798,50 @@ class Validator:
                 self.fail("artifact_deleted",
                           "artifact %r is registered but missing on disk" % key,
                           "artifacts.%s.path" % key, "<exists>", p)
+
+        # A2 (2026-08-10, keyed on workflow.state 2026-08-11 per prd.md §16.5): post-validation
+        # state/proof coherence. A run whose WORKFLOW STATE is post-validation (VALIDATED or
+        # CAMPAIGN_APPROVED) is CLAIMING there is a current valid production execution package;
+        # it must therefore still hold current valid production proof — the same proof the entry
+        # gate required. Keying this on workflow.state (not the downgradable
+        # execution_tracking.seam6_execution_status string) closes the resting-state hole: a
+        # migrate/reopen that invalidates proof and downgrades the status to 'ready' MUST also
+        # move the workflow state out of the post-validation set (via the sanctioned reopen
+        # edge), or this fires. SEAM6_READY and every pre-VALIDATED state are exempt, so a
+        # correctly reopened run is coherent in its downgraded state.
+        POST_VALIDATION = {"VALIDATED", "CAMPAIGN_APPROVED"}
+        wf_state = (self.state.get("workflow") or {}).get("state")
+        # The ONLY transition that exempts the departing state's coherence is a sanctioned
+        # execution-REOPEN edge out of the post-validation state (VALIDATED/CAMPAIGN_APPROVED ->
+        # SEAM6_READY, transition_type: reopen). That edge is exactly what resolves the stale
+        # proof, and check_reopen() independently enforces its obligations (proof invalidated,
+        # artifacts superseded, decision recorded). Everything else still applies the check:
+        #   - a bare validate (no --to): a resting post-validation state;
+        #   - a FORWARD transition (VALIDATED -> CAMPAIGN_APPROVED, CAMPAIGN_APPROVED -> LIVE):
+        #     current proof IS required; the LIVE gate is NOT a substitute for this invariant.
+        # Tie the exemption to the schema's own reopen classification, not to target-state names.
+        exempt_reopen = False
+        if to is not None and wf_state in POST_VALIDATION:
+            t = self.find_transition(wf_state, to)
+            exempt_reopen = bool(t) and t.get("transition_type") == "reopen"
+        if wf_state in POST_VALIDATION and not exempt_reopen:
+            # Reuse the SINGLE definition of current valid production proof (the same predicates
+            # that gate SEAM6_READY -> VALIDATED). Each records its own specific failure; we add
+            # the coherence refusal so the incoherent resting state is named explicitly.
+            ctx2 = "invariant[%s coherence]" % wf_state
+            proof_ok = (self.p_last_validation_passed([], ctx2)
+                        and self.p_validation_binds_products_csv([], ctx2))
+            if not proof_ok:
+                self.fail("stale_execution_proof",
+                          "workflow.state is %r but the run holds no current valid production "
+                          "execution proof (a non-invalidated passing production build hash-bound "
+                          "to the current products_csv). A run may not rest in a post-validation "
+                          "state on invalidated or superseded proof — regenerate via "
+                          "validate-execution, or move out of the post-validation state through "
+                          "the sanctioned reopen edge (%s -> SEAM6_READY)." % (wf_state, wf_state),
+                          "workflow.state",
+                          "current valid production execution proof for a post-validation state",
+                          "unbound, invalidated, or superseded proof")
 
     # ---------- artifact structural validation (separate phase) ----------
     def check_artifacts(self):
@@ -938,7 +1059,7 @@ def main():
     v = Validator(a.state, a.schema, a.charter, a.runs_dir, a.run_dir)
     cur = v.state.get("workflow", {}).get("state")
     if a.phase in ("all", "state"):
-        v.invariants()
+        v.invariants(a.to)
     if a.phase in ("all", "artifacts"):
         v.check_artifacts()
     if a.phase in ("all", "transition"):

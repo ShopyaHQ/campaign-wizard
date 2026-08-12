@@ -27,8 +27,8 @@ Grain and validation per owner ruling:
   is_rail_item TRUE  -> rail_name and rail_position (1..12) REQUIRED
   is_rail_item FALSE -> rail_name and rail_position MUST be null/blank
   exactly 12 rail items per collection; >=50 dependable in_stock UNIQUE members
-  per collection (collection-depth hard floor, render_003 — low_stock counted
-  separately, never toward the floor); rail_position exactly 1..12;
+  per collection (collection-depth hard floor, render_003 v0.7.0 — low_stock
+  counted separately, never toward the floor); rail_position exactly 1..12;
   collection_position unique + contiguous 1..N; no duplicate product x collection
   rows; every hydrated url must be gate-clean (url_class == pdp) and every rail
   item currently available.
@@ -44,10 +44,13 @@ COLS = ["campaign_id", "campaign_name", "build_id", "collection_name",
 JUDGMENT_KEYS = {"product_uid", "collection_name", "is_rail_item", "rail_name",
                  "rail_position", "collection_position", "annotation"}
 AVAILABLE = ("in_stock", "low_stock")
-# Collection-depth hard floor (charter render_003, owner ruling 2026-08-09): every launched
-# durable category collection must carry >=50 dependable in_stock UNIQUE members. low_stock is
-# reported separately and does NOT satisfy the floor; variants/duplicate identities never inflate.
+# Collection-depth HARD floor (charter render_003 v0.7.0, owner Decision 1 2026-08-10 restoring
+# the 2026-08-09 ruling): every launched durable category collection must carry >=50 dependable
+# in_stock UNIQUE sellable members. 49 fails, 50 passes. The 0.6.0-era 24-floor was an
+# accidental regression, reversed. low_stock is reported separately and does NOT satisfy the
+# floor; variants/duplicate identities never inflate (engine-owned sellable_product_uid).
 COLLECTION_FLOOR = 50
+COLLECTION_HEALTH_TARGET = 50   # floor and target coincide under the hard-50 rule
 
 ENGINE_DEFAULT = os.path.join(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))), "shopya-collection-curation")
@@ -73,17 +76,35 @@ TRUTH_REQUIRED_FIELDS = ("product_uid", "sellable_product_uid", "floor_eligible"
                          "price_native", "currency", "observed_at")
 
 
-def load_truth(path, engine, allow_stale):
+def load_truth(path, engine, allow_stale, expect_export_id=None, expect_export_sha256=None):
     recs = [json.loads(l) for l in open(path, encoding="utf-8") if l.strip()]
     if not recs or recs[0].get("type") != "meta":
         sys.exit("STOP — %s has no meta line; regenerate with the engine's "
                  "export_current_truth.py" % path)
     meta, rows = recs[0], recs[1:]
     cv = meta.get("truth_contract_version")
+
+    # ---- Truth Export v2: an immutable snapshot — consume via the sanctioned v2 consumer,
+    #      which verifies export_id/export_sha256 and refuses tamper/version mismatch (§13). ----
+    if cv == "2.0.0":
+        import truth_export_v2 as tev2
+        try:
+            snap = tev2.load_snapshot(path, expect_export_id=expect_export_id,
+                                      expect_export_sha256=expect_export_sha256)
+        except tev2.TruthExportError as e:
+            sys.exit("STOP — v2 truth snapshot refused: %s" % e)
+        # taxonomy/source travel through the snapshot; the CSV builder hydrates product facts.
+        by_uid = snap["rows_by_uid"]
+        for uid, r in by_uid.items():
+            missing = [f for f in TRUTH_REQUIRED_FIELDS if f not in r]
+            if missing:
+                sys.exit("STOP — v2 truth row %s missing contract field(s) %s" % (uid, missing))
+        return by_uid
+
     if cv not in SUPPORTED_TRUTH_CONTRACTS:
         sys.exit("STOP — truth export declares truth_contract_version %r; this builder supports "
-                 "%s. Refusing rather than guessing at an incompatible contract."
-                 % (cv, sorted(SUPPORTED_TRUTH_CONTRACTS)))
+                 "%s (v1) or 2.0.0 (immutable snapshot). Refusing rather than guessing at an "
+                 "incompatible contract." % (cv, sorted(SUPPORTED_TRUTH_CONTRACTS)))
     for i, r in enumerate(rows):
         missing = [f for f in TRUTH_REQUIRED_FIELDS if f not in r]
         if missing:
@@ -196,7 +217,7 @@ def main():
         if rail_pos != list(range(1, 13)):
             errors.append("%s: rail_position not exactly 1..12 (%d rail items)"
                           % (c, len(rail_pos)))
-        # Collection-depth hard floor (charter render_003, owner 2026-08-09):
+        # Collection-depth hard floor (charter render_003 v0.7.0):
         # COUNT(DISTINCT sellable_product_uid WHERE floor_eligible). The engine owns
         # both fields; floor_eligible already means pdp + in_stock + confidence in
         # {confirmed_live, verified}. Colorways/variants/name-drift collapse to one
@@ -205,7 +226,7 @@ def main():
         if len(eligible) < COLLECTION_FLOOR:
             ineligible = sum(1 for _, _, _, elig in members if not elig)
             errors.append("%s: %d distinct floor-eligible sellable products, need >=%d "
-                          "(collection-depth hard floor render_003; %d member rows not "
+                          "(collection-depth hard floor render_003 v0.7.0; %d member rows not "
                           "floor-eligible — non-PDP / low_stock / unverified — not counted)"
                           % (c, len(eligible), COLLECTION_FLOOR, ineligible))
         cpos = sorted(int(r["collection_position"]) for _, r, _, _ in members)
@@ -224,7 +245,8 @@ def main():
         print("  %-24s %2d members (%d rail + %d body); %d floor-eligible sellable"
               % (c[:24], n, nr, n - nr, elig))
     print("  QA: judgment purity, engine-vouched uids, gate-clean PDPs, rail "
-          "availability, grain 12 rail + >=50 sellable floor, positions — ALL PASS")
+          "availability, grain 12 rail + >=%d sellable floor, positions — ALL PASS"
+          % COLLECTION_FLOOR)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,13 @@
 # SHOPYA CANONICAL CATEGORY TAXONOMY — the full durable-collection registry
-# v1.0-proposed · 2026-08-09 · owner approval pending
+# v1.0 · 2026-08-09 · PLATFORM REGISTRY SSOT (status reconciled 2026-08-10)
+# STATUS BASIS: owner-confirmed ruling full_taxonomy_registry_v1 (2026-08-09, run
+# cmp_01KZCD765E6NNW2TZR1AFHQMWG) directed and accepted this registry as the year-round
+# all-seasons system; owner directive 2026-08-10 confirmed it is the platform SSOT,
+# maintained and audited separately from campaign work and never re-approved line-by-line
+# per campaign. What IS approved per campaign: that campaign's SELECTED SUBSET of
+# category_ids (its campaign_collection_selection) and any genuine exceptions. A category a
+# campaign needs that is absent here is surfaced as `proposed_taxonomy_addition —
+# owner/taxonomy approval required`, never silently minted.
 # This is the YEAR-ROUND system: every durable category collection Shopya operates, across
 # all seasons, events and campaigns. Campaigns SELECT from this registry (>=6 per surfaced
 # vertical); they never invent thematic collections. Every node: one canonical category,
@@ -7,7 +15,9 @@
 # window. Rails and content attach at campaign selection, not here.
 # Fields per node: id · display · boundary -> exclusions · why-durable · floor(50) hyp ·
 # source coverage hyp · season window (peak; all=year-round) · AF = Almost Fall status
-# (SEL = selected this campaign · avail = in registry, not selected now)
+# (SEL = selected this campaign · avail = in registry, not selected now). The AF markers
+# are 2026-08-09 mapping ANNOTATIONS; the CANONICAL Almost Fall selection is the campaign
+# review_book launch-set table (round r003), not these markers.
 
 ## WOMEN'S FASHION (26 nodes)
 w.dresses · Dresses · all dresses -> excl jumpsuits · biggest womenswear node everywhere · STRONG · strong · all (peaks spring/hol) · SEL

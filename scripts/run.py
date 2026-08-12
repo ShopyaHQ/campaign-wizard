@@ -146,9 +146,12 @@ def cmd_new(a):
     os.makedirs(d, exist_ok=False)
     spec_v = schema["schema"]["version"]
     chart_v = charter["charter"]["version"]
+    # run_mode is a run-level identity, set ONCE here and immutable. Normal /new-campaign
+    # is production; --diagnostic creates a sanctioned below-Foundation diagnostic run.
+    run_mode = "diagnostic" if getattr(a, "diagnostic", False) else "production"
     st = {
         "run": {"run_id": rid, "spec_version": spec_v, "charter_version": chart_v,
-                "created_at": now()},
+                "run_mode": run_mode, "created_at": now()},
         "identity": {
             "campaign_id": {"value": None, "status": None, "confirmed_by_owner": False,
                             "externally_referenced": False, "first_external_reference": None},
@@ -158,6 +161,7 @@ def cmd_new(a):
                                   "transition_type": "forward",
                                   "pinned_spec_version": spec_v,
                                   "pinned_charter_version": chart_v,
+                                  "pinned_run_mode": run_mode,
                                   "decision_ref": None}]},
         "owner_decisions": {},
         "artifacts": {},
@@ -177,6 +181,7 @@ def cmd_new(a):
     rc, out, err = call_validator(state_path(rid))
     print(out or err)
     print("run_id        %s" % rid)
+    print("run_mode      %s   (immutable)" % run_mode)
     print("spec_version  %s   (pinned)" % spec_v)
     print("charter_ver   %s   (pinned, status %s)" % (chart_v, charter["charter"]["status"]))
     print("state file    %s" % os.path.relpath(state_path(rid), ROOT))
@@ -251,6 +256,12 @@ def cmd_record_decision(a):
     if a.note:
         rec["note"] = a.note
     s.setdefault("owner_decisions", {})[a.id] = rec
+    # A1 (2026-08-10): a decision invalidated by a reopen becomes gate-worthy again ONLY by
+    # being genuinely re-recorded. An owner_confirmed re-record clears the invalidation; any
+    # other status leaves it invalidated (a provisional recommendation cannot resurrect it).
+    if status == "owner_confirmed" and a.id in (s.get("invalidated") or []):
+        s["invalidated"].remove(a.id)
+        print("  cleared invalidation of %r (re-recorded by owner)" % a.id)
     atomic_write(state_path(a.run), s)
     print("recorded %s %r by %s at %s" % (status, a.id, a.by, rec["decided_at"]))
     if val is not None:
@@ -315,6 +326,24 @@ def cmd_reopen(a):
     for target in t.get("invalidates") or []:
         if target not in inval:
             inval.append(target)
+    # 2b) A1 (2026-08-10): the invalidation is ATOMIC with the reopen preparation — stale
+    # execution-dependent proof must not survive as live proof. Driven by the edge's declared
+    # invalidates list; these fields are stamped ONLY here and in cmd_migrate.
+    if "validation_attempts" in (t.get("invalidates") or []):
+        for att in s.get("validation_attempts") or []:
+            if att.get("result") == "passed" and not att.get("invalidated_at"):
+                att["invalidated_at"] = now()
+                att["invalidated_by_decision"] = did
+    if "verification" in (t.get("invalidates") or []) and s.get("verification"):
+        v = s["verification"]
+        if not v.get("invalidated_at"):
+            v["invalidated_at"] = now()
+            v["invalidated_by_decision"] = did
+    if a.to == "SEAM6_READY":
+        # execution returns to regenerate-and-revalidate; 'validated' may not survive a reopen
+        et = s.setdefault("execution_tracking", {})
+        if et.get("seam6_execution_status") in ("validated", "executed"):
+            et["seam6_execution_status"] = "ready"
     # 3) record the reopen owner decision (owner_confirmed; required value fields + reason).
     value = json.loads(a.value_json) if a.value_json else {}
     value.setdefault("reason", a.reason)
@@ -389,10 +418,72 @@ def cmd_migrate(a):
     run.setdefault("migration", []).append(rec)
     run["spec_version"] = to_spec
     run["charter_version"] = to_chart
+
+    # A2 (2026-08-10): migration may NOT leave traversed canon-dependent/hash-bound proof that
+    # would fail the current canon. Deterministic invalidation, not historical replay:
+    # a passing validation attempt is current-canon-valid only if it is a production build
+    # hash-bound to the CURRENTLY registered products_csv. Anything else is stamped invalid,
+    # the 'validated' execution status is downgraded, and the stale execution artifacts are
+    # superseded (never deleted). The validator's stale_execution_proof invariant enforces the
+    # same rule, so a hand-edited state cannot dodge this.
+    csv_rec = (s.get("artifacts") or {}).get("products_csv") or {}
+    csv_sha = csv_rec.get("sha256")
+    invalidated_n = 0
+    live_valid = False
+    for att in s.get("validation_attempts") or []:
+        if att.get("result") != "passed" or att.get("invalidated_at"):
+            continue
+        bound = (att.get("production") is True and att.get("output_sha256")
+                 and att.get("output_sha256") == csv_sha
+                 and not att.get("allow_stale_used") and not att.get("legacy_replay_used"))
+        if bound and csv_rec.get("status", "current") == "current":
+            live_valid = True
+        else:
+            att["invalidated_at"] = now()
+            att["invalidated_by_decision"] = "canon_migration"
+            invalidated_n += 1
+    et = s.setdefault("execution_tracking", {})
+    if invalidated_n and not live_valid:
+        if et.get("seam6_execution_status") == "validated":
+            et["seam6_execution_status"] = "ready"
+        for key in ("products_csv", "execution_manifest"):
+            arec = (s.get("artifacts") or {}).get(key)
+            if arec and arec.get("status", "current") == "current":
+                arec["status"] = "superseded"
+                arec["superseded_by"] = None
+                arec["superseded_at"] = now()
+                arec["supersession_reason"] = ("canon migration %s/%s -> %s/%s: bound proof "
+                                               "invalid under current canon; regenerate via "
+                                               "validate-execution"
+                                               % (frm_spec, frm_chart, to_spec, to_chart))
+        rec["proof_invalidated"] = {
+            "validation_attempts_stamped": invalidated_n,
+            "seam6_execution_status": et.get("seam6_execution_status"),
+            "superseded": [k for k in ("products_csv", "execution_manifest")
+                           if ((s.get("artifacts") or {}).get(k) or {}).get("status") == "superseded"],
+        }
+
     atomic_write(state_path(a.run), s)
     print("migrated run %s: spec %s->%s, charter %s->%s"
           % (a.run, frm_spec, to_spec, frm_chart, to_chart))
     print("  by %s: %s" % (a.by, a.note or "(no note)"))
+    if invalidated_n:
+        print("  OBLIGATION: %d passing validation attempt(s) carried no current-canon proof "
+              "and were stamped invalidated" % invalidated_n)
+        if not live_valid:
+            print("  OBLIGATION: no live proof remains — seam6_execution_status downgraded to "
+                  "%r; stale execution artifacts superseded; run validate-execution to "
+                  "regenerate" % et.get("seam6_execution_status"))
+            # prd.md §16.5: a run whose workflow.state is post-validation may not rest on
+            # invalidated proof. Migration does not silently transition state (state changes go
+            # through the sanctioned reopen edge); it flags that the run is now incoherent and
+            # will be REFUSED by the validator until reopened out of the post-validation state.
+            wf_state = (s.get("workflow") or {}).get("state")
+            if wf_state in ("VALIDATED", "CAMPAIGN_APPROVED"):
+                print("  OBLIGATION: workflow.state is still %r with no live proof — the run "
+                      "will now be REFUSED (stale_execution_proof) until it is reopened via "
+                      "`run.py reopen --to SEAM6_READY` and regenerated. Migration does not "
+                      "move the workflow state on its own." % wf_state)
 
 
 def cmd_validate_execution(a):
@@ -736,7 +827,10 @@ def main():
     ap = argparse.ArgumentParser(description="Campaign run interface.")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    p = sub.add_parser("new");  p.add_argument("--note"); p.set_defaults(f=cmd_new)
+    p = sub.add_parser("new");  p.add_argument("--note")
+    p.add_argument("--diagnostic", action="store_true",
+                   help="create a sanctioned diagnostic run (default: production); immutable")
+    p.set_defaults(f=cmd_new)
     p = sub.add_parser("list"); p.set_defaults(f=cmd_list)
     p = sub.add_parser("status"); p.add_argument("--run", required=True); p.set_defaults(f=cmd_status)
 

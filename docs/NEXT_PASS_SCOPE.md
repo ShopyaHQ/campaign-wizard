@@ -111,11 +111,22 @@ to run root; campaign.yaml metadata file; migrate the four existing runs; update
 run_dir derivation and validator sibling scan; record executed_build in execution tracking.
 
 ## Charter revision queue addition (2026-08-07, inventory depth ruling)
-- Split render_002 into rail-readiness / collection-readiness / execution-readiness claims and
-  add the inventory depth model (floor 2x rail capacity, launch target >50) at the next
-  campaign-charter revision (mid-run version changes blocked). Operating rules live now in
-  content charter 0.7.0-proposed §10.
+- CLOSED 2026-08-10: the inventory depth model is settled as campaign charter render_003
+  v0.7.0 — a single >=50 dependable-in_stock-unique-sellable HARD floor (floor and health
+  target coincide). The 0.6.0 24-floor / >50-health split was an accidental regression,
+  reversed the same day by owner Decision 1 (2026-08-10); the readiness split lives in
+  content charter readiness_model. Remaining open item:
 - Live sellout rebuild threshold: define after observing real live behavior.
+
+## V2 product-ranking / fallback logic (owner-parked 2026-08-10 — future, NOT current launch)
+Once Shopya has meaningful first-party data, extend the v1 selection ladder's Tier 2/3
+ranking (content charter product_selection_ladder) with evidence such as: save rate, total
+saves, user engagement, back-in-stock interest, restock behavior, durable popularity,
+favorites, conversion/usefulness signals where available, category-specific lifecycle
+behavior. Potential future content/product programs on those signals: back in stock ·
+favorites · classics · enduring best products · popular right now · resurging products.
+These are FUTURE ranking/content mechanisms, not claims the current system can make —
+never simulated with guessed popularity. v1 uses the three-tier ladder only.
 
 ## Ingest process (owner ruling 2026-08-07)
 Current truth: products enter Shopya by owner manual add; duplicates auto-identified. Building
@@ -140,8 +151,9 @@ products, preserving product truth and campaign visual direction.
 
 ## ELEVATED (owner, 2026-08-07): PDP resolution tool — now an ACTIVE separate workstream
 The product_url/verification_url separation and engine-owned verification interface items above
-are no longer next-pass: spun out into a dedicated CollectionCuration session (see
-shopya-collection-curation/SCRAPER_TOOL_KICKOFF.md). Almost Fall paused pending b004.
+are no longer next-pass: spun out into a dedicated CollectionCuration workstream, now the standing
+engine doc shopya-collection-curation/PDP_RESOLUTION_PROTOCOL.md (its kickoff doc was folded in and
+removed in the 2026-08-11 decontamination). Almost Fall paused pending b004.
 
 ## Proposed SSOT updates awaiting owner ruling (moved from PROPOSED_SSOT_UPDATES.md, 2026-08-09)
 1. Channel-failure vs thesis-failure classification as a formal rule (owner has applied it in
@@ -193,3 +205,11 @@ the refusal string is retained in the schema (status: not_yet_enforced) for when
 - trigger: after the hardened E2E product is settled and imagery truth is available.
 - acceptance: prompts/assets are generated from approved campaign rails+verified products with
   provenance; no product fact is invented or altered.
+
+## Copy-QA gap (demonstrated 2026-08-10, Almost Fall r007 -> owner Amendment 2)
+The campaign avoid-term lint caught explicit sale/discount vocabulary but MISSED comparative
+cheapness/price framing ("cheaper than new" shipped to owner review in rail copy). Next
+hardening pass: extend the mechanical avoid-terms/anti-slop layer (content charter T-9 family)
+to comparative price framing (cheaper/cheapest-than, "for less", "half the price") and add a
+semantic-review checklist item for price-comparison framing. The campaign-pass lint was
+trivially corrected in place for this run; the durable rule belongs in the charter QA tiers.
