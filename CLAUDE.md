@@ -107,6 +107,12 @@ canonical doc (version bump) or the campaign's review_book.md — never a siblin
 seams contract's source of truth is the FRONTEND repo (agent_knowledge/…) — reference it; never
 duplicate it here.
 
+`docs/ALMOST_FALL_GOLDEN_BENCHMARK.md` is a **frozen calibration reference** (owner-approved
+2026-08-12, status CLOSED) — NOT an eighth locked-set doc and NOT authority. It records the quality
+bar a fresh `/new-campaign` must independently meet; its collection/rail/content examples are
+representative, not immutable, and it is not iterated. The selection *rule* lives in the Content
+Charter (`collection_breadth` CB-1..CB-5); the launch floor in the Campaign Charter (`render_003`).
+
 ## Scope
 
 Authoring may span every seam relevant to the campaign. **Execution is Seam 6 only** — source

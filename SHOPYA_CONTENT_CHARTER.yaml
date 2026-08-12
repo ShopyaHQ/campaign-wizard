@@ -15,11 +15,11 @@
 
 charter:
   name: shopya_content_charter
-  version: 1.2.0
+  version: 1.3.0
   status: approved
   approved_by: product_owner
-  approved_at: 2026-08-10T00:00:00Z
-  supersedes: 1.1.0
+  approved_at: 2026-08-12T00:00:00Z
+  supersedes: 1.2.0
   companion_to:
     file: SHOPYA_CAMPAIGN_CHARTER.yaml
     min_version: 0.4.0            # first campaign-charter version carrying the depth-floor
@@ -31,6 +31,19 @@ charter:
                                   # 2026-08-10: an exact pin went stale on every campaign-charter
                                   # revision even when no content rule changed.
   changelog:
+    1.3.0: >
+      Owner ruling 2026-08-12 (Almost Fall golden-benchmark review): adds merchandising.
+      collection_breadth (CB-1..CB-5) — the SSOT for the collection-selection breadth principle.
+      The HARD selection gate is THREE tests (CB-1: canonical category · genuine campaign/vertical
+      fit · distinct shopper/product job). Durable reusable catalog/site value is a POSITIVE
+      selection consideration (CB-3) that strengthens an otherwise-qualifying collection and is why
+      valid breadth must not be artificially minimized — it is NOT a mandatory fourth gate and
+      never rescues an off-premise/redundant/quota-driven collection. Breadth is an OUTCOME of
+      role-earning, never a target: no max/preferred/per-vertical count, no vertical symmetry;
+      product abundance alone never qualifies; campaign SELECTION and render_003 launch FEASIBILITY
+      are explicitly separate, so fulfilment risk alone cannot invalidate an otherwise role-earned
+      selection. No numeric collection-fit score introduced. render_003 unchanged (number stays in
+      the campaign charter).
     1.2.0: >
       Owner Decision 1 (2026-08-10): depth POINTERS restored to the HARD >=50
       launched-collection floor (render_003 v0.7.0) — the 1.1.0 pointer change to a
@@ -595,6 +608,82 @@ merchandising:
       rule: "Sufficient product count is not qualification."
       evidence: P1
       p1_basis: "B6 and X1 qualified on 29 and 28 rows and nothing else"
+
+  collection_breadth:
+    status: approved
+    basis: [BRAND, OPS]
+    evidence: "owner ruling 2026-08-12 (Almost Fall golden-benchmark review): breadth is an
+               outcome of role-earning, never a target; the historical 43-collection program was
+               weak where selections were quota-driven, mirrored, redundant or editorially thin —
+               its absolute count was not itself the problem."
+    principle: >
+      Durable collection breadth is an OUTCOME of role-earning, not an optimization target. Each
+      collection earns selection independently against the three CB-1 gates (canonical category ·
+      genuine campaign/vertical fit · distinct shopper/product job); durable reusable catalog value
+      further strengthens the case (CB-3) but is never a gate on its own. There is no penalty,
+      maximum, preferred, or target count for selected durable collections, and no requirement that
+      verticals carry equal or similar counts. Breadth is whatever the sum of role-earned
+      selections happens to be.
+    rules:
+      - id: CB-1
+        name: independent_earning_test
+        rule: >
+          The HARD selection gate is exactly THREE tests. A durable collection may be selected only
+          when it (1) uses a canonical requestable taxonomy category; (2) genuinely expresses the
+          campaign premise or that vertical's approved interpretation; and (3) has a distinct
+          shopper/product job relative to the other selected collections (this is CQ-1/CQ-2,
+          restated as the gate for breadth). All three hold, or it is not selected. Durable
+          reusable catalog/site value is NOT a fourth gate — it is a positive selection
+          consideration handled by CB-3: it strengthens the case for an otherwise-qualifying
+          collection, but never substitutes for these three and never rescues an off-premise,
+          redundant, or quota-driven one.
+      - id: CB-2
+        name: breadth_is_emergent
+        rule: >
+          No desired total count, no maximum, no preferred per-vertical count, no vertical
+          symmetry requirement. A campaign with 1 collection in one vertical, 8 in another and 0
+          in a third can be correct when justified by campaign conviction. "Fewer collections" is
+          NOT inherently better and "~N collections" is NOT a goal. Unequal vertical conviction is
+          the expected shape, not a defect.
+      - id: CB-3
+        name: durable_infrastructure_value
+        rule: >
+          Collection selection is not only about what appears prominently in Default. A canonical
+          category's selection is STRENGTHENED when establishing/populating it also creates useful
+          reusable site/catalog infrastructure — PROVIDED it has already passed the three CB-1
+          gates. Durable utility is a positive selection consideration, not a mandatory fourth
+          gate and not a standalone reason: it is why valid breadth should not be artificially
+          minimized, but it can never rescue a collection that fails CB-1 (off-premise, redundant,
+          or quota-driven). This is not license for unrelated taxonomy expansion: campaign fit
+          comes first.
+      - id: CB-4
+        name: no_quota_no_filler
+        rule: >
+          A collection may NOT be selected primarily because: another vertical has more; a grid
+          feels incomplete; every vertical "should" have N collections; enough products happen to
+          exist; or the campaign needs broader-looking coverage. Product abundance alone never
+          makes a collection campaign-worthy (this reinforces `disqualifier`).
+      - id: CB-5
+        name: selection_versus_fulfillment
+        rule: >
+          Campaign SELECTION and launch FEASIBILITY are separate stages, owned by different
+          systems. The Wizard (with owner approval) decides which canonical collections belong in
+          the campaign; CollectionCuration determines whether enough valid product truth exists to
+          fulfil them under campaign-charter render_003 (>=50 dependable in_stock unique sellable
+          products — see render_003; this document does NOT restate the number). Therefore:
+          a creatively valid selection may remain FULFILMENT-BLOCKED without being retroactively
+          judged an editorial mistake; and a collection PASSING render_003 does not thereby prove
+          it belongs in the campaign. Current low eligible depth / sourcing difficulty / thin
+          corpus are FULFILMENT-RISK facts (owned by the later fulfilment system), NOT creative
+          reasons to drop an otherwise role-earned selection. Editorial weakness (off-premise,
+          redundant job, quota filler, no distinct shopper role) remains a legitimate reason to
+          drop; fulfilment risk alone does not.
+    machine_enforcement: >
+      NOT machine-scored. There is no numeric "collection relevance / fit score". The enforceable
+      mechanics stay: canonical taxonomy validation, Request v2 structure, Engine eligibility, and
+      render_003. CB-1..CB-5 are Wizard editorial judgement + owner approval; the future structured
+      campaign_spec.collection_selections will make each selection's rationale explicit/auditable
+      (target model — not implemented here).
 
   inclusion_logic:
     required: true

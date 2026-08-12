@@ -196,6 +196,24 @@ no-padding / no-silent-widening / low-stock-excluded / variant-non-inflation sem
 Charter `render_003`**; inability to clear the floor becomes a material exception (§13).
 **Collections own taxonomy.**
 
+**Breadth is emergent, not a target.** Durable collections are reusable taxonomy infrastructure;
+campaign collection breadth is determined by justified per-collection SELECTIONS, not by a target
+count or a balanced vertical grid. There is no maximum, preferred, or per-vertical count and no
+requirement of vertical symmetry: campaign architecture may express **unequal conviction across
+verticals, including zero durable collections in a vertical** when another object (e.g. Content or
+a cross-collection story rail) carries that vertical's campaign role. Each selection must
+independently earn its place (campaign/vertical relevance + a distinct shopper/product job);
+sufficient product count alone never justifies selection. The full earning test is the Content
+Charter's `merchandising.collection_breadth` (CB-1..CB-5); this PRD does not restate it.
+
+**Selection and fulfillment are separate stages.** The Wizard (with owner approval) decides which
+canonical collections belong in the campaign; **CollectionCuration** determines whether enough valid
+product truth exists to fulfil them under `render_003`. A creatively valid selection may therefore
+remain fulfillment-blocked (a material-availability fact, §13) without being retroactively judged an
+editorial mistake; and clearing `render_003` does not by itself prove a collection belongs in the
+campaign. Current low eligible depth or sourcing difficulty is fulfillment risk, not a creative
+reason to drop an otherwise role-earned selection.
+
 ## Campaign Rail
 
 A campaign-specific merchandising/editorial object (e.g. "Coats you can't wear yet"; "The first dark
@@ -306,11 +324,15 @@ generates the CollectionCuration curation requests (§9).
   Sports): why the campaign matters here; fresh vertical-specific evidence; shopper tension;
   interpretation; merchandising territories; content/editorial territories; exclusions; rejected
   hypotheses. The Fashion mechanism must not be mechanically copied into every vertical.
-* **collection_selections** — durable canonical taxonomy shelves selected for this campaign (required
-  selection counts and gender applicability per Campaign Charter / Content Charter; see §14). Per
-  selection: canonical category ID; display name; category boundary; inclusion logic; exclusions;
-  gender where relevant; campaign relevance; fulfillment requirements; price/range expectations;
-  representative ideal products/brands as guidance.
+* **collection_selections** — durable canonical taxonomy shelves selected for this campaign. Breadth
+  is emergent (no target/max/per-vertical count, no vertical symmetry — Content Charter
+  `collection_breadth` CB-1..CB-5); gender applicability per Campaign Charter / Content Charter; see
+  §14. Each selection ultimately needs enough structured rationale/provenance to establish its
+  campaign/vertical relevance, its distinct shopper/product job, and its selection rationale (so the
+  earning test CB-1..CB-4 is auditable). Per selection: canonical category ID; display name; category
+  boundary; inclusion logic; exclusions; gender where relevant; campaign relevance; distinct job;
+  selection rationale; fulfillment requirements; price/range expectations; representative ideal
+  products/brands as guidance.
 * **rails** — every selected collection's rail scope: target surface; rail title; hook/supporting
   copy; base or story type; source collection(s); activation priority; delivery path; execution
   feasibility; technical blocker where applicable. Thematic/color/texture ideas live here, not in
@@ -635,8 +657,11 @@ interrupt the owner.
 
 # 14. Collection selection structure and gender
 
-Structural validators MAY enforce: valid taxonomy IDs; required selection counts (per Campaign Charter
-/ Content Charter); and valid gender applicability.
+Structural validators MAY enforce: valid taxonomy IDs and valid gender applicability. They MUST NOT
+enforce a collection-count target, maximum, per-vertical count, or vertical symmetry — breadth is
+emergent from role-earned selections (Content Charter `collection_breadth` CB-2), not a validated
+number. (`render_003`'s per-collection launch-depth floor is a separate fulfillment feasibility
+check, not a count of how many collections a campaign selects.)
 
 The **no-mechanical-mirroring principle** — men's and women's selections chosen independently on
 strength rather than mirrored — is **editorial/strategic quality governance**, owned by the Content
