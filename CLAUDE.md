@@ -129,6 +129,11 @@ python3 scripts/generate_curation_request.py --run <cmp_…> --category-id <id> 
 
 ## Now implemented (this contract step)
 
+- **Truth Export v2 consumer** — `scripts/truth_export_v2.py` verifies an immutable Engine
+  snapshot (version + `export_id`/`export_sha256` + source binding), consumes read-only, refuses
+  stale/tampered/v1, and INDEPENDENTLY recomputes Request-v2 eligibility (same sellable SET as the
+  Engine) from the snapshot alone — never reading Engine internal logs or Source Profile config.
+  `build_execution_csv.py` hydrates from a v2 snapshot through this consumer.
 - **`run_mode`** is a run-level identity (`production`|`diagnostic`), set once at NEW and
   IMMUTABLE (not in `settable_paths`; validator refuses mutation). A Curation Request inherits it.
 - **Deterministic Request v2 generation** — `scripts/generate_curation_request.py` is the one

@@ -76,17 +76,35 @@ TRUTH_REQUIRED_FIELDS = ("product_uid", "sellable_product_uid", "floor_eligible"
                          "price_native", "currency", "observed_at")
 
 
-def load_truth(path, engine, allow_stale):
+def load_truth(path, engine, allow_stale, expect_export_id=None, expect_export_sha256=None):
     recs = [json.loads(l) for l in open(path, encoding="utf-8") if l.strip()]
     if not recs or recs[0].get("type") != "meta":
         sys.exit("STOP — %s has no meta line; regenerate with the engine's "
                  "export_current_truth.py" % path)
     meta, rows = recs[0], recs[1:]
     cv = meta.get("truth_contract_version")
+
+    # ---- Truth Export v2: an immutable snapshot — consume via the sanctioned v2 consumer,
+    #      which verifies export_id/export_sha256 and refuses tamper/version mismatch (§13). ----
+    if cv == "2.0.0":
+        import truth_export_v2 as tev2
+        try:
+            snap = tev2.load_snapshot(path, expect_export_id=expect_export_id,
+                                      expect_export_sha256=expect_export_sha256)
+        except tev2.TruthExportError as e:
+            sys.exit("STOP — v2 truth snapshot refused: %s" % e)
+        # taxonomy/source travel through the snapshot; the CSV builder hydrates product facts.
+        by_uid = snap["rows_by_uid"]
+        for uid, r in by_uid.items():
+            missing = [f for f in TRUTH_REQUIRED_FIELDS if f not in r]
+            if missing:
+                sys.exit("STOP — v2 truth row %s missing contract field(s) %s" % (uid, missing))
+        return by_uid
+
     if cv not in SUPPORTED_TRUTH_CONTRACTS:
         sys.exit("STOP — truth export declares truth_contract_version %r; this builder supports "
-                 "%s. Refusing rather than guessing at an incompatible contract."
-                 % (cv, sorted(SUPPORTED_TRUTH_CONTRACTS)))
+                 "%s (v1) or 2.0.0 (immutable snapshot). Refusing rather than guessing at an "
+                 "incompatible contract." % (cv, sorted(SUPPORTED_TRUTH_CONTRACTS)))
     for i, r in enumerate(rows):
         missing = [f for f in TRUTH_REQUIRED_FIELDS if f not in r]
         if missing:
