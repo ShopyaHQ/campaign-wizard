@@ -13,7 +13,11 @@ VALIDATOR = os.path.join(ROOT, "scripts", "validate_state.py")
 BUILD = os.path.join(ROOT, "scripts", "build_csv.py")
 SCHEMA = os.path.join(ROOT, "schemas", "workflow_state.schema.yaml")
 CHARTER = os.path.join(ROOT, "SHOPYA_CAMPAIGN_CHARTER.yaml")
-ENGINE = os.path.join(os.path.dirname(ROOT), "shopya-collection-curation")
+# LEGACY-REPLAY fixture (historical/compatibility only) — self-contained under the test's
+# own fixtures, NOT the sibling Engine repo. It reproduces the shape of the now-deleted
+# Engine campaign-output collections/*/products.csv + a matching product_results_log.jsonl
+# for the availability join. See tests/fixtures/legacy_execution/README.md.
+ENGINE = os.path.join(ROOT, "tests", "fixtures", "legacy_execution", "engine")
 
 PASS, FAIL = [], []
 
