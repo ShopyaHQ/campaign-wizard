@@ -29,6 +29,8 @@ ATOMIC TRANSITION
 import argparse, copy, datetime, glob, hashlib, json, os, shutil, subprocess, sys, tempfile
 import yaml
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # sibling scripts (receipt_ingest…)
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 RUNS = os.environ.get("SHOPYA_CAMPAIGN_RUNS", os.path.join(ROOT, "campaigns"))
@@ -536,6 +538,287 @@ def cmd_validate_execution(a):
         sys.exit(1)
 
 
+# ─────────────────── receipt ingestion + execution package (this unit) ───────────────────
+def _run_store(run_id):
+    """Per-run Wizard-side fulfillment store (receipt ingestions + material exceptions).
+    Under the run directory so it travels with promotion; never in the Engine tree."""
+    return os.path.join(run_dir(run_id), "fulfillment")
+
+
+def _package_dir(run_id):
+    return os.path.join(run_dir(run_id), "execution", "package")
+
+
+def cmd_ingest_receipt(a):
+    """THE sanctioned Wizard receipt-ingestion path (task §3). Given ONLY artifact refs + the
+    exact Wizard-generated Request v2 this receipt must fulfil, the Wizard independently verifies
+    the receipt, binds it to the request, verifies the bound Truth Export v2 snapshot and
+    recomputes the eligible sellable SET, distinguishes satisfied vs shortfall (opening a Material
+    Exception for a shortfall), and records an immutable ingestion. No hand-authored facts."""
+    import receipt_ingest as ri
+    require_run(a.run)
+    s = require_run(a.run)
+    run_mode = (s.get("run") or {}).get("run_mode") or "production"
+    campaign_id = ((s.get("identity") or {}).get("campaign_id") or {}).get("value")
+    run_ref = (s.get("run") or {}).get("run_id")
+    store = _run_store(a.run)
+    try:
+        res = ri.ingest_receipt(
+            a.receipt, a.request,
+            snapshot_dir=a.snapshot_dir, store_dir=store,
+            fulfillment_exception_path=a.fulfillment_exception,
+            expected_run_mode=run_mode,
+            expected_campaign_id=campaign_id if not a.no_campaign_check else None,
+            expected_run_ref=run_ref if not a.no_run_check else None,
+            generated_at=now())
+    except ri.ReceiptIngestError as e:
+        sys.exit("REFUSED — receipt ingestion: %s" % e)
+    print("ingested receipt %s" % res["receipt_id"])
+    print("  request        %s" % res["request_id"])
+    print("  category       %s  run_mode %s" % (res["category_id"], res["run_mode"]))
+    print("  terminal       %s" % res["terminal_status"])
+    print("  required/achieved  %s / %s   (independently recomputed %s)"
+          % (res["required_depth"], res["achieved_depth"], res["recomputed_depth"]))
+    print("  eligible set   %d verified sellable products" % len(res["eligible_sellable_set"]))
+    if res["terminal_status"] == "satisfied":
+        print("  SATISFIED — verified eligible set is the trusted material for assembly")
+    else:
+        print("  SHORTFALL — opened Material Exception %s (status open) — BLOCKS assembly"
+              % res.get("material_exception_id"))
+        print("  no automatic widening/substitution: owner resolution required (run.py "
+              "resolve-material-exception)")
+
+
+def cmd_resolve_material_exception(a):
+    """Record an owner JUDGMENT on an open Material Exception (open -> resolved; task §0 Issue B).
+    DECISION RECORD ONLY: it does NOT unblock assembly, waive render_003, or make a shortfall
+    Request satisfy package completeness. The factual section is never rewritten; no silent
+    auto-resolution. Completeness still requires a genuine satisfied Receipt for the request."""
+    import receipt_ingest as ri
+    require_run(a.run)
+    if a.by != "product_owner":
+        sys.exit("REFUSED: a Material Exception resolution is an owner judgment — --by product_owner")
+    resolution = json.loads(a.value_json) if a.value_json else {"note": a.note or ""}
+    resolution.setdefault("resolved_by", a.by)
+    try:
+        rec = ri.resolve_material_exception(_run_store(a.run), a.id, resolution, generated_at=now())
+    except ri.ReceiptIngestError as e:
+        sys.exit("REFUSED: %s" % e)
+    print("resolved material exception %s -> %s (owner judgment recorded)"
+          % (a.id, rec.get("status")))
+    print("  NOTE: this does NOT unblock package assembly. The expected Request still needs a "
+          "satisfied Receipt — resolving the exception does not waive the material requirement "
+          "(render_003) or transmute the Engine result.")
+
+
+def _load_architecture_or_exit(a):
+    import execution_package as ep
+    try:
+        return ep.load_architecture(a.architecture)
+    except (ep.PackageError, FileNotFoundError, ValueError) as e:
+        sys.exit("REFUSED — architecture: %s" % e)
+
+
+def _build_master_csv(a, out_csv):
+    """Build A (Master CSV) via the sanctioned v2 builder as a REAL subprocess. Product facts are
+    hydrated from Engine truth; the Wizard authors judgment only. Returns (ok, sha256, stdout)."""
+    builder = os.path.join(HERE, "build_execution_csv.py")
+    cmd = [sys.executable, builder, "--campaign", a.campaign, "--campaign-name",
+           a.campaign_name, "--build", a.build, "--judgment", a.judgment, "--out", out_csv]
+    if a.engine:
+        cmd += ["--engine", a.engine]
+    if getattr(a, "truth", None):
+        cmd += ["--truth", a.truth]
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    if proc.returncode != 0 or not os.path.exists(out_csv):
+        return False, None, (proc.stdout or "") + (proc.stderr or "")
+    return True, hashlib.sha256(open(out_csv, "rb").read()).hexdigest(), proc.stdout
+
+
+def cmd_build_package(a):
+    """STAGE the COMPLETE A–G human execution components (task §0 Issue A, step 1). A (Master CSV)
+    is built via the v2 builder (Engine truth hydration); B–E, G are produced by execution_package
+    from the campaign architecture + accepted receipt ingestions. It writes NO Execution Manifest
+    and makes NO validity claim — F is emitted ONLY by validate-package, AFTER validation passes.
+    Does not transition. Refuses if there is nothing to stage (no ingestions)."""
+    import execution_package as ep
+    import receipt_ingest as ri
+    s = require_run(a.run)
+    run_ref = (s.get("run") or {}).get("run_id")  # noqa: F841 (kept for parity/log symmetry)
+    arch = _load_architecture_or_exit(a)
+
+    store = _run_store(a.run)
+    ingestions = ri.load_ingestions(store)
+    material = ri.load_material_exceptions(store)
+    if not ingestions:
+        sys.exit("REFUSED: no accepted receipt ingestions under %s — ingest receipts first "
+                 "(run.py ingest-receipt)" % store)
+    fview = ep.build_fulfillment_view(ingestions, material)
+
+    pkg_dir = _package_dir(a.run)
+    os.makedirs(pkg_dir, exist_ok=True)
+    out_csv = os.path.join(pkg_dir, "A_master.csv")
+    ok, csv_sha, blob = _build_master_csv(a, out_csv)
+    if not ok:
+        print(blob[-1500:])
+        sys.exit("REFUSED — Master CSV (A) build failed; the complete package cannot stage")
+
+    try:
+        staged = ep.stage_components(arch, fview, out_dir=pkg_dir, master_csv_path=out_csv,
+                                     master_csv_sha256=csv_sha)
+    except ep.PackageError as e:
+        sys.exit("REFUSED — staging: %s" % e)
+    print("staged A–G components under %s (no manifest yet — validate-package emits F)"
+          % os.path.relpath(pkg_dir, ROOT))
+    for comp in ("A", "B", "C", "D", "E", "G"):
+        print("  %s  sha %s" % (comp, staged["shas"][comp][:16]))
+    print("  next: run.py validate-package (validates A–G, THEN emits + registers F)")
+
+
+def cmd_validate_package(a):
+    """VALIDATE the COMPLETE A–G package, THEN emit + register the immutable F Execution Manifest
+    over the ALREADY-VALIDATED component set, and record a package-validating attempt bound to it
+    (task §0 Issue A, steps 2–5). Frozen order — no self-attestation:
+
+        stage A–G (build-package)  ->  VALIDATE A–G + deps + completeness + coherence
+                                   ->  emit F from the COMPLETED validation result
+                                   ->  register F  ->  record execution_package_validated bound F.
+
+    A manifest is NEVER emitted over an unvalidated/incoherent package, and validation NEVER
+    consults a manifest field to decide the package is valid. The sanctioned writer of a
+    package-validating validation_attempts entry + the products_csv/execution_manifest artifacts."""
+    import execution_package as ep
+    import receipt_ingest as ri
+    s = require_run(a.run)
+    run_mode = (s.get("run") or {}).get("run_mode") or "production"
+    campaign_id = ((s.get("identity") or {}).get("campaign_id") or {}).get("value")
+    run_ref = (s.get("run") or {}).get("run_id")
+    arch = _load_architecture_or_exit(a)
+    store = _run_store(a.run)
+    fview = ep.build_fulfillment_view(ri.load_ingestions(store), ri.load_material_exceptions(store))
+    pkg_dir = _package_dir(a.run)
+
+    # ---- step 2a: rebuild A (real subprocess) and re-stage B–G deterministically. Staging is a
+    #      pure function of architecture + fview; re-staging here means validate-package does not
+    #      trust whatever build-package happened to leave on disk. ----
+    out_csv = os.path.join(pkg_dir, "A_master.csv")
+    failures = []
+    ok_csv, csv_sha, blob = _build_master_csv(a, out_csv)
+    if not ok_csv:
+        failures.append({"predicate": "master_csv_builds", "detail": (blob or "")[-500:]})
+    if failures:
+        _record_failed_package_attempt(s, a.run, failures, blob)
+        return
+    try:
+        staged = ep.stage_components(arch, fview, out_dir=pkg_dir, master_csv_path=out_csv,
+                                     master_csv_sha256=csv_sha)
+    except ep.PackageError as e:
+        _record_failed_package_attempt(s, a.run, [{"predicate": "staging", "detail": str(e)}], blob)
+        return
+
+    # ---- step 2b: AUTHORITATIVE validation of the staged package (consults no manifest) ----
+    result = ep.validate_package(arch, fview, pkg_dir, staged, run_mode)
+    if not result["ok"]:
+        failures = [{"predicate": "validate_package", "detail": p} for p in result["problems"]]
+        _record_failed_package_attempt(s, a.run, failures, blob)
+        return
+
+    # ---- steps 3–4: emit F over the VALIDATED set (validation recorded FROM the result) + register
+    arch_sha = hashlib.sha256(open(a.architecture, "rb").read()).hexdigest()
+    try:
+        emitted = ep.emit_manifest(
+            arch, fview, out_dir=pkg_dir, staged=staged, campaign_id=campaign_id,
+            run_id=run_ref, run_mode=run_mode, validation_result=result,
+            package_revision=a.revision,
+            architecture_ref=os.path.relpath(a.architecture, run_dir(a.run))
+            if os.path.abspath(a.architecture).startswith(os.path.abspath(run_dir(a.run)))
+            else a.architecture,
+            architecture_sha256=arch_sha, generated_at=now())
+    except ep.PackageError as e:
+        _record_failed_package_attempt(s, a.run,
+                                       [{"predicate": "emit_manifest", "detail": str(e)}], blob)
+        return
+
+    manifest = emitted["manifest"]
+    manifest_file_sha = hashlib.sha256(open(emitted["manifest_path"], "rb").read()).hexdigest()
+
+    # ---- step 5: register F + record the package-validated attempt bound to the exact manifest ----
+    s = require_run(a.run)
+    s.setdefault("artifacts", {})["execution_manifest"] = {
+        "path": _artifact_rel(a.run, emitted["manifest_path"]), "written_at": now(),
+        "sha256": manifest_file_sha, "status": "current",
+        "superseded_by": None, "superseded_at": None, "supersession_reason": None}
+    s.setdefault("artifacts", {})["products_csv"] = {
+        "path": _artifact_rel(a.run, out_csv), "written_at": now(), "sha256": csv_sha,
+        "status": "current", "superseded_by": None, "superseded_at": None,
+        "supersession_reason": None}
+    attempt = {"attempted_at": now(), "result": "passed",
+               "allow_stale_used": False, "legacy_replay_used": False,
+               "production": run_mode == "production",
+               "package_validated": True,
+               "package_manifest_sha256": manifest_file_sha,
+               "output_sha256": csv_sha,
+               "manifest_id": manifest["manifest_id"],
+               "validated_checks": result["checks"],
+               "builder_stdout_tail": (blob or "")[-1500:],
+               "failures": []}
+    s.setdefault("validation_attempts", []).append(attempt)
+    et = s.setdefault("execution_tracking", {})
+    et["seam6_execution_status"] = "validated"
+    atomic_write(state_path(a.run), s)
+    print("validate-package: PASSED — COMPLETE A–G package validated, THEN F emitted over it")
+    print("  products_csv sha         %s" % csv_sha)
+    print("  emitted execution_manifest %s (sha %s)"
+          % (manifest["manifest_id"], manifest_file_sha[:16]))
+    print("  seam6_execution_status -> validated")
+
+
+def _record_failed_package_attempt(s, run_id, failures, blob):
+    """Record a FAILED package validation attempt (no products_csv/manifest registered, status not
+    advanced). A failed validation never emits a manifest — the frozen order forbids it."""
+    s = require_run(run_id)
+    attempt = {"attempted_at": now(), "result": "failed",
+               "allow_stale_used": False, "legacy_replay_used": False, "production": False,
+               "package_validated": False, "package_manifest_sha256": None, "output_sha256": None,
+               "builder_stdout_tail": (blob or "")[-1500:], "failures": failures}
+    s.setdefault("validation_attempts", []).append(attempt)
+    atomic_write(state_path(run_id), s)
+    print("validate-package: FAILED — %d issue(s) (no manifest emitted):" % len(failures))
+    for f in failures:
+        print("  [%s] %s" % (f["predicate"], f["detail"]))
+    sys.exit(1)
+
+
+def cmd_approve_package(a):
+    """Record the owner EXECUTION-PACKAGE approval bound to the EXACT current Execution Manifest
+    (task §23). "Approve this exact validated human execution package for implementation." The
+    approval decision.value binds manifest_id + manifest_sha256; the CAMPAIGN_APPROVED gate refuses
+    an approval that does not match the current manifest. Owner-only, owner_confirmed."""
+    if a.by != "product_owner":
+        sys.exit("REFUSED: execution-package approval is an owner judgment — --by product_owner")
+    s = require_run(a.run)
+    rec = (s.get("artifacts") or {}).get("execution_manifest")
+    if not rec or rec.get("status", "current") != "current":
+        sys.exit("REFUSED: no current execution_manifest to approve — build/validate the package first")
+    mpath = artifact_path(a.run, rec)
+    manifest = json.load(open(mpath, encoding="utf-8"))
+    value = {"manifest_id": manifest.get("manifest_id"),
+             "manifest_sha256": rec.get("sha256"),
+             "meaning": "approve this exact validated human execution package for implementation"}
+    if a.note:
+        value["note"] = a.note
+    decision = {"status": "owner_confirmed", "decided": True, "decided_by": a.by,
+                "decided_at": now(), "value": value, "note": a.note or ""}
+    s.setdefault("owner_decisions", {})["execution_package_approved"] = decision
+    if "execution_package_approved" in (s.get("invalidated") or []):
+        s["invalidated"].remove("execution_package_approved")
+        print("  cleared prior invalidation of execution_package_approved (re-recorded by owner)")
+    atomic_write(state_path(a.run), s)
+    print("recorded execution-package approval by %s" % a.by)
+    print("  manifest_id  %s" % value["manifest_id"])
+    print("  manifest_sha %s" % value["manifest_sha256"])
+
+
 def cmd_promote(a):
     """Controlled lifecycle operation (NAMING_CONVENTIONS.md): move a run whose campaign_id
     is owner-confirmed into campaigns/<campaign_id>/runs/<run_id>, rewrite legacy artifact
@@ -859,6 +1142,56 @@ def main():
     # NOTE: no --allow-stale / --legacy-replay here by design. Diagnostic/legacy builds use the
     # raw build_execution_csv.py directly; they can never produce a launch-ready validation.
     p.set_defaults(f=cmd_validate_execution)
+
+    p = sub.add_parser("ingest-receipt",
+                       help="ingest ONE immutable Engine Curation Receipt v1: independently "
+                            "verify + bind to the exact Wizard Request v2 + recompute the eligible "
+                            "SET + open a Material Exception on shortfall (the sanctioned path)")
+    p.add_argument("--run", required=True)
+    p.add_argument("--receipt", required=True, help="path to the Curation Receipt v1 artifact")
+    p.add_argument("--request", required=True,
+                   help="path to the exact Wizard-generated Request v2 this receipt must fulfil")
+    p.add_argument("--snapshot-dir", help="dir holding <export_id>.jsonl Truth Export v2 snapshots "
+                                          "(when the receipt's immutable_ref is not reachable)")
+    p.add_argument("--fulfillment-exception",
+                   help="path to the matching Fulfillment Exception v1 (required for a shortfall)")
+    p.add_argument("--no-campaign-check", action="store_true",
+                   help="skip campaign_id association check (diagnostic/cross-repo fixtures)")
+    p.add_argument("--no-run-check", action="store_true",
+                   help="skip run_ref association check (diagnostic/cross-repo fixtures)")
+    p.set_defaults(f=cmd_ingest_receipt)
+
+    p = sub.add_parser("resolve-material-exception",
+                       help="record an owner resolution on an open Material Exception (open -> "
+                            "resolved) — owner judgment record ONLY; does NOT unblock assembly "
+                            "or waive the material requirement")
+    p.add_argument("--run", required=True); p.add_argument("--id", required=True)
+    p.add_argument("--by", required=True); p.add_argument("--value-json"); p.add_argument("--note")
+    p.set_defaults(f=cmd_resolve_material_exception)
+
+    for name, fn, helptext in (
+        ("build-package", cmd_build_package,
+         "assemble the COMPLETE A–G execution package + immutable F manifest and register it"),
+        ("validate-package", cmd_validate_package,
+         "validate the COMPLETE A–G package, bind the manifest, record a hash-bound attempt")):
+        p = sub.add_parser(name, help=helptext)
+        p.add_argument("--run", required=True)
+        p.add_argument("--architecture", required=True,
+                       help="campaign architecture JSON (judgment: collections/rails/content)")
+        p.add_argument("--campaign", required=True); p.add_argument("--campaign-name", required=True)
+        p.add_argument("--build", required=True); p.add_argument("--judgment", required=True)
+        p.add_argument("--engine")
+        p.add_argument("--truth", help="engine truth export / v2 snapshot for A (Master CSV) "
+                                       "hydration; default <engine>/exports/current_truth.jsonl")
+        p.add_argument("--revision", type=int, default=1)
+        p.set_defaults(f=fn)
+
+    p = sub.add_parser("approve-package",
+                       help="record the owner execution-package approval bound to the EXACT "
+                            "current Execution Manifest (task §23)")
+    p.add_argument("--run", required=True); p.add_argument("--by", required=True)
+    p.add_argument("--note")
+    p.set_defaults(f=cmd_approve_package)
 
     p = sub.add_parser("verify-live",
                        help="record the computed live-verification the LIVE gate consumes "

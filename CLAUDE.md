@@ -145,7 +145,43 @@ python3 scripts/generate_curation_request.py --run <cmp_…> --category-id <id> 
 - **Deterministic Request v2 generation** — `scripts/generate_curation_request.py` is the one
   sanctioned path; it reads the run, inherits `run_mode`, emits an immutable, canonically-hashed
   Request v2 (contract 2.0.0). Engine validates/normalizes it; the request hash matches Engine's.
+- **Curation Receipt v1 ingestion** — `scripts/receipt_ingest.py` (`run.py ingest-receipt`) is the
+  ONE sanctioned Wizard path that ingests an immutable Engine Curation Receipt v1 mechanically:
+  independently verifies the receipt (contract/self-hash/id-binds-core, no Engine runtime import —
+  parity with the Engine verifier proven by a golden test), binds it to the exact Wizard-generated
+  Request v2 (id + recomputed hash + run_mode + category), loads the bound Truth Export v2 snapshot
+  and INDEPENDENTLY recomputes the eligible sellable SET (the trusted material for assembly), and
+  distinguishes satisfied (achieved≥required) from a factual `shortfall_policy_exhausted`. A
+  shortfall requires its matching Fulfillment Exception v1 and opens a Wizard-owned **Material
+  Exception** (`open`|`resolved`) that BLOCKS assembly — no auto-widen/substitute. Owner resolution
+  (`run.py resolve-material-exception`) records **campaign judgment ONLY: it never waives the
+  material requirement (render_003), never makes a shortfall Receipt satisfy package completeness,
+  and never unblocks assembly.** Completeness always requires a genuine satisfied Receipt for each
+  current expected Request (produced by the not-yet-built architecture/request-revision flow), not
+  the resolved flag. Ingestion refuses a diagnostic receipt in a production run, and tampered/
+  mismatched/unexpected/duplicate artifacts.
+- **Complete A–G execution package + immutable Execution Manifest** — `scripts/execution_package.py`
+  produces the seven-class human execution package in a **frozen, non-self-attesting order**:
+  `run.py build-package` STAGES A–G only (A Master CSV via the v2 builder; B Collection Creation
+  Spec; C Rail/Feed Spec — honest renderer capability, no invented XC fallback; D Content Package;
+  E Seam Handoffs; G Human Checklist) and writes NO manifest and makes NO validity claim. `run.py
+  validate-package` then VALIDATES the staged A–G + deps + receipt-set completeness + coherence +
+  diagnostic + renderer honesty (consulting NO manifest), and **only after that passes** emits the
+  immutable, content-addressed **F Execution Manifest** over the already-validated set — recording
+  the completed validator result as the manifest's `validation` block. F never pre-certifies its own
+  validation; `verify_manifest` checks integrity/identity only and never treats the recorded
+  `validation` block as proof of validity. Same semantic package → same `exmf_…` id; any component
+  change → different id; same-id/different-bytes refused.
+- **Complete-package validation + manifest-bound approval** — `run.py validate-package` (above)
+  records a hash-bound attempt carrying `package_validated` + `package_manifest_sha256` bound to the
+  F it just emitted; VALIDATED requires `execution_manifest` + `execution_package_validated` (a
+  `products.csv`-only pass can never satisfy it). `run.py approve-package` records the owner
+  `execution_package_approved` decision bound to the exact manifest id/sha; CAMPAIGN_APPROVED
+  requires that manifest-bound approval (being VALIDATED is not approval). Post-validation coherence
+  and the sanctioned reopen edges (VALIDATED/CAMPAIGN_APPROVED → SEAM6_READY) now also supersede the
+  manifest and invalidate a stale package approval.
 - Still **target-only** (not built): structured `campaign_spec` / `research_brief` /
-  `research_ledger` / `campaign_directions`, Curation Receipt, the fulfillment lifecycle,
-  Truth Export v2, Wizard receipt ingestion. `spec_ref` binds to the current run until
-  `campaign_spec` exists (honest; not faked).
+  `research_ledger` / `campaign_directions`, premise/vertical/architecture approvals, the front-half
+  workflow. `spec_ref` binds to the current run until `campaign_spec` exists (honest; not faked);
+  the A–G producers consume a current-adapter campaign-architecture judgment file (collections /
+  rails / content) in place of the not-yet-built `campaign_spec`.

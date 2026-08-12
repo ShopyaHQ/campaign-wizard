@@ -179,6 +179,14 @@ state_file:
       report_path: {type: string, optional: true}
       invalidated_at: {type: timestamp, nullable: true}
       invalidated_by_decision: {type: string, nullable: true}
+      package_validated: {type: boolean, optional: true,
+                          desc: "true only when validate-package validated the COMPLETE A–G
+                                 package and bound the immutable execution manifest. A
+                                 products.csv-only validate-execution attempt does NOT set this."}
+      package_manifest_sha256: {type: string, optional: true,
+                                desc: "sha256 of the execution_manifest this package validation is
+                                       bound to — must equal the registered execution_manifest
+                                       artifact sha256 for VALIDATED (execution_package_validated)."}
 
   abandonment:
     charter_ref: identity_005
@@ -306,6 +314,22 @@ predicates:
                                              human_observation) observed_by is present — so LIVE
                                              cannot be entered by asserting a boolean"}
   artifact_current:        {args: [key], desc: "artifacts[key].status == current"}
+  execution_package_validated: {args: [], desc: "the last passing validation_attempt validated the
+                                             COMPLETE A–G package (not merely products.csv): its
+                                             package_manifest_sha256 equals the CURRENT registered
+                                             execution_manifest artifact sha256, package_validated
+                                             is true, and every component the attempt recorded is
+                                             hashed. A products.csv-only attempt (no
+                                             package_manifest_sha256) can NEVER satisfy this — so
+                                             VALIDATED requires the whole package, not just the CSV."}
+  execution_package_approval_binds_manifest: {args: [decision_id], desc: "the owner
+                                             execution-package approval decision binds the EXACT
+                                             current execution_manifest: decision.value.manifest_id
+                                             and manifest_sha256 both equal the registered
+                                             execution_manifest artifact (id in the manifest file,
+                                             sha256 in the artifact record). An approval recorded
+                                             against an older manifest can never authorize a new
+                                             package; being in VALIDATED is not approval."}
 
 # ═══════════════════════════════════════════════════════════════════
 # 3 · STATES
@@ -496,22 +520,36 @@ states:
 
   - name: VALIDATED
     stage: 8
-    meaning: "Validation PASSED. A failed build never reaches this state."
+    meaning: "Validation PASSED for the COMPLETE A–G package. A failed build never reaches this
+              state, and a products.csv-only pass is no longer sufficient."
     entry_prerequisites:
       - {p: artifact_exists, args: [products_csv]}
+      - {p: artifact_exists, args: [execution_manifest]}
       - {p: last_validation_passed}
       - {p: validation_binds_products_csv}
+      - {p: execution_package_validated}
       - {p: field_equals, args: [execution_tracking.seam6_execution_status, validated]}
       - {p: field_present, args: [validation_attempts]}
-    notes: "Warnings do not block: deprecated collection_rank, non-blocking pending validations,
-            limited inventory resilience, cache-bounded activation imprecision, unsupported
-            non-essential handoff capabilities."
+    notes: "Validation now validates the COMPLETE package (A Master CSV, B Collection Creation
+            Spec, C Rail/Feed Spec, D Content Package, E Seam Handoffs, G Human Checklist) and
+            binds the immutable F Execution Manifest. Warnings do not block: deprecated
+            collection_rank, non-blocking pending validations, limited inventory resilience,
+            cache-bounded activation imprecision, unsupported non-essential handoff capabilities."
 
   - name: CAMPAIGN_APPROVED
     stage: 8
     entry_prerequisites:
-      - {p: owner_decision_recorded, args: [campaign_approved]}
+      - {p: owner_decision_recorded, args: [execution_package_approved]}
+      - {p: execution_package_approval_binds_manifest, args: [execution_package_approved]}
+      - {p: artifact_exists, args: [execution_manifest]}
+      - {p: execution_package_validated}
       - {p: field_equals, args: [execution_tracking.external_handoffs_status, authored]}
+    notes: >
+      CAMPAIGN_APPROVED now requires an EXPLICIT execution-package approval bound to the EXACT
+      current Execution Manifest id + sha256 (execution_package_approved decision.value). Being in
+      VALIDATED is not approval; an approval recorded against a superseded/older manifest cannot
+      authorize the current package (task §23/§24). This is the prd.md §19 execution-package
+      approval: "approve this exact validated human execution package for implementation."
 
   - name: LIVE
     stage: 8
@@ -741,7 +779,7 @@ transitions:
     decision_value_required_fields: [reason, invalidating_finding, affected_artifacts]
     invalidates:
       - route_selected
-      - campaign_approved
+      - execution_package_approved
       - execution_tracking.activation_architecture_status
       - execution_tracking.seam6_execution_status
       - validation_attempts
@@ -750,6 +788,7 @@ transitions:
       - stage6_activation
       - stage7_seam6
       - products_csv
+      - execution_manifest
     cascade_note: >
       Reopening an approved brief invalidates routes, the selected route, the activation
       architecture, the Seam 6 specification, the validation result and campaign approval.
@@ -777,12 +816,15 @@ transitions:
     applies_when: "an already-validated execution artifact is deliberately changed"
     does_not_apply_to: "an ordinary failed build — that never leaves SEAM6_READY"
     invalidates:
-      - campaign_approved
+      - execution_package_approved
       - execution_tracking.seam6_execution_status
+    supersedes_artifacts:
+      - products_csv
+      - execution_manifest
     on_transition:
       - "stamp the last validation_attempts entry with invalidated_at and
          invalidated_by_decision — preserve the report as history"
-      - "supersede products_csv and the execution artifacts being changed"
+      - "supersede products_csv, execution_manifest and the execution artifacts being changed"
       - "clear every downstream approval that depended on the invalidated result"
       - "require a fresh passing validation attempt before SEAM6_READY -> VALIDATED again"
 
@@ -803,7 +845,7 @@ transitions:
     does_not_apply_to: "a LIVE run — post-LIVE change is a separate future concept"
     decision_value_required_fields: [reason]
     invalidates:
-      - campaign_approved
+      - execution_package_approved
       - execution_tracking.seam6_execution_status
       - validation_attempts
       - verification
@@ -817,9 +859,9 @@ transitions:
          can never satisfy a post-reopen LIVE gate"
       - "supersede products_csv and execution_manifest — NEVER delete"
       - "set execution_tracking.seam6_execution_status back to 'ready'"
-      - "campaign_approved is invalidated: re-entering CAMPAIGN_APPROVED requires the owner to
-         RE-RECORD the decision on the regenerated execution (record-decision clears the
-         invalidation); the stale approval can never gate again"
+      - "execution_package_approved is invalidated: re-entering CAMPAIGN_APPROVED requires the
+         owner to RE-RECORD the execution-package approval on the regenerated execution + its NEW
+         manifest (record-decision clears the invalidation); the stale approval can never gate again"
     cascade_note: >
       A fresh passing hash-bound validation attempt is required before SEAM6_READY ->
       VALIDATED, and a fresh owner approval before VALIDATED -> CAMPAIGN_APPROVED. Artifacts

@@ -108,6 +108,28 @@ def main():
                 d[k] = v
             return d
 
+        # A COMPLETE-package proof: since VALIDATED/CAMPAIGN_APPROVED/LIVE now require the immutable
+        # execution manifest (task §21–§24), write a minimal manifest file and register it, and
+        # stamp the run's last passing attempt as package-validated bound to that manifest sha.
+        import json as _json
+        _mpath = os.path.join(tmp, "F_execution_manifest.json")
+        with open(_mpath, "w") as _f:
+            _json.dump({"manifest_id": "exmf_testmanifest01", "manifest_contract_version": "1.0.0"}, _f)
+        MANIFEST_SHA = hashlib.sha256(open(_mpath, "rb").read()).hexdigest()
+
+        def add_package_proof(s):
+            """Register the execution_manifest artifact and mark the last passing validation
+            attempt as a COMPLETE-package validation bound to it — what a real post-VALIDATED run
+            carries after run.py validate-package."""
+            s.setdefault("artifacts", {})["execution_manifest"] = {
+                "path": _mpath, "sha256": MANIFEST_SHA, "status": "current"}
+            for att in reversed(s.get("validation_attempts") or []):
+                if att.get("result") == "passed" and not att.get("invalidated_at"):
+                    att["package_validated"] = True
+                    att["package_manifest_sha256"] = MANIFEST_SHA
+                    break
+            return s
+
         print("\n-- transition legality --")
         rc, out = validate(write(os.path.join(tmp, "a.yaml"), mk()), "FRAME_READY")
         ok("happy path NEW -> FRAME_READY passes", rc == 0, out)
@@ -210,8 +232,14 @@ def main():
                                      "output_sha256": csv_sha, "production": True,
                                      "allow_stale_used": False, "legacy_replay_used": False,
                                      "failures": []}]
+        # a products.csv-only pass (no package_manifest_sha256) can no longer reach VALIDATED.
+        rc, out = validate(write(os.path.join(tmp, "d2csv.yaml"), s), "VALIDATED")
+        ok("products.csv-only pass (no package manifest) cannot reach VALIDATED",
+           rc != 0 and ("COMPLETE A–G package" in out or "execution_manifest" in out))
+        # with the COMPLETE package (manifest registered + package-validated attempt) it reaches it.
+        add_package_proof(s)
         rc, out = validate(write(os.path.join(tmp, "d2.yaml"), s), "VALIDATED")
-        ok("hash-bound production passing attempt reaches VALIDATED", rc == 0, out)
+        ok("hash-bound production package-validated attempt reaches VALIDATED", rc == 0, out)
 
         s["validation_attempts"][-1]["invalidated_at"] = "y"
         s["validation_attempts"][-1]["invalidated_by_decision"] = "reopen_seam6_execution"
@@ -247,6 +275,8 @@ def main():
             # record). Without it, the post-validation coherence invariant correctly refuses.
             s["validation_attempts"] = [{"attempted_at": "t", "result": "passed",
                                          "production": True, "output_sha256": sha, "failures": []}]
+            # a post-validation state must also carry the COMPLETE-package proof (manifest bound).
+            add_package_proof(s)
             return s
         # ADVERSARIAL: asserting post_cache_verified=true with no computed record cannot reach LIVE.
         s = live_base()
@@ -298,7 +328,7 @@ def main():
         s["artifacts"]["stage6_activation"] = {"path": frame_p, "status": "superseded",
                                                "supersession_reason": "reopen"}
         s["artifacts"]["stage4_brief"] = {"path": frame_p, "status": "current"}
-        s["invalidated"] = ["route_selected", "campaign_approved",
+        s["invalidated"] = ["route_selected", "execution_package_approved",
                             "execution_tracking.activation_architecture_status",
                             "execution_tracking.seam6_execution_status", "validation_attempts"]
         rc, out = validate(write(os.path.join(tmp, "f2.yaml"), s), "BRIEF_DRAFT")

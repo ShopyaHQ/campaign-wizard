@@ -637,6 +637,107 @@ class Validator:
             return False
         return True
 
+    def p_execution_package_validated(self, a, ctx):
+        """The last passing validation attempt validated the COMPLETE A–G package, not merely
+        products.csv (task §21/§22). It must carry package_manifest_sha256 equal to the CURRENT
+        registered execution_manifest artifact sha256, package_validated == true, and a component
+        set that is fully hashed. A products.csv-only attempt (no package_manifest_sha256) can
+        never satisfy this — so VALIDATED requires the whole package, and the execution proof binds
+        the exact manifest (task §22)."""
+        att = self.state.get("validation_attempts") or []
+        if not att:
+            self.fail("validation_failure_treated_as_transition",
+                      "%s: no validation attempt validated a package" % ctx,
+                      "validation_attempts", "a package-validating attempt", [])
+            return False
+        last = att[-1]
+        pv = last.get("package_validated")
+        stamped = last.get("package_manifest_sha256")
+        if pv is not True or not stamped:
+            self.fail("validation_failure_treated_as_transition",
+                      "%s: the last validation attempt did not validate the COMPLETE A–G package "
+                      "(package_validated=%r, package_manifest_sha256=%r) — a products.csv-only "
+                      "pass cannot satisfy VALIDATED; run validate-package"
+                      % (ctx, pv, stamped),
+                      "validation_attempts[-1].package_validated", True, pv)
+            return False
+        rec = self.artifact_record("execution_manifest") or {}
+        if not rec:
+            self.fail("prerequisites_unmet",
+                      "%s: no execution_manifest artifact is registered — the package validation "
+                      "must bind the immutable manifest" % ctx,
+                      "artifacts.execution_manifest", "<registered>", MISSING)
+            return False
+        if rec.get("status", "current") != "current":
+            self.fail("stale_artifact_treated_as_current",
+                      "%s: execution_manifest is superseded — a superseded manifest cannot anchor "
+                      "the package validation binding" % ctx,
+                      "artifacts.execution_manifest.status", "current", rec.get("status"))
+            return False
+        registered = rec.get("sha256")
+        if stamped != registered:
+            self.fail("validation_failure_treated_as_transition",
+                      "%s: package validation binds manifest sha %r but the registered "
+                      "execution_manifest sha is %r — regenerate/revalidate the package"
+                      % (ctx, stamped, registered),
+                      "validation_attempts[-1].package_manifest_sha256", registered, stamped)
+            return False
+        return True
+
+    def p_execution_package_approval_binds_manifest(self, a, ctx):
+        """The owner execution-package approval decision must bind the EXACT current Execution
+        Manifest (task §23/§24): decision.value.manifest_id equals the manifest file's id and
+        decision.value.manifest_sha256 equals the registered execution_manifest artifact sha256.
+        An approval recorded against an older/superseded manifest can never authorize the current
+        package — being in VALIDATED is not approval."""
+        did = a[0]
+        d = (self.state.get("owner_decisions") or {}).get(did) or {}
+        val = d.get("value") or {}
+        approved_id = val.get("manifest_id")
+        approved_sha = val.get("manifest_sha256")
+        if not approved_id or not approved_sha:
+            self.fail("closing_sentence_is_not_proof",
+                      "%s: execution-package approval %r does not bind a manifest_id + "
+                      "manifest_sha256 — approval must name the exact package it approves"
+                      % (ctx, did),
+                      "owner_decisions.%s.value" % did,
+                      "{manifest_id, manifest_sha256}", val or MISSING)
+            return False
+        rec = self.artifact_record("execution_manifest") or {}
+        if not rec or rec.get("status", "current") != "current":
+            self.fail("stale_artifact_treated_as_current",
+                      "%s: no CURRENT execution_manifest to approve against (record %r)"
+                      % (ctx, rec.get("status") if rec else "absent"),
+                      "artifacts.execution_manifest.status", "current",
+                      rec.get("status") if rec else MISSING)
+            return False
+        registered_sha = rec.get("sha256")
+        if approved_sha != registered_sha:
+            self.fail("prerequisites_unmet",
+                      "%s: execution-package approval binds manifest sha %r but the current "
+                      "registered execution_manifest sha is %r — a stale approval cannot authorize "
+                      "the current package; re-record the approval on the current manifest"
+                      % (ctx, approved_sha, registered_sha),
+                      "owner_decisions.%s.value.manifest_sha256" % did, registered_sha, approved_sha)
+            return False
+        # The approved manifest_id must match the id INSIDE the current manifest file (id binds
+        # content). Read it from disk through the artifact record.
+        mp = self._artifact_path((rec or {}).get("path", ""))
+        file_id = None
+        if os.path.exists(mp):
+            try:
+                file_id = (json.load(open(mp, encoding="utf-8")) or {}).get("manifest_id")
+            except Exception:
+                file_id = None
+        if file_id is None or approved_id != file_id:
+            self.fail("prerequisites_unmet",
+                      "%s: execution-package approval binds manifest_id %r but the current "
+                      "manifest file's id is %r — re-record the approval on the current manifest"
+                      % (ctx, approved_id, file_id),
+                      "owner_decisions.%s.value.manifest_id" % did, file_id, approved_id)
+            return False
+        return True
+
     def p_verification_bound_to_executed_build(self, a, ctx):
         """LIVE consumes a COMPUTED verification record (run.py verify-live), not an asserted
         boolean. The record must report a pass, be bound by build_sha256 to the registered
@@ -829,16 +930,24 @@ class Validator:
             # that gate SEAM6_READY -> VALIDATED). Each records its own specific failure; we add
             # the coherence refusal so the incoherent resting state is named explicitly.
             ctx2 = "invariant[%s coherence]" % wf_state
+            # Current valid production proof now means: a passing production build hash-bound to the
+            # current products_csv AND a package validation hash-bound to the current
+            # execution_manifest (the COMPLETE A–G package, not merely the CSV — task §22). Each
+            # predicate records its own specific failure; the coherence refusal names the resting
+            # state. A run whose manifest was superseded (reopen/migrate) fails execution_package_
+            # validated and must move out of the post-validation set through the reopen edge.
             proof_ok = (self.p_last_validation_passed([], ctx2)
-                        and self.p_validation_binds_products_csv([], ctx2))
+                        and self.p_validation_binds_products_csv([], ctx2)
+                        and self.p_execution_package_validated([], ctx2))
             if not proof_ok:
                 self.fail("stale_execution_proof",
                           "workflow.state is %r but the run holds no current valid production "
                           "execution proof (a non-invalidated passing production build hash-bound "
-                          "to the current products_csv). A run may not rest in a post-validation "
-                          "state on invalidated or superseded proof — regenerate via "
-                          "validate-execution, or move out of the post-validation state through "
-                          "the sanctioned reopen edge (%s -> SEAM6_READY)." % (wf_state, wf_state),
+                          "to the current products_csv AND package validation bound to the current "
+                          "execution_manifest). A run may not rest in a post-validation state on "
+                          "invalidated or superseded proof — regenerate via validate-package, or "
+                          "move out of the post-validation state through the sanctioned reopen edge "
+                          "(%s -> SEAM6_READY)." % (wf_state, wf_state),
                           "workflow.state",
                           "current valid production execution proof for a post-validation state",
                           "unbound, invalidated, or superseded proof")

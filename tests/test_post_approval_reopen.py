@@ -52,6 +52,14 @@ def main():
 
         anchor = write(os.path.join(tmp, "anchor.yaml"), {"x": 1})
         sha = hashlib.sha256(open(anchor, "rb").read()).hexdigest()
+        # A real execution manifest file with a manifest_id: the CAMPAIGN_APPROVED gate now binds
+        # the approval to the exact manifest (id in the file, sha256 in the artifact record).
+        manifest_file = os.path.join(tmp, "F_execution_manifest.json")
+        with open(manifest_file, "w") as _f:
+            json.dump({"manifest_id": "exmf_reopentest0001",
+                       "manifest_contract_version": "1.0.0"}, _f)
+        MSHA = hashlib.sha256(open(manifest_file, "rb").read()).hexdigest()
+        MID = "exmf_reopentest0001"
         stage7 = write(os.path.join(tmp, "stage7.yaml"), {
             "rails": [{"rail_id": "r1", "collection_id": "c1", "rail_position": 0}],
             "entities": [{"entity_type": "products", "eligible_count": 12}],
@@ -69,18 +77,22 @@ def main():
                                              "first_external_reference": None},
                              "display_name": "Test Reopen"},
                 "workflow": {"state": "CAMPAIGN_APPROVED", "entered_at": "t", "history": []},
-                "owner_decisions": {"campaign_approved": {
+                "owner_decisions": {"execution_package_approved": {
                     "status": "owner_confirmed", "decided": True, "decided_by": "product_owner",
-                    "decided_at": "t"}},
+                    "decided_at": "t",
+                    "value": {"manifest_id": MID, "manifest_sha256": MSHA}}},
                 "invalidated": [],
                 "capability_claims": [],
                 "artifacts": {
                     "stage7_seam6": {"path": stage7, "status": "current"},
                     "products_csv": {"path": anchor, "sha256": sha, "status": "current"},
-                    "execution_manifest": {"path": anchor, "sha256": sha, "status": "current"},
+                    "execution_manifest": {"path": manifest_file, "sha256": MSHA,
+                                           "status": "current"},
                 },
                 "validation_attempts": [{"attempted_at": "t", "result": "passed",
                                          "production": True, "output_sha256": sha,
+                                         "package_validated": True,
+                                         "package_manifest_sha256": MSHA,
                                          "failures": []}],
                 "execution_tracking": {"activation_architecture_status": "approved",
                                        "seam6_execution_status": "validated",
@@ -114,7 +126,7 @@ def main():
             for key in ("products_csv", "execution_manifest"):
                 s["artifacts"][key]["status"] = "superseded"
                 s["artifacts"][key]["supersession_reason"] = "post-approval reopen"
-            s["invalidated"] = ["campaign_approved",
+            s["invalidated"] = ["execution_package_approved",
                                 "execution_tracking.seam6_execution_status",
                                 "validation_attempts", "verification"]
             s["validation_attempts"][0]["invalidated_at"] = "t2"
@@ -131,17 +143,21 @@ def main():
         # CAMPAIGN_APPROVED on the OLD (invalidated) approval. Must be refused.
         s = reopened_state()
         s["workflow"]["state"] = "VALIDATED"
+        # regenerate: fresh current products_csv + execution_manifest + a package-validated pass.
         s["artifacts"]["products_csv"] = {"path": anchor, "sha256": sha, "status": "current"}
+        s["artifacts"]["execution_manifest"] = {"path": manifest_file, "sha256": MSHA,
+                                                "status": "current"}
         s["validation_attempts"].append({"attempted_at": "t3", "result": "passed",
                                          "production": True, "output_sha256": sha,
-                                         "failures": []})
+                                         "package_validated": True,
+                                         "package_manifest_sha256": MSHA, "failures": []})
         s["execution_tracking"]["seam6_execution_status"] = "validated"
         rc, out = validate(write(os.path.join(tmp, "a4.yaml"), s), "CAMPAIGN_APPROVED")
-        ok("invalidated campaign_approved cannot gate re-entry to CAMPAIGN_APPROVED",
+        ok("invalidated execution_package_approved cannot gate re-entry to CAMPAIGN_APPROVED",
            rc != 0 and "stale_decision_after_reopen" in out)
         # The owner re-records the decision (record-decision clears the invalidation):
         s2 = copy.deepcopy(s)
-        s2["invalidated"].remove("campaign_approved")
+        s2["invalidated"].remove("execution_package_approved")
         rc, out = validate(write(os.path.join(tmp, "a5.yaml"), s2), "CAMPAIGN_APPROVED")
         ok("a genuinely re-recorded approval gates again", rc == 0, out)
 
@@ -193,8 +209,8 @@ def main():
         ok("  products_csv + execution_manifest superseded",
            all(after["artifacts"][k]["status"] == "superseded"
                for k in ("products_csv", "execution_manifest")))
-        ok("  campaign_approved invalidated",
-           "campaign_approved" in after.get("invalidated", []))
+        ok("  execution_package_approved invalidated",
+           "execution_package_approved" in after.get("invalidated", []))
         ok("  seam6_execution_status downgraded to ready",
            after["execution_tracking"]["seam6_execution_status"] == "ready")
         r2 = subprocess.run([sys.executable, RUNNER, "transition", "--run", rid,
@@ -278,7 +294,7 @@ def main():
         def stale_proof(state):
             """A run at `state` whose proof has been invalidated + superseded and whose
             execution status was downgraded to 'ready' — the exact shape a migrate/reopen
-            leaves behind. campaign_approved is NOT invalidated (this is a RESTING state, not
+            leaves behind. execution_package_approved is NOT invalidated (this is a RESTING state, not
             a re-entry attempt), isolating the coherence check from stale_decision_after_reopen."""
             s = approved_state()
             s["workflow"]["state"] = state
@@ -312,7 +328,7 @@ def main():
         # coherence invariant must NOT fire — a correctly reopened run is valid in its
         # downgraded state, and SEAM6_READY must not require validation proof.
         s = stale_proof("SEAM6_READY")
-        s["invalidated"] = ["campaign_approved"]
+        s["invalidated"] = ["execution_package_approved"]
         rc, out = validate(write(os.path.join(tmp, "a3_reopened.yaml"), s))
         ok("reopened SEAM6_READY with stale proof invalidated is coherent (PASS)",
            rc == 0, out)
@@ -351,22 +367,23 @@ def main():
             state as it exists WHILE the reopen transition to SEAM6_READY is being validated
             (workflow.state still the source). The two edges differ:
               CAMPAIGN_APPROVED -> SEAM6_READY (reopen_execution_post_approval): invalidates
-                campaign_approved + seam6_execution_status + validation_attempts + verification;
+                execution_package_approved + seam6_execution_status + validation_attempts + verification;
                 supersedes products_csv + execution_manifest.
-              VALIDATED -> SEAM6_READY (reopen_seam6_execution): invalidates campaign_approved +
-                seam6_execution_status; no artifact supersession obligation."""
+              VALIDATED -> SEAM6_READY (reopen_seam6_execution): invalidates execution_package_approved +
+                seam6_execution_status; supersedes products_csv + execution_manifest (the whole
+                A–G package is regenerated, so its manifest can no longer anchor VALIDATED)."""
             s = approved_state()
             s["workflow"]["state"] = state
             if state == "CAMPAIGN_APPROVED":
                 decision = "reopen_execution_post_approval"
-                inval = ["campaign_approved", "execution_tracking.seam6_execution_status",
+                inval = ["execution_package_approved", "execution_tracking.seam6_execution_status",
                          "validation_attempts", "verification"]
-                for key in ("products_csv", "execution_manifest"):
-                    s["artifacts"][key]["status"] = "superseded"
-                    s["artifacts"][key]["supersession_reason"] = "post-approval reopen"
             else:  # VALIDATED
                 decision = "reopen_seam6_execution"
-                inval = ["campaign_approved", "execution_tracking.seam6_execution_status"]
+                inval = ["execution_package_approved", "execution_tracking.seam6_execution_status"]
+            for key in ("products_csv", "execution_manifest"):
+                s["artifacts"][key]["status"] = "superseded"
+                s["artifacts"][key]["supersession_reason"] = "reopen: regenerate execution"
             s["owner_decisions"][decision] = {
                 "status": "owner_confirmed", "decided": True, "decided_by": "product_owner",
                 "decided_at": "t", "value": {"reason": "regenerate stale execution"}}
