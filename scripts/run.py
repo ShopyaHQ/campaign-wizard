@@ -298,6 +298,237 @@ def _artifact_rel(run_id, p):
         else os.path.relpath(ap, ROOT)
 
 
+# ═══════════════════════════════════════════════════════════════════
+# STRUCTURED FRONT HALF (spec 1.8.0) — register-object + typed hash-bound approvals.
+# The structured objects are AUTHORITY; register-object BUILDS + canonically HASHES them (never
+# hand-authored bytes), writes an IMMUTABLE revision file, registers it as an artifact, stamps the
+# structured_objects spine, and on a MATERIAL change deterministically invalidates the downstream
+# front-half approvals per the schema dependency_graph. State mutation stays here; the object logic
+# lives in front_half.py.
+# ═══════════════════════════════════════════════════════════════════
+FRONT_HALF_KINDS = ("research_brief", "research_ledger", "campaign_directions", "campaign_spec")
+
+
+def _dependency_graph():
+    return (load(SCHEMA).get("state_file") or {}).get("dependency_graph") or {}
+
+
+def cmd_register_object(a):
+    """Author + register a structured front-half object revision (task §3/§5/§7/§18).
+
+    Reads a JSON/YAML payload, BUILDS the canonical object (validating structure + charter rules and
+    stamping section/composite/per-item hashes), writes it as an IMMUTABLE revision file
+    <kind>.r<NNN>.yaml under the run, registers it as the artifact <kind>, and updates the
+    structured_objects spine. A revision is write-once: registering a materially different object
+    under the same id mints a NEW revision and (per dependency_graph) invalidates the downstream
+    front-half approvals so a stale approval can never gate a changed object (task §19)."""
+    import front_half as fh
+    s = require_run(a.run)
+    kind = a.kind
+    if kind not in FRONT_HALF_KINDS:
+        sys.exit("FATAL: --kind must be one of %s" % (FRONT_HALF_KINDS,))
+    raw = a.payload if os.path.isabs(a.payload) else os.path.join(ROOT, a.payload)
+    if not os.path.exists(raw):
+        sys.exit("FATAL: payload not found: %s" % raw)
+    with open(raw, encoding="utf-8") as f:
+        payload = json.load(f) if raw.endswith(".json") else yaml.safe_load(f)
+
+    # optional cross-object binding material (ledger for direction evidence-ref resolution).
+    try:
+        if kind == "research_brief":
+            obj = fh.build_research_brief(payload)
+        elif kind == "research_ledger":
+            obj = fh.build_research_ledger(payload)
+        elif kind == "campaign_directions":
+            ledger = _load_current_object(s, a.run, "research_ledger")
+            obj = fh.build_campaign_directions(payload, ledger=ledger)
+        else:
+            obj = fh.build_campaign_spec_revision(payload)
+    except fh.FrontHalfError as e:
+        sys.exit("REFUSED — %s is not a valid %s: %s" % (raw, kind, e))
+
+    spine_prev = (s.get("structured_objects") or {}).get(kind) or {}
+    prev_hash = spine_prev.get("canonical_hash")
+    prev_section_hashes = spine_prev.get("section_hashes") or {}
+
+    # write the IMMUTABLE revision file (never overwrite an existing revision of the same id).
+    rev = obj["revision"]
+    rd = run_dir(a.run)
+    os.makedirs(rd, exist_ok=True)
+    rev_path = os.path.join(rd, "%s.%s.yaml" % (kind, rev))
+    if os.path.exists(rev_path):
+        existing = yaml.safe_load(open(rev_path, encoding="utf-8")) or {}
+        if existing.get("canonical_hash") != obj["canonical_hash"]:
+            sys.exit("REFUSED (campaign_spec_revision_mutated): %s already exists with a different "
+                     "hash — a revision is write-once; mint a NEW revision label instead" % rev_path)
+    with open(rev_path, "w", encoding="utf-8") as f:
+        yaml.safe_dump(obj, f, sort_keys=False, default_flow_style=False, allow_unicode=True)
+
+    # register the artifact (points at the current revision file) with sha over the bytes.
+    rel = _artifact_rel(a.run, rev_path)
+    sha = hashlib.sha256(open(rev_path, "rb").read()).hexdigest()
+    s.setdefault("artifacts", {})[kind] = {
+        "path": rel, "written_at": now(), "sha256": sha, "status": "current",
+        "superseded_by": None, "superseded_at": None, "supersession_reason": None}
+
+    # stamp the spine + keep a write-once revision ledger (for campaign_spec_revision_immutable).
+    spine = fh.spine_for_object(obj, kind)
+    revisions = list(spine_prev.get("revisions") or [])
+    rec = {"campaign_spec_id" if kind == "campaign_spec" else "object_id": spine["object_id"],
+           "revision": rev, "canonical_hash": obj["canonical_hash"]}
+    if kind == "campaign_spec":
+        rec["composite_hash"] = obj["composite_hash"]
+    if not any(r.get("revision") == rev and r.get("canonical_hash") == obj["canonical_hash"]
+               for r in revisions):
+        revisions.append(rec)
+    spine["revisions"] = revisions
+    s.setdefault("structured_objects", {})[kind] = spine
+
+    # DETERMINISTIC dependency invalidation (task §19). Compute which sections/objects materially
+    # changed and invalidate the downstream front-half approvals via the schema dependency_graph.
+    changed_nodes = _changed_nodes(kind, prev_hash, obj, prev_section_hashes)
+    invalidated = _invalidate_downstream(s, changed_nodes)
+
+    atomic_write(state_path(a.run), s)
+    print("registered %s %s/%s" % (kind, spine["object_id"], rev))
+    print("  canonical_hash %s" % obj["canonical_hash"])
+    if kind == "campaign_spec":
+        print("  composite_hash %s" % obj["composite_hash"])
+        for sec in fh.CS_SECTIONS:
+            print("    %-22s %s" % (sec, obj["section_hashes"][sec][:16]))
+    if invalidated:
+        print("  invalidated stale downstream approvals: %s" % sorted(invalidated))
+
+
+def _load_current_object(s, run_id, kind):
+    """Load the current registered structured object's bytes, or None."""
+    rec = (s.get("artifacts") or {}).get(kind)
+    if not rec or rec.get("status", "current") != "current":
+        return None
+    p = rec["path"]
+    full = p if os.path.isabs(p) else os.path.join(run_dir(run_id), p)
+    if not os.path.exists(full):
+        full = os.path.join(ROOT, p)
+    if not os.path.exists(full):
+        return None
+    return yaml.safe_load(open(full, encoding="utf-8"))
+
+
+def _changed_nodes(kind, prev_hash, obj, prev_section_hashes):
+    """Return the dependency-graph nodes that materially changed by this registration."""
+    if kind != "campaign_spec":
+        node = {"research_brief": "research_brief", "research_ledger": "research_ledger",
+                "campaign_directions": "campaign_directions"}[kind]
+        # a changed brief/ledger/directions is a change at that node (nothing changed if same hash).
+        return set() if prev_hash == obj["canonical_hash"] else {node}
+    # campaign_spec: a change is per-SECTION so an independent leaf (e.g. a content headline) does
+    # NOT invalidate an unrelated upstream approval (task §19).
+    changed = set()
+    for sec, h in obj["section_hashes"].items():
+        if prev_section_hashes.get(sec) != h:
+            changed.add("campaign_spec." + sec)
+    return changed
+
+
+def _invalidate_downstream(s, changed_nodes):
+    """Mark every downstream front-half approval invalidated (state.invalidated). Deterministic."""
+    import front_half as fh
+    dg = _dependency_graph()
+    to_invalidate = set()
+    for node in changed_nodes:
+        to_invalidate |= fh.downstream_approvals_for_change(dg, node)
+    inval = s.setdefault("invalidated", [])
+    newly = []
+    decisions = s.get("owner_decisions") or {}
+    for did in to_invalidate:
+        # only invalidate an approval that actually exists (was recorded) and isn't already stale.
+        if did in decisions and did not in inval:
+            inval.append(did)
+            newly.append(did)
+    return newly
+
+
+def cmd_select_direction(a):
+    """Record the owner's EXACT direction selection (task §8) — a typed decision binding the chosen
+    direction_id + its per-direction hash from the current campaign_directions. This is the vNext
+    form of opportunity_selected; the validator refuses a selection that names no current direction."""
+    import front_half as fh  # noqa: F401 (parity; hash already on the object)
+    s = require_run(a.run)
+    dirs_obj = _load_current_object(s, a.run, "campaign_directions")
+    if not dirs_obj:
+        sys.exit("FATAL: no current campaign_directions registered — register-object it first")
+    match = next((d for d in (dirs_obj.get("directions") or [])
+                  if d.get("direction_id") == a.direction_id), None)
+    if match is None:
+        sys.exit("FATAL: direction %r is not in the current campaign_directions" % a.direction_id)
+    if a.by == "product_owner" and a.status != "owner_confirmed":
+        sys.exit("REFUSED (decision_status_misstamped): product_owner requires --status owner_confirmed")
+    value = {"directions_id": dirs_obj.get("directions_id"),
+             "revision": dirs_obj.get("revision"),
+             "direction_id": a.direction_id,
+             "direction_hash": match.get("direction_hash")}
+    rec = {"status": a.status, "decided": a.status == "owner_confirmed", "decided_by": a.by,
+           "decided_at": now(), "value": value}
+    if a.note:
+        rec["note"] = a.note
+    s.setdefault("owner_decisions", {})["direction_selected_v2"] = rec
+    if a.status == "owner_confirmed" and "direction_selected_v2" in (s.get("invalidated") or []):
+        s["invalidated"].remove("direction_selected_v2")
+    atomic_write(state_path(a.run), s)
+    print("recorded direction_selected_v2 -> %s (hash %s) by %s"
+          % (a.direction_id, (match.get("direction_hash") or "")[:16], a.by))
+
+
+def cmd_approve_object(a):
+    """Record a typed, hash-bound front-half owner approval (task §4/§11/§20/§21).
+
+    Binds the EXACT current object/section/composite so an approval can never silently authorize a
+    different revision. Modes:
+      --binding object     : binds {object_id, revision, canonical_hash}          (kickoff_approved)
+      --binding section    : binds {object_id, revision, section, section_hash}   (premise/verticals)
+      --binding composite  : binds {object_id, revision, composite_hash} over --sections
+                             (architecture_approved: 3 sections; campaign_spec_approved: all 8)
+    """
+    import front_half as fh
+    s = require_run(a.run)
+    if a.by == "product_owner" and a.status != "owner_confirmed":
+        sys.exit("REFUSED (decision_status_misstamped): product_owner requires --status owner_confirmed")
+    obj = _load_current_object(s, a.run, a.kind)
+    spine = (s.get("structured_objects") or {}).get(a.kind) or {}
+    if not obj or not spine:
+        sys.exit("FATAL: no current %s registered — register-object it first" % a.kind)
+    if a.binding == "object":
+        value = {"object_id": spine["object_id"], "revision": spine["revision"],
+                 "canonical_hash": spine["canonical_hash"]}
+    elif a.binding == "section":
+        sh = (spine.get("section_hashes") or {}).get(a.section)
+        if not sh:
+            sys.exit("FATAL: campaign_spec has no section_hash for %r" % a.section)
+        value = {"object_id": spine["object_id"], "revision": spine["revision"],
+                 "section": a.section, "section_hash": sh}
+    else:  # composite
+        sections = [x.strip() for x in (a.sections or "").split(",") if x.strip()]
+        if not sections:
+            sys.exit("FATAL: --sections is required for a composite binding")
+        sh = spine.get("section_hashes") or {}
+        missing = [x for x in sections if not sh.get(x)]
+        if missing:
+            sys.exit("FATAL: missing section hashes for %s" % missing)
+        value = {"object_id": spine["object_id"], "revision": spine["revision"],
+                 "composite_hash": fh.composite_hash(sh, sections)}
+    rec = {"status": a.status, "decided": a.status == "owner_confirmed", "decided_by": a.by,
+           "decided_at": now(), "value": value}
+    if a.note:
+        rec["note"] = a.note
+    s.setdefault("owner_decisions", {})[a.id] = rec
+    if a.status == "owner_confirmed" and a.id in (s.get("invalidated") or []):
+        s["invalidated"].remove(a.id)
+        print("  cleared invalidation of %r (re-recorded by owner on the current object)" % a.id)
+    atomic_write(state_path(a.run), s)
+    print("recorded %s %r by %s (binds %s)" % (a.status, a.id, a.by, a.binding))
+    print("  value: %s" % json.dumps(value))
+
+
 def cmd_reopen(a):
     """Prepare a reopen edge so a subsequent `transition --to <to>` validates.
 
@@ -1185,6 +1416,38 @@ def main():
                                        "hydration; default <engine>/exports/current_truth.jsonl")
         p.add_argument("--revision", type=int, default=1)
         p.set_defaults(f=fn)
+
+    # ── STRUCTURED FRONT HALF (spec 1.8.0) ──
+    p = sub.add_parser("register-object",
+                       help="build + register an IMMUTABLE structured front-half object revision "
+                            "(research_brief|research_ledger|campaign_directions|campaign_spec)")
+    p.add_argument("--run", required=True)
+    p.add_argument("--kind", required=True, choices=list(FRONT_HALF_KINDS))
+    p.add_argument("--payload", required=True, help="JSON/YAML object payload")
+    p.set_defaults(f=cmd_register_object)
+
+    p = sub.add_parser("select-direction",
+                       help="record the owner's EXACT direction selection, hash-bound (task §8)")
+    p.add_argument("--run", required=True); p.add_argument("--direction-id", required=True)
+    p.add_argument("--by", required=True)
+    p.add_argument("--status", default="owner_confirmed",
+                   choices=["provisional_recommendation", "owner_confirmed"])
+    p.add_argument("--note")
+    p.set_defaults(f=cmd_select_direction)
+
+    p = sub.add_parser("approve-object",
+                       help="record a typed, hash-bound front-half approval (kickoff/premise/"
+                            "verticals/architecture/final campaign_spec) (task §4/§11/§20/§21)")
+    p.add_argument("--run", required=True); p.add_argument("--id", required=True)
+    p.add_argument("--kind", required=True, choices=list(FRONT_HALF_KINDS))
+    p.add_argument("--binding", required=True, choices=["object", "section", "composite"])
+    p.add_argument("--section", help="section name for --binding section")
+    p.add_argument("--sections", help="comma-separated sections for --binding composite")
+    p.add_argument("--by", required=True)
+    p.add_argument("--status", default="owner_confirmed",
+                   choices=["provisional_recommendation", "owner_confirmed"])
+    p.add_argument("--note")
+    p.set_defaults(f=cmd_approve_object)
 
     p = sub.add_parser("approve-package",
                        help="record the owner execution-package approval bound to the EXACT "

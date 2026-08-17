@@ -110,8 +110,11 @@ duplicate it here.
 `docs/ALMOST_FALL_GOLDEN_BENCHMARK.md` is a **frozen calibration reference** (owner-approved
 2026-08-12, status CLOSED) — NOT an eighth locked-set doc and NOT authority. It records the quality
 bar a fresh `/new-campaign` must independently meet; its collection/rail/content examples are
-representative, not immutable, and it is not iterated. The selection *rule* lives in the Content
-Charter (`collection_breadth` CB-1..CB-5); the launch floor in the Campaign Charter (`render_003`).
+representative, not immutable, and it is not iterated. It is **NOT a creative or research input to
+campaign generation** — a fresh Almost Fall run must reach the bar from its own research_ledger, not
+by copying the benchmark; the benchmark's role is post-hoc calibration/evaluation only. The selection
+*rule* lives in the Content Charter (`collection_breadth` CB-1..CB-5); the launch floor in the
+Campaign Charter (`render_003`).
 
 ## Scope
 
@@ -130,6 +133,15 @@ authoritative** and must not be followed.
 python3 scripts/run.py new                    # begin a run (run_mode: production, immutable)
 python3 scripts/run.py new --diagnostic       # a sanctioned diagnostic run
 python3 scripts/run.py status                 # current state and its legal transitions
+
+# structured vNext front half (fresh runs, schema >= 1.8.0) — see "Now implemented" below:
+python3 scripts/run.py register-object  --run <cmp_…> --kind research_brief|research_ledger|campaign_directions|campaign_spec --payload <p>
+python3 scripts/run.py select-direction --run <cmp_…> --direction-id <id> --by product_owner
+python3 scripts/run.py approve-object   --run <cmp_…> --id <checkpoint> --kind campaign_spec --binding object|section|composite [...] --by product_owner
+
+# Request v2 for a fresh vNext production run derives from the exact approved Campaign Spec:
+python3 scripts/generate_curation_request.py --run <cmp_…> --from-spec
+# legacy/compatibility path (historical/testing only; NOT the normal vNext production path):
 python3 scripts/generate_curation_request.py --run <cmp_…> --category-id <id> --required-depth 50
 ```
 
@@ -157,8 +169,9 @@ python3 scripts/generate_curation_request.py --run <cmp_…> --category-id <id> 
   (`run.py resolve-material-exception`) records **campaign judgment ONLY: it never waives the
   material requirement (render_003), never makes a shortfall Receipt satisfy package completeness,
   and never unblocks assembly.** Completeness always requires a genuine satisfied Receipt for each
-  current expected Request (produced by the not-yet-built architecture/request-revision flow), not
-  the resolved flag. Ingestion refuses a diagnostic receipt in a production run, and tampered/
+  current expected Request (for a fresh vNext run, the expected Request set is generated from the
+  approved Campaign Spec's `collection_selections` — see the front-half + `--from-spec` items below),
+  not the resolved flag. Ingestion refuses a diagnostic receipt in a production run, and tampered/
   mismatched/unexpected/duplicate artifacts.
 - **Complete A–G execution package + immutable Execution Manifest** — `scripts/execution_package.py`
   produces the seven-class human execution package in a **frozen, non-self-attesting order**:
@@ -180,8 +193,32 @@ python3 scripts/generate_curation_request.py --run <cmp_…> --category-id <id> 
   requires that manifest-bound approval (being VALIDATED is not approval). Post-validation coherence
   and the sanctioned reopen edges (VALIDATED/CAMPAIGN_APPROVED → SEAM6_READY) now also supersede the
   manifest and invalidate a stale package approval.
-- Still **target-only** (not built): structured `campaign_spec` / `research_brief` /
-  `research_ledger` / `campaign_directions`, premise/vertical/architecture approvals, the front-half
-  workflow. `spec_ref` binds to the current run until `campaign_spec` exists (honest; not faked);
-  the A–G producers consume a current-adapter campaign-architecture judgment file (collections /
-  rails / content) in place of the not-yet-built `campaign_spec`.
+- **Structured vNext front half** — IMPLEMENTED (fresh runs pinned to workflow schema `>= 1.8.0`).
+  `scripts/front_half.py` builds and canonically hashes four first-class structured objects that are
+  the front-half AUTHORITY: `research_brief` (FRAME_READY), `research_ledger` (SIGNALS_READY),
+  `campaign_directions` (OPPORTUNITIES_READY) and ONE `campaign_spec` carried as IMMUTABLE revisions
+  (premise · vertical_strategies · collection_selections · rails · content_program · naming_voice ·
+  default_composition · seam_intent), each section semantically hashed with an order-stable composite.
+  `run.py register-object` writes each object (write-once revision file + state-file spine the
+  validator recomputes); `run.py select-direction` / `run.py approve-object` record the FIVE typed,
+  hash-bound owner checkpoints — kickoff, direction selection, premise + vertical (two distinct
+  section approvals), architecture (one composite over collection_selections+rails+content_program),
+  and the final **"build this"** composite over all eight sections. A material change re-mints the
+  hash and DETERMINISTICALLY invalidates downstream approvals via the schema `dependency_graph`; a
+  stale/superseded approval can never gate. The existing internal states are RETAINED as lifecycle
+  markers — no second state machine; on a vNext run the legacy prose predicates are superseded by the
+  structured objects (INTERVIEW_COMPLETE / BRIEF_DRAFT / ROUTES_READY are compatibility pass-throughs;
+  ACTIVATION_READY / SEAM6_READY KEEP their real Seam-6 execution-prep gates and ADD the structured
+  ones). Version-gated: historical (`< 1.8.0`) runs stay readable under the legacy predicates and are
+  never migrated. Machine authority is `schemas/workflow_state.schema.yaml` (states/predicates/
+  `dependency_graph`) + `schemas/{campaign_spec,front_half_objects}.schema.yaml` (object shapes) +
+  `scripts/validate_state.py` (the judge). Prose artifacts are DERIVED review renderings / historical
+  compatibility only — never a co-equal authority; owner approvals bind hashes, not files.
+- **Request v2 from the exact approved Campaign Spec** — `generate_curation_request.py --from-spec` is
+  the vNext PRODUCTION path: it derives `category_id` + `required_depth` from the approved spec's
+  `collection_selections` and binds `spec_ref` to the exact `campaign_spec` id/revision/composite hash,
+  refusing unless a CURRENT, non-stale `campaign_spec_approved` ("build this") decision exists. The
+  legacy run-bound path (`spec_ref.kind = run`, `hash = null`) is COMPATIBILITY/historical only, not
+  the normal vNext path. Request v2 semantics (contract 2.0.0, canonical hashing) are UNCHANGED — the
+  proven back half (fulfillment → receipt → A–G package → manifest → approval → CAMPAIGN_APPROVED) is
+  untouched.

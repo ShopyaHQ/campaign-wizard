@@ -9,6 +9,8 @@ import csv, json, os, shutil, subprocess, sys, tempfile
 import yaml
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, "tests"))
+import front_half_fixture as fx  # noqa: E402  (canon >= 1.8.0 runs need a valid structured front half)
 VALIDATOR = os.path.join(ROOT, "scripts", "validate_state.py")
 BUILD = os.path.join(ROOT, "scripts", "build_csv.py")
 SCHEMA = os.path.join(ROOT, "schemas", "workflow_state.schema.yaml")
@@ -73,6 +75,9 @@ def main():
                                          "seam6_execution_status": "not_started",
                                          "external_handoffs_implemented": "unknown"},
                   "collection_freeze": {"snapshot": [], "exceptions": []}}
+            # canon >= 1.8.0: ACTIVATION_READY requires the structured campaign_spec sections; inject
+            # a valid vNext front half so the feed-cap behavior is what's under test, not the gate.
+            fx.inject_full_front_half(st, tmp, run_id="cmp_T")
             return write(os.path.join(tmp, "st.yaml"), st)
 
         def run(feeds):

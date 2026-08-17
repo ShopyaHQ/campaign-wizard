@@ -19,6 +19,8 @@ VALIDATOR = os.path.join(ROOT, "scripts", "validate_state.py")
 RUNNER = os.path.join(ROOT, "scripts", "run.py")
 SCHEMA = os.path.join(ROOT, "schemas", "workflow_state.schema.yaml")
 CHARTER = os.path.join(ROOT, "SHOPYA_CAMPAIGN_CHARTER.yaml")
+sys.path.insert(0, os.path.join(ROOT, "tests"))
+import front_half_fixture as fx  # noqa: E402  (canon >= 1.8.0: SEAM6_READY needs the "build this" spec)
 
 PASS, FAIL = [], []
 
@@ -100,6 +102,10 @@ def main():
                                        "external_handoffs_implemented": "unknown"},
                 "collection_freeze": {"snapshot": [], "exceptions": []},
             }
+            # canon >= 1.8.0: SEAM6_READY re-entry needs the structured 'build this' campaign_spec +
+            # its five hash-bound front-half approvals. Inject a valid vNext front half so the reopen
+            # obligations are what's under test, not the front-half gate.
+            fx.inject_full_front_half(s, tmp, run_id="cmp_TESTREOPEN0000000000000000")
             for k, v in over.items():
                 s[k] = v
             return s

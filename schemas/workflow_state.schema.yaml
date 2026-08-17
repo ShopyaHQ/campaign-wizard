@@ -12,16 +12,49 @@
 
 schema:
   name: workflow_state
-  version: 1.7.0   # 1.7.0: run-level run_mode (production|diagnostic), immutable, minted at NEW.
+  version: 1.8.0   # 1.8.0: STRUCTURED FRONT HALF. Four first-class, canonically-hashed objects
+                   # (research_brief, research_ledger, campaign_directions, and one campaign_spec
+                   # with immutable revisions) become the front-half AUTHORITY, mapped onto the
+                   # EXISTING states (no second state machine — owner ruling 2026-08-12). Typed
+                   # hash-bound approvals gate kickoff, direction, premise, vertical, architecture
+                   # and the final "build this" campaign_spec. Version-gated exactly like run_mode:
+                   # fresh vNext runs (pinned spec >= 1.8.0) MUST carry the structured objects and
+                   # hash-bound approvals; historical runs (< 1.8.0) stay readable under the old
+                   # prose-artifact predicates (frame/stage1/stage2/stage4/stage5 …). Request v2
+                   # for a vNext run binds spec_ref to the exact approved campaign_spec
+                   # id/revision/hash; the proven back half is otherwise untouched.
+                   # 1.7.0: run-level run_mode (production|diagnostic), immutable, minted at NEW.
                    # Fresh vNext runs require it; historical runs stay readable under their pin
                    # (Model B current-canon: a pre-1.7.0 run migrates before it can transition).
   charter_min_version: 0.2.0
+  vnext_structured_front_half_min: 1.8.0   # spec floor at/above which the structured-object gates
+                                           # and hash-bound approvals are ENFORCED (below it, the
+                                           # legacy prose predicates apply — historical readability).
   state_file_path: "campaigns/<run_id>/state.yaml"
   notes: >
     Claim ids in `charter_ref` fields point at SHOPYA_CAMPAIGN_CHARTER.yaml. A prerequisite
     with a charter_ref is traceable to an approved decision; one without is a schema-local
     structural check.
   changelog:
+    1.8.0: >
+      Structured Wizard Front Half (owner ruling 2026-08-12). Four first-class structured objects
+      replace prose as the front-half AUTHORITY, mapped onto the EXISTING states with no new state
+      machine: research_brief (FRAME_READY), research_ledger (SIGNALS_READY), campaign_directions
+      (OPPORTUNITIES_READY) + the exact direction selection (OPPORTUNITY_SELECTED), and ONE
+      campaign_spec carried as immutable revisions whose premise+vertical sections gate
+      BRIEF_APPROVED, whose collection_selections+rails+content_program composite gates
+      ROUTE_SELECTED, whose naming_voice+default_composition+seam_intent complete at
+      ACTIVATION_READY, and whose EXACT final composite hash ("build this") gates SEAM6_READY.
+      New predicates: structured_artifact_current, campaign_spec_section_hashes_present,
+      campaign_spec_revision_immutable, approval_binds_object_hash, approval_binds_spec_sections,
+      final_spec_approval_binds_composite, direction_selection_binds_direction,
+      no_stale_approval_after_dependency_change. Approvals are typed and hash-bound: an approval of
+      one object/section/revision can never authorize a different one (a materially changed object
+      produces a new hash, and the stale approval no longer gates). All new gates are version-gated
+      at spec >= 1.8.0; a historical (< 1.8.0) run is judged under the pre-1.8.0 prose predicates
+      and is never forced to carry the structured objects. Request v2 for a vNext run binds spec_ref
+      to the exact approved campaign_spec; the back half (fulfillment, receipt, execution package,
+      manifest, approval) is unchanged.
     1.6.0: >
       Post-regression corrections (owner directive 2026-08-10, defects demonstrated by the
       Almost Fall r002 regression). A1: new reopen edge CAMPAIGN_APPROVED -> SEAM6_READY
@@ -262,6 +295,96 @@ state_file:
   execution_tracking_executed_build:
     note: "execution_tracking.executed_build: the build id recorded as imported. Set by verify-live."
 
+  # ─────────────────────────────────────────────────────────────────
+  # STRUCTURED FRONT-HALF OBJECTS (spec 1.8.0) — canonical, hashed, immutable-by-revision.
+  # These are AUTHORITY (owner ruling 2026-08-12), not co-equal with the old prose artifacts.
+  # Each is a registered artifact (register-object) whose canonical hash the validator recomputes;
+  # the state file carries the id/revision/hash spine so approvals can bind an EXACT object.
+  # ─────────────────────────────────────────────────────────────────
+
+  structured_objects:
+    description: >
+      The vNext front-half spine. Each entry mirrors an artifact registered under artifacts.* and
+      records the object's stable id, current revision, and canonical_hash (recomputed by the
+      validator from the artifact bytes). A hash-bound approval names {id, revision, hash}; if the
+      object materially changes it gets a new revision + hash, and any approval bound to the old
+      hash no longer gates (no_stale_approval_after_dependency_change / approval_binds_object_hash).
+      Written ONLY by run.py register-object; not in settable_paths.
+    type: map
+    keys: [research_brief, research_ledger, campaign_directions, campaign_spec]
+    item:
+      object_kind: {type: enum, values: [research_brief, research_ledger, campaign_directions, campaign_spec]}
+      object_id: {type: string, desc: "stable logical id, e.g. rb_… / rl_… / cd_… / cs_…"}
+      revision: {type: string, desc: "immutable revision label, e.g. r001; a material change mints a new one"}
+      parent_revision: {type: string, nullable: true}
+      canonical_hash: {type: string, desc: "sha256 over the object's canonical (semantic-normalized) bytes"}
+      section_hashes:
+        type: map
+        nullable: true
+        desc: "campaign_spec only: per-section canonical hash (premise, vertical_strategies,
+               collection_selections, rails, content_program, naming_voice, default_composition,
+               seam_intent). Lets a section approval bind exactly one section."
+      artifact_key: {type: string, desc: "the artifacts.* key holding the object bytes on disk"}
+      created_at: {type: timestamp}
+      supersedes_revision: {type: string, nullable: true}
+    rules:
+      - "A revision is IMMUTABLE. run.py register-object writes a NEW revision file; it never edits
+         an existing one (campaign_spec_revision_immutable)."
+      - "canonical_hash is recomputed by the validator from the artifact bytes; a state-file hash
+         that disagrees with the bytes is a refusal (structured_object_hash_mismatch)."
+      - "A material change to a dependency section invalidates a downstream approval per the
+         declared dependency graph (dependency_graph); the validator refuses a stale approval."
+
+  # Declared front-half section dependency graph (task §19). A material change to an upstream
+  # object/section makes every downstream approval stale. Independent leaves (e.g. a content
+  # headline) do NOT invalidate unrelated upstream approvals. The validator reads THIS, not agent
+  # discretion (no_stale_approval_after_dependency_change).
+  dependency_graph:
+    research_brief:            {depends_on: []}
+    research_ledger:           {depends_on: [research_brief]}
+    campaign_directions:       {depends_on: [research_ledger]}
+    selected_direction:        {depends_on: [campaign_directions]}
+    campaign_spec.premise:             {depends_on: [selected_direction]}
+    campaign_spec.vertical_strategies: {depends_on: [campaign_spec.premise]}
+    campaign_spec.collection_selections: {depends_on: [campaign_spec.premise, campaign_spec.vertical_strategies]}
+    campaign_spec.rails:                 {depends_on: [campaign_spec.collection_selections]}
+    campaign_spec.content_program:       {depends_on: [campaign_spec.collection_selections]}
+    campaign_spec.naming_voice:          {depends_on: [campaign_spec.premise]}
+    campaign_spec.default_composition:   {depends_on: [campaign_spec.rails, campaign_spec.content_program]}
+    campaign_spec.seam_intent:           {depends_on: [campaign_spec.collection_selections, campaign_spec.rails, campaign_spec.content_program]}
+    campaign_spec.composite:             {depends_on: [campaign_spec.premise, campaign_spec.vertical_strategies,
+                                                       campaign_spec.collection_selections, campaign_spec.rails,
+                                                       campaign_spec.content_program, campaign_spec.naming_voice,
+                                                       campaign_spec.default_composition, campaign_spec.seam_intent]}
+
+  # The typed hash-bound approval ledger extension (task §4/§8/§11/§20/§21). Each front-half owner
+  # approval is a normal owner_decisions entry (status owner_confirmed) whose VALUE binds the exact
+  # object it approves. The validator recomputes the bound hash from disk and refuses a mismatch.
+  front_half_approvals:
+    description: "owner_decisions ids reserved for the five front-half checkpoints + direction selection."
+    kickoff_approved:
+      binds: {object: research_brief, fields: [object_id, revision, canonical_hash]}
+      checkpoint: "KICKOFF REVIEW (task §4)"
+    direction_selected_v2:
+      binds: {object: campaign_directions, fields: [object_id, revision, direction_id, direction_hash]}
+      checkpoint: "RESEARCH + DIRECTION REVIEW (task §8)"
+    premise_approved:
+      binds: {object: campaign_spec, fields: [object_id, revision, section, section_hash]}
+      section_const: premise
+      checkpoint: "PREMISE + VERTICAL REVIEW — premise (task §11)"
+    verticals_approved:
+      binds: {object: campaign_spec, fields: [object_id, revision, section, section_hash]}
+      section_const: vertical_strategies
+      checkpoint: "PREMISE + VERTICAL REVIEW — verticals (task §11)"
+    architecture_approved:
+      binds: {object: campaign_spec, fields: [object_id, revision, composite_of, composite_hash]}
+      composite_of_const: [collection_selections, rails, content_program]
+      checkpoint: "CAMPAIGN ARCHITECTURE REVIEW (task §20)"
+    campaign_spec_approved:
+      binds: {object: campaign_spec, fields: [object_id, revision, composite_hash]}
+      meaning: "build this exact campaign architecture (task §21)"
+      checkpoint: "FINAL CAMPAIGN SPEC (task §21)"
+
 # ═══════════════════════════════════════════════════════════════════
 # 2 · PREDICATE VOCABULARY
 # The validator implements exactly these. No others may appear in prerequisites.
@@ -331,6 +454,40 @@ predicates:
                                              against an older manifest can never authorize a new
                                              package; being in VALIDATED is not approval."}
 
+  # ── STRUCTURED FRONT-HALF predicates (spec 1.8.0). All are version-gated: on a run pinned
+  # below vnext_structured_front_half_min they PASS trivially (historical readability), so the
+  # legacy prose prerequisites alone govern a pre-1.8.0 run. ──
+  structured_object_present: {args: [object_kind], desc: "structured_objects[object_kind] exists,
+                             its artifact is registered + current, and the state-file canonical_hash
+                             equals the hash recomputed from the artifact bytes on disk (no
+                             hand-edited hash). Version-gated (>= 1.8.0)."}
+  campaign_spec_sections_present: {args: [sections], desc: "the current campaign_spec revision carries
+                             a non-empty section_hash for every named section. Version-gated."}
+  campaign_spec_revision_immutable: {args: [], desc: "no two campaign_spec revisions share an id+revision
+                             with differing canonical_hash — a revision is write-once. Version-gated."}
+  approval_binds_object_hash: {args: [decision_id, object_kind], desc: "the owner approval decision
+                             binds decision.value.{object_id, revision, canonical_hash} equal to the
+                             CURRENT structured_objects[object_kind] spine; an approval bound to a
+                             superseded revision/hash cannot gate. Version-gated."}
+  approval_binds_spec_section: {args: [decision_id, section], desc: "the owner approval decision binds
+                             decision.value.{object_id, revision, section, section_hash} equal to the
+                             CURRENT campaign_spec revision's section_hashes[section]; a materially
+                             changed section gets a new hash and the stale approval no longer gates
+                             (dependency invalidation is deterministic). Version-gated."}
+  approval_binds_spec_composite: {args: [decision_id, sections], desc: "the owner approval decision
+                             binds decision.value.composite_hash equal to the canonical hash of the
+                             named sections of the CURRENT campaign_spec revision (order-stable). Used
+                             for the architecture composite and the final build-this composite.
+                             Version-gated."}
+  direction_selection_binds_direction: {args: [decision_id], desc: "the owner direction-selection
+                             decision binds decision.value.{direction_id, direction_hash} to a
+                             direction that EXISTS in the current campaign_directions object with a
+                             matching per-direction canonical hash; a changed direction set makes the
+                             stale selection non-gating. Version-gated."}
+  front_half_approval_not_stale: {args: [decision_id], desc: "the front-half approval is not listed in
+                             state.invalidated (a dependency change or reopen invalidates it until the
+                             owner re-records it on the current object). Version-gated."}
+
 # ═══════════════════════════════════════════════════════════════════
 # 3 · STATES
 # ═══════════════════════════════════════════════════════════════════
@@ -348,7 +505,12 @@ states:
 
   - name: FRAME_READY
     stage: 0
+    structured_object: research_brief   # vNext (1.8.0): the research_brief IS the frame authority.
     entry_prerequisites:
+      # vNext (>=1.8.0): the structured research_brief is the authority (task §3). Version-gated —
+      # PASSES on a historical run, which is judged by the legacy frame.* prose gates below.
+      - {p: structured_object_present, args: [research_brief]}
+      # Legacy prose frame (pre-1.8.0 runs; a vNext run's derived review rendering may still carry it).
       - {p: artifact_exists, args: [frame]}
       - {p: field_non_empty, args: [frame.objective]}
       - {p: field_non_empty, args: [frame.planning_horizon]}
@@ -356,18 +518,34 @@ states:
       - {p: field_non_empty, args: [frame.eligible_seams]}
       - {p: field_present, args: [frame.hard_constraints]}
       - {p: field_present, args: [frame.known_unknowns]}
-    produces: ["campaigns/<run_id>/frame.yaml"]
+    produces: ["campaigns/<run_id>/frame.yaml", "campaigns/<run_id>/research_brief.r<NNN>.yaml"]
     forbids: [product_library_access]
+    notes: >
+      vNext (1.8.0): research_brief carries owner_supplied vs system_inferred vs derived provenance
+      per material field (task §3). The KICKOFF REVIEW checkpoint approves it (kickoff_approved,
+      hash-bound). The legacy frame.yaml is a derived review rendering / historical compatibility,
+      never co-equal authority.
 
   - name: RESEARCHING
     stage: 1
     entry_prerequisites:
+      # vNext KICKOFF REVIEW (task §4): typed, hash-bound approval of the EXACT research_brief.
+      - {p: approval_binds_object_hash, args: [kickoff_approved, research_brief]}
+      - {p: front_half_approval_not_stale, args: [kickoff_approved]}
+      # frame_accepted remains the owner-confirmation gate (kickoff_approved IS frame_accepted for
+      # vNext; the legacy id is kept for pre-1.8.0 runs and back-compat).
       - {p: owner_decision_recorded, args: [frame_accepted]}
     produces: []
+    notes: "vNext: kickoff_approved binds research_brief id+revision+hash (task §4). Material brief
+            change → new revision/hash → the prior kickoff approval no longer gates (stale)."
 
   - name: SIGNALS_READY
     stage: 1
+    structured_object: research_ledger   # vNext (1.8.0): structured evidence, not prose notes (task §5).
     entry_prerequisites:
+      # vNext: the research_ledger is the structured evidence authority (task §5/§6). Version-gated.
+      - {p: structured_object_present, args: [research_ledger]}
+      # Legacy prose signals (pre-1.8.0; vNext derived review rendering may still carry them).
       - {p: artifact_exists, args: [stage1_signals]}
       - {p: artifact_exists, args: [stage1_landscape]}
       - {p: each_has_keys, args: [signals, [signal_id, claim, evidence_type, source, source_date,
@@ -385,7 +563,12 @@ states:
 
   - name: OPPORTUNITIES_READY
     stage: 2
+    structured_object: campaign_directions   # vNext (1.8.0): directions with stable IDs (task §7).
     entry_prerequisites:
+      # vNext: campaign_directions is the authority — 2–4 genuinely distinct directions derived
+      # from the research_ledger, each with a stable id + per-direction hash (task §7). Version-gated.
+      - {p: structured_object_present, args: [campaign_directions]}
+      # Legacy prose opportunities (pre-1.8.0; vNext derived review rendering may still carry them).
       - {p: artifact_exists, args: [stage2_opportunities]}
       - {p: artifact_exists, args: [stage2_comparison]}
       - {p: count_between, args: [opportunities, 4, 6]}
@@ -404,13 +587,25 @@ states:
   - name: OPPORTUNITY_SELECTED
     stage: 2
     entry_prerequisites:
+      # vNext RESEARCH + DIRECTION REVIEW (task §8): the owner selects an EXACT direction; the
+      # decision binds the direction_id + per-direction hash from the current campaign_directions.
+      - {p: direction_selection_binds_direction, args: [direction_selected_v2]}
+      - {p: front_half_approval_not_stale, args: [direction_selected_v2]}
+      # Legacy owner-confirmation gate (kept for pre-1.8.0 runs; direction_selected_v2 is the vNext
+      # form of opportunity_selected).
       - {p: owner_decision_recorded, args: [opportunity_selected]}
       - {p: field_present, args: [identity.campaign_id.status]}
     permits: [campaign_id_proposal]
     charter_ref: identity_004
+    notes: "vNext: changing the selected direction (or the direction set) invalidates downstream
+            premise/architecture/spec approvals per the dependency_graph (task §8/§19)."
 
   - name: INTERVIEW_COMPLETE
     stage: 3
+    vnext_prose_passthrough: true   # vNext (1.8.0): kept ONLY as an internal/compat transition (owner
+                                    # ruling 2026-08-12). No new structured object; on a vNext run the
+                                    # legacy interview prose prereqs are optional (the structured
+                                    # objects already carry this material). Pre-1.8.0 runs keep them.
     entry_prerequisites:
       - {p: artifact_exists, args: [stage3_interview]}
       - {p: field_non_empty, args: [interview.desired_behavior]}
@@ -427,6 +622,10 @@ states:
 
   - name: BRIEF_DRAFT
     stage: 4
+    vnext_prose_passthrough: true   # vNext (1.8.0): the campaign_spec premise/vertical workshop IS the
+                                    # brief-draft phase; the legacy stage4_brief artifact is a derived
+                                    # rendering, optional on a vNext run. The revision-round self-loop
+                                    # is preserved. Pre-1.8.0 runs keep the prose prereq.
     entry_prerequisites:
       - {p: artifact_exists, args: [stage4_brief]}
     self_loop: true
@@ -443,7 +642,18 @@ states:
 
   - name: BRIEF_APPROVED
     stage: 4
+    structured_object: campaign_spec   # vNext (1.8.0): PREMISE + VERTICAL REVIEW (task §9–§11).
     entry_prerequisites:
+      # vNext PREMISE + VERTICAL REVIEW (task §11): ONE composed review, two distinct typed
+      # approvals — premise and vertical_strategies — each hash-bound to the exact campaign_spec
+      # section. Version-gated (PASSES on a pre-1.8.0 run, which uses the legacy brief gates).
+      - {p: structured_object_present, args: [campaign_spec]}
+      - {p: campaign_spec_sections_present, args: [[premise, vertical_strategies]]}
+      - {p: approval_binds_spec_section, args: [premise_approved, premise]}
+      - {p: front_half_approval_not_stale, args: [premise_approved]}
+      - {p: approval_binds_spec_section, args: [verticals_approved, vertical_strategies]}
+      - {p: front_half_approval_not_stale, args: [verticals_approved]}
+      # Legacy prose brief (pre-1.8.0; vNext derived review rendering may still carry it).
       - {p: owner_decision_recorded, args: [brief_approved]}
       - {p: each_has_non_null, args: [brief.tests, [truth, behavior, mechanism, surface, ownability,
                                            theme, feasibility, competitor]]}
@@ -451,10 +661,22 @@ states:
       - {p: field_non_empty, args: [brief.participation_mechanism]}
       - {p: field_non_empty, args: [brief.measurement]}
       - {p: each_has_non_null, args: [brief.ownability, [level, rationale]]}
-    produces: ["campaigns/<run_id>/stage4_brief.yaml"]
+    produces: ["campaigns/<run_id>/stage4_brief.yaml", "campaigns/<run_id>/campaign_spec.r<NNN>.yaml"]
+    notes: >
+      vNext: premise_approved and verticals_approved are DISTINCT typed decisions binding distinct
+      section hashes (task §11). Verticals may have unequal conviction and a vertical may hold zero
+      durable collections — there is NO per-vertical quota or symmetry gate (Content Charter CB-1..
+      CB-5; task §10). A premise change mints a new campaign_spec revision and invalidates both
+      section approvals (dependency_graph); an independent content-headline change does not touch
+      the premise approval (task §19).
 
   - name: ROUTES_READY
     stage: 5
+    vnext_prose_passthrough: true   # vNext (1.8.0): the campaign_spec architecture (collection_
+                                    # selections/rails/content_program) IS the routes work; the
+                                    # composite architecture approval is taken at ROUTE_SELECTED. The
+                                    # legacy stage5_routes artifact is a derived rendering, optional on
+                                    # a vNext run. Pre-1.8.0 runs keep the prose prereqs.
     entry_prerequisites:
       - {p: artifact_exists, args: [stage5_routes]}
       - {p: count_between, args: [routes, 2, 3]}
@@ -465,16 +687,35 @@ states:
 
   - name: ROUTE_SELECTED
     stage: 5
+    structured_object: campaign_spec   # vNext (1.8.0): CAMPAIGN ARCHITECTURE REVIEW (task §12–§20).
     entry_prerequisites:
+      # vNext CAMPAIGN ARCHITECTURE REVIEW (task §20): ONE composed review of the whole program —
+      # collection_selections + rails + content_program — approved by a single composite-hash-bound
+      # decision. NO product-row approval. Version-gated.
+      - {p: campaign_spec_sections_present, args: [[collection_selections, rails, content_program]]}
+      - {p: approval_binds_spec_composite, args: [architecture_approved, [collection_selections, rails, content_program]]}
+      - {p: front_half_approval_not_stale, args: [architecture_approved]}
+      # Legacy owner-confirmation + identity gates (route_selected is the pre-1.8.0 form).
       - {p: owner_decision_recorded, args: [route_selected]}
       - {p: field_equals, args: [identity.campaign_id.confirmed_by_owner, true], charter_ref: identity_004}
       - {p: field_equals, args: [identity.campaign_id.status, confirmed]}
       - {p: campaign_id_unique, charter_ref: identity_006}
       - {p: field_non_empty, args: [identity.display_name]}
+    notes: >
+      vNext: architecture_approved binds ONE composite hash over collection_selections + rails +
+      content_program of the current campaign_spec revision (task §20) — the owner reviews the
+      composed campaign, not individual rails/rows. A material change to any of those three sections
+      re-mints the composite hash and the stale architecture approval no longer gates.
 
   - name: ACTIVATION_READY
     stage: 6
+    structured_object: campaign_spec   # vNext (1.8.0): naming_voice + default_composition + seam_intent complete.
+    vnext_additive_only: true          # ADD the structured section gates; keep ALL real activation gates.
     entry_prerequisites:
+      # vNext (task §15–§17): the campaign_spec's naming_voice, default_composition and seam_intent
+      # sections are complete before Seam 6 readiness. Version-gated.
+      - {p: campaign_spec_sections_present, args: [[naming_voice, default_composition, seam_intent]]}
+      # Legacy prose activation (pre-1.8.0; vNext derived review rendering may still carry it).
       - {p: artifact_exists, args: [stage6_activation]}
       - {p: each_has_non_null, args: [activations, [seam_id, surface, role, user_action, execution_mode,
                                            owner, activation_authority, scheduling, artifact,
@@ -500,7 +741,22 @@ states:
 
   - name: SEAM6_READY
     stage: 7
+    structured_object: campaign_spec   # vNext (1.8.0): FINAL CAMPAIGN SPEC "build this" (task §21–§23).
+    vnext_additive_only: true          # ADD the final "build this" gate; keep ALL real seam6 gates.
     entry_prerequisites:
+      # vNext FINAL CAMPAIGN SPEC (task §21): the owner approves the EXACT final campaign_spec
+      # revision — "build this exact campaign architecture" — bound to the composite hash over ALL
+      # eight sections. This is the final pre-fulfillment authority; Request v2 for a vNext run may
+      # only be generated from this exact approved spec (task §22/§23). Version-gated.
+      - {p: campaign_spec_sections_present, args: [[premise, vertical_strategies, collection_selections,
+                                                    rails, content_program, naming_voice,
+                                                    default_composition, seam_intent]]}
+      - {p: campaign_spec_revision_immutable}
+      - {p: approval_binds_spec_composite, args: [campaign_spec_approved, [premise, vertical_strategies,
+                                                  collection_selections, rails, content_program,
+                                                  naming_voice, default_composition, seam_intent]]}
+      - {p: front_half_approval_not_stale, args: [campaign_spec_approved]}
+      # Legacy prose seam6 (pre-1.8.0; vNext derived review rendering may still carry it).
       - {p: artifact_exists, args: [stage7_seam6]}
       - {p: each_has_non_null, args: [rails, [rail_id, collection_id, rail_position]], charter_ref: rail_001}
       - {p: each_satisfies, args: [rails, has_rail_position], charter_ref: rail_001}
@@ -517,6 +773,10 @@ states:
       First state in which the product library may be read. Validation is ATTEMPTED here and
       may fail any number of times; a failed attempt appends to validation_attempts and the run
       REMAINS in SEAM6_READY. There is no failure transition.
+      vNext: campaign_spec_approved is the exact "build this" authority — it binds the composite of
+      all eight sections of the current revision; only this current, non-stale approval may authorize
+      deterministic Request v2 generation for production (task §22/§23). Being architecture-approved
+      is not "build this"; the final approval is a distinct typed decision.
 
   - name: VALIDATED
     stage: 8
@@ -693,9 +953,15 @@ path_resolution:
   collections:         {artifact: stage7_seam6, key: collections}
   measurement:         {artifact: stage9_measurement}
   review:              {artifact: review}
+  # structured front-half objects (spec 1.8.0) — resolve against their registered artifact bytes.
+  research_brief:      {artifact: research_brief}
+  research_ledger:     {artifact: research_ledger}
+  campaign_directions: {artifact: campaign_directions}
+  campaign_spec:       {artifact: campaign_spec}
   # everything else resolves against the state file:
   #   run, identity, workflow, owner_decisions, artifacts, execution_tracking,
-  #   collection_freeze, capability_claims, validation_attempts, verification, abandonment
+  #   collection_freeze, capability_claims, validation_attempts, verification, abandonment,
+  #   structured_objects, dependency_graph
 
 # ═══════════════════════════════════════════════════════════════════
 # 5 · ITEM PREDICATES (used by each_satisfies)
@@ -986,6 +1252,35 @@ refusals:
     charter_ref: governance_001
     message: "owner decision <id> was invalidated by a reopen and cannot gate a transition
               until the owner re-records it on the regenerated work. Refusing."
+  structured_object_missing:
+    message: "A vNext run (spec >= 1.8.0) requires the structured front-half object <kind>
+              (research_brief | research_ledger | campaign_directions | campaign_spec), registered
+              and current. The object is the front-half AUTHORITY (owner ruling 2026-08-12); prose
+              artifacts are derived/historical, never a substitute. Refusing."
+  structured_object_hash_mismatch:
+    message: "structured_objects.<kind>.canonical_hash disagrees with the hash recomputed from the
+              artifact bytes on disk. The spine hash is never hand-authored — it is recomputed by
+              register-object. Refusing."
+  campaign_spec_section_missing:
+    message: "The current campaign_spec revision is missing a required section hash (<section>).
+              Every named section must carry a non-empty canonical section_hash. Refusing."
+  campaign_spec_revision_mutated:
+    message: "A campaign_spec revision is write-once. Two records share the same id+revision with
+              differing canonical_hash — a revision was edited in place instead of minting a new one.
+              Refusing."
+  approval_not_bound_to_object:
+    message: "The front-half approval <id> does not bind the EXACT current object it must approve
+              (object_id + revision + canonical_hash / section_hash / composite_hash). An approval
+              bound to a superseded revision, a changed section, or missing binding fields can never
+              gate — a stale approval cannot silently authorize a different revision. Refusing."
+  direction_selection_not_bound:
+    message: "The direction selection <id> does not bind a direction that exists in the current
+              campaign_directions with a matching per-direction hash. A changed direction set makes a
+              prior selection stale. Refusing."
+  front_half_approval_stale:
+    message: "The front-half approval <id> was invalidated by a dependency change or reopen and
+              cannot gate until the owner re-records it on the current object (dependency invalidation
+              is deterministic — dependency_graph, not agent discretion). Refusing."
 
 # ═══════════════════════════════════════════════════════════════════
 # 8 · RULINGS APPLIED IN 1.1.0

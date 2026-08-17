@@ -7,7 +7,7 @@ Covers the transition failures that matter, the reserved-hook behaviour, artifac
 validation, and — most importantly — that a REFUSED transition leaves state.yaml untouched.
 Exits non-zero if any case does not behave as specified. No pytest dependency.
 """
-import copy, hashlib, os, shutil, subprocess, sys, tempfile
+import copy, hashlib, json, os, shutil, subprocess, sys, tempfile
 import yaml
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -15,6 +15,8 @@ VALIDATOR = os.path.join(ROOT, "scripts", "validate_state.py")
 RUNNER = os.path.join(ROOT, "scripts", "run.py")
 SCHEMA = os.path.join(ROOT, "schemas", "workflow_state.schema.yaml")
 CHARTER = os.path.join(ROOT, "SHOPYA_CAMPAIGN_CHARTER.yaml")
+sys.path.insert(0, os.path.join(ROOT, "tests"))
+import front_half_fixture as fx  # noqa: E402  (canon >= 1.8.0: front-half states need structured objects)
 
 PASS, FAIL = [], []
 
@@ -104,6 +106,10 @@ def main():
             d = copy.deepcopy(BASE)
             d["run"]["spec_version"], d["run"]["charter_version"] = spec_v, chart_v
             d["artifacts"]["frame"] = {"path": frame_p, "sha256": sha, "status": "current"}
+            # canon >= 1.8.0: the front-half states are vNext gates. Inject a valid structured front
+            # half + its hash-bound approvals so these legacy transition/legality tests exercise what
+            # they mean to (edge legality, owner decisions, version semantics) — not the new gates.
+            fx.inject_full_front_half(d, tmp, run_id=BASE["run"]["run_id"])
             for k, v in over.items():
                 d[k] = v
             return d
@@ -166,17 +172,17 @@ def main():
         ok("missing owner decision refused", rc != 0 and "closing_sentence_is_not_proof" in out)
 
         s = mk(); s["workflow"]["state"] = "FRAME_READY"
-        s["owner_decisions"] = {"frame_accepted": {"status": "owner_confirmed", "decided": True,
-                                                   "decided_by": "po",
-                                                   "decided_at": "2026-08-06T15:10:00Z"}}
+        s["owner_decisions"].update({"frame_accepted": {"status": "owner_confirmed", "decided": True,
+                                                        "decided_by": "po",
+                                                        "decided_at": "2026-08-06T15:10:00Z"}})
         rc, out = validate(write(os.path.join(tmp, "c2.yaml"), s), "RESEARCHING")
         ok("recorded owner decision passes", rc == 0, out)
 
         # F4 (binary ledger): a provisional_recommendation cannot satisfy an owner gate.
         s = mk(); s["workflow"]["state"] = "FRAME_READY"
-        s["owner_decisions"] = {"frame_accepted": {"status": "provisional_recommendation",
-                                                   "decided": False, "decided_by": "agent",
-                                                   "decided_at": "z"}}
+        s["owner_decisions"].update({"frame_accepted": {"status": "provisional_recommendation",
+                                                        "decided": False, "decided_by": "agent",
+                                                        "decided_at": "z"}})
         rc, out = validate(write(os.path.join(tmp, "c3.yaml"), s), "RESEARCHING")
         ok("provisional_recommendation cannot satisfy the owner gate", rc != 0)
         # F4: a would-be 'fulfilled'/'validated' entry stamped as an owner decision is rejected
@@ -334,47 +340,29 @@ def main():
         rc, out = validate(write(os.path.join(tmp, "f2.yaml"), s), "BRIEF_DRAFT")
         ok("reopen WITH all obligations met is executable", rc == 0, out)
 
-        print("\n-- C2: each_has_keys vs each_has_non_null --")
-        FAMS = ["cultural_or_editorial", "demand_or_behavioral", "commercial_or_category",
-                "visual_or_design", "counter_trend_or_fatigue", "temporal_catalyst"]
-        sig_ok = {"signal_id": "SIG-001", "claim": "c", "evidence_type": "cultural_or_editorial",
-                  "source": "s", "source_date": None, "observed_date": "2026-08-06",
-                  "geography": "US", "direct_observation": "o", "interpretation": None,
-                  "confidence": "weak", "limitations": "l"}
-        land = write(os.path.join(tmp, "land.md"), {"x": 1})
-        def sigstate(sigs):
-            st = mk(); st["workflow"]["state"] = "RESEARCHING"
-            sp = write(os.path.join(tmp, "sigs.yaml"),
-                       {"run_id": "r", "produced_at": "t",
-                        "evidence_families_covered": FAMS, "stop_condition_met": True,
-                        "stop_condition_basis": "b",
-                        "deviations": [], "unavailable_data": [], "signals": sigs})
-            st["artifacts"]["stage1_signals"] = {"path": sp, "status": "current"}
-            st["artifacts"]["stage1_landscape"] = {"path": land, "status": "current"}
-            st["stage1"] = {"evidence_families_covered": ["a"], "stop_condition_met": True,
-                            "deviations": []}
-            return st
-        rc, out = validate(write(os.path.join(tmp, "k1.yaml"), sigstate([sig_ok])), "SIGNALS_READY")
-        ok("a null value on a nullable field PASSES each_has_keys", rc == 0, out)
+        print("\n-- C2: vNext structured objects supersede the legacy prose front-half gates --")
+        # canon >= 1.8.0: SIGNALS_READY is authored by the structured research_ledger and
+        # OPPORTUNITIES_READY by campaign_directions (mk() injects both). The legacy stage1_signals /
+        # stage2_opportunities prose SHAPE gates are superseded — a run may reach these states on the
+        # structured objects alone, with NO prose artifact. (The each_has_keys / each_has_non_null
+        # predicate MECHANICS themselves are covered by the artifact-structure phase and test_stage0.)
+        st = mk(); st["workflow"]["state"] = "RESEARCHING"
+        rc, out = validate(write(os.path.join(tmp, "k1.yaml"), st), "SIGNALS_READY")
+        ok("SIGNALS_READY passes on the structured research_ledger with NO prose signals", rc == 0, out)
 
-        missing = dict(sig_ok); missing.pop("limitations")
-        rc, out = validate(write(os.path.join(tmp, "k2.yaml"), sigstate([missing])), "SIGNALS_READY")
-        ok("an ABSENT key still fails each_has_keys",
-           rc != 0 and "missing required key" in out and "limitations" in out)
-
-        opp_null = {k: "x" for k in ["opportunity_id", "territory", "observation",
-                    "cultural_tension", "audience_behavior", "why_now", "shopya_role",
-                    "desired_user_action", "instrumentation_mapping", "supporting_signal_ids",
-                    "relevant_seams", "surface_potential", "expiration", "confidence",
-                    "assumptions", "operational_risks"]}
-        opp_null["ownability"] = {"level": "L1", "rationale": None}
         st = mk(); st["workflow"]["state"] = "SIGNALS_READY"
-        op = write(os.path.join(tmp, "opps.yaml"), {"opportunities": [opp_null] * 4})
-        st["artifacts"]["stage2_opportunities"] = {"path": op, "status": "current"}
-        st["artifacts"]["stage2_comparison"] = {"path": land, "status": "current"}
         rc, out = validate(write(os.path.join(tmp, "k3.yaml"), st), "OPPORTUNITIES_READY")
-        ok("each_has_non_null still rejects a null where content is required",
-           rc != 0 and "null or empty" in out)
+        ok("OPPORTUNITIES_READY passes on structured campaign_directions with NO prose opportunities",
+           rc == 0, out)
+
+        # a vNext run MISSING its structured object for the target state is refused (structured is
+        # authority; the prose rendering can never substitute for it).
+        st = mk(); st["workflow"]["state"] = "RESEARCHING"
+        st["structured_objects"].pop("research_ledger", None)
+        st["artifacts"].pop("research_ledger", None)
+        rc, out = validate(write(os.path.join(tmp, "k2.yaml"), st), "SIGNALS_READY")
+        ok("SIGNALS_READY refused when the structured research_ledger is absent",
+           rc != 0 and "structured_object_missing" in out)
 
         print("\n-- reserved hooks are not operational --")
         # F3: migration is now a real model (was a refused stub). A run.migration record whose
@@ -429,12 +417,17 @@ def main():
            sorted(os.listdir(os.path.join(runs, "_drafts", rid))) == ["state.yaml"],
            str(sorted(os.listdir(os.path.join(runs, "_drafts", rid)))))
 
-        r = subprocess.run([sys.executable, RUNNER, "register-artifact", "--run", rid,
-                            "--key", "frame", "--path", frame_p], capture_output=True, text=True, env=env)
+        # vNext (canon >= 1.8.0): FRAME_READY is authored by the structured research_brief. Register
+        # it through the real run.py register-object path (builds + canonically hashes the object).
+        rb_payload = os.path.join(tmp, "rb_payload.json")
+        json.dump(fx.brief_payload(bid="rb_atomic", run_id=rid), open(rb_payload, "w"))
+        r = subprocess.run([sys.executable, RUNNER, "register-object", "--run", rid,
+                            "--kind", "research_brief", "--payload", rb_payload],
+                           capture_output=True, text=True, env=env)
         r2 = subprocess.run([sys.executable, RUNNER, "transition", "--run", rid, "--to", "FRAME_READY"],
                             capture_output=True, text=True, env=env)
         committed = yaml.safe_load(open(sp))
-        ok("transition commits after the artifact exists",
+        ok("transition commits after the structured research_brief exists",
            r2.returncode == 0 and committed["workflow"]["state"] == "FRAME_READY",
            r.stdout + r2.stdout + r2.stderr)
         print("\n-- C1: controlled state writes --")
@@ -469,9 +462,12 @@ def main():
 
         ok("history records the transition type",
            committed["workflow"]["history"][-1]["transition_type"] == "forward")
+        # only real artifacts remain: state.yaml + the immutable research_brief revision file
+        # register-object wrote (no scratch/proposal files).
+        left = sorted(os.listdir(os.path.join(runs, "_drafts", rid)))
         ok("a committed transition exits 0 and leaves no scratch in the run dir",
-           r2.returncode == 0 and sorted(os.listdir(os.path.join(runs, "_drafts", rid))) == ["state.yaml"],
-           str(sorted(os.listdir(os.path.join(runs, "_drafts", rid)))))
+           r2.returncode == 0 and not any(f.startswith(".state.") for f in left) and "state.yaml" in left,
+           str(left))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

@@ -835,19 +835,29 @@ machinery.
 # 22. Implementation mapping (non-normative appendix)
 
 Subordinate to the normative sections above. This reflects the **audited current state** and the
-**target enforcing mechanism**; it does not claim nonexistent authoring commands/schemas already
-exist. The Workflow Schema remains the machine authority for states.
+**target enforcing mechanism**. The Workflow Schema remains the machine authority for states.
 
-| Product phase | Target structured object | Current workflow state(s) | Current implementation status | Target enforcing mechanism |
+**Version gate (fresh vNext vs. historical).** The structured front half is enforced for fresh runs
+pinned to workflow schema **`>= 1.8.0`** (`vnext_structured_front_half_min`). For such a run the
+structured objects below are AUTHORITATIVE, prose renderings are derived/optional, and the owner
+approvals are typed and hash-bound. A historical (`< 1.8.0`) run remains readable under its
+version-gated legacy prose predicates and is NOT migrated automatically. The rows below therefore
+read: **Implemented (fresh vNext)** where the object + its hash-bound approval now exist in code, and
+name the machine authority (`schemas/workflow_state.schema.yaml` +
+`schemas/{campaign_spec,front_half_objects}.schema.yaml` + `scripts/validate_state.py`) rather than a
+prose file. No second state machine was created — the existing states are retained as internal
+lifecycle markers with structured authority behind them.
+
+| Product phase | Structured object | Current workflow state(s) | Current implementation status | Enforcing mechanism |
 |---|---|---|---|---|
-| Kickoff / Frame | `research_brief` | FRAME_READY → RESEARCHING | **Partial** — frame schema + interpretation-discipline tests exist; no authoring command | frame/brief schema + sanctioned authoring/validate command + `research_brief_approval` |
-| Research | `research_ledger` | RESEARCHING → SIGNALS_READY | **Partial** — signal schema + evidence-family/stop-condition predicates; no sufficiency check, no command | research runner + ledger schema/validators |
-| Campaign directions | `campaign_directions` | SIGNALS_READY → OPPORTUNITIES_READY → OPPORTUNITY_SELECTED | **Implemented differently / prose-heavy** — expressed as opportunities/routes; PRD chain not a code object; untested | directions schema + rubric + `campaign_direction_selection` |
-| Premise | `campaign_spec.premise` | INTERVIEW_COMPLETE → BRIEF_DRAFT ⇄ BRIEF_APPROVED | **Folded into brief** — no distinct premise object | spec-section schema + section approval |
-| Vertical strategy | `campaign_spec.vertical_strategies` | (within BRIEF/ROUTES states) | **Prose-only** — `vertical_strategy_matrix.md`, no schema/gate/test | spec-section schema + section approval |
-| Architecture | collection_selections + rails + content_program | ROUTES_READY → ROUTE_SELECTED → ACTIVATION_READY | **Prose-heavy / implemented differently** — `three_layer_map_v2.md` upstream; enforced only at execution grain | spec-section schemas + section approvals |
-| Naming / final spec | `campaign_spec` naming_voice + default_composition + seam_intent | SEAM6_READY (spec) | **Partial** — `naming_and_assembly.yaml` + a final-spec decision; consolidation is prose | consolidated Campaign Spec + `final_campaign_spec_approval` |
-| Fulfillment | curation requests → receipts + fulfillment_exceptions + truth export | (engine; no wizard state) | **Largely enforced (engine)** — request gate, forbidden-facts, foundation gate; request/receipt loop not yet wired | deterministic request gen + receipts + `foundation_001` gate + truth-export contract |
+| Kickoff / Frame | `research_brief` | FRAME_READY → RESEARCHING | **Implemented (fresh vNext ≥1.8.0)** — object built + hashed by `front_half.py` (`register-object`); per-field owner/inferred/derived provenance; `kickoff_approved` binds the exact brief id/revision/hash | `structured_object_present` + `approval_binds_object_hash(kickoff_approved)`; brief/object schema |
+| Research | `research_ledger` | RESEARCHING → SIGNALS_READY | **Implemented (fresh vNext)** — structured per-signal evidence with stable ids + hashes and enforced evidence standards (no unsourced claims; benchmark may not supply market evidence) | `structured_object_present(research_ledger)`; object schema |
+| Campaign directions | `campaign_directions` | SIGNALS_READY → OPPORTUNITIES_READY → OPPORTUNITY_SELECTED | **Implemented (fresh vNext)** — 2–4 distinct directions derived from the ledger, each with a per-direction hash; `direction_selected_v2` binds `direction_id + direction_hash` | `structured_object_present` + `direction_selection_binds_direction`; object schema |
+| Premise | `campaign_spec.premise` | INTERVIEW_COMPLETE → BRIEF_DRAFT ⇄ BRIEF_APPROVED | **Implemented (fresh vNext)** — distinct `premise` section of the immutable Campaign Spec; `premise_approved` binds the exact section hash | `campaign_spec_sections_present` + `approval_binds_spec_section(premise)` |
+| Vertical strategy | `campaign_spec.vertical_strategies` | (within BRIEF states) | **Implemented (fresh vNext)** — structured section; unequal conviction + zero-collection verticals valid; NO per-vertical quota/symmetry; `verticals_approved` binds the section hash | `approval_binds_spec_section(vertical_strategies)` |
+| Architecture | collection_selections + rails + content_program | ROUTES_READY → ROUTE_SELECTED → ACTIVATION_READY | **Implemented (fresh vNext)** — three structured sections (CB-1 gates; base_1c/story_xc; SEO≠card); ONE `architecture_approved` binds the composite hash — no product-row approval | `campaign_spec_sections_present` + `approval_binds_spec_composite(architecture_approved)` |
+| Naming / final spec | `campaign_spec` naming_voice + default_composition + seam_intent | ACTIVATION_READY (sections) → SEAM6_READY (final) | **Implemented (fresh vNext)** — sections complete at ACTIVATION_READY; `campaign_spec_approved` ("build this") binds the composite over all eight sections at SEAM6_READY | `campaign_spec_revision_immutable` + `approval_binds_spec_composite(campaign_spec_approved)` |
+| Fulfillment | curation requests → receipts + fulfillment_exceptions + truth export | (engine; no wizard state) | **Enforced (engine + wizard loop wired)** — request gate, forbidden-facts, foundation gate; deterministic Request v2 generated from the approved Campaign Spec (`generate_curation_request.py --from-spec`, `spec_ref` = exact spec id/revision/composite hash); receipt ingestion + material exceptions; truth-export v2 consumer | deterministic request gen from approved spec + receipts + `foundation_001` gate + truth-export contract |
 | Assembly + validation | complete human execution package → validated, manifest-bound package | VALIDATED | **Partial** — judgment-purity, hydration, hash-bound production-only validation exist, but validation/manifest currently bind the products CSV, not the full package | `validate-execution` extended to assemble + validate + hash-bind the complete package (A–G) |
 | Execution approval | execution manifest | CAMPAIGN_APPROVED | **Enforced with the §16.5 coherence defect open** | `execution_package_approval` + coherence fix (dev step 2) |
 | Go-live | verification record | LIVE | **Enforced (structural)** — bound to executed build | sanctioned verify-live path |
@@ -855,9 +865,14 @@ exist. The Workflow Schema remains the machine authority for states.
 
 **Notes.** Several internal states advance the **same** logical Campaign Spec through immutable
 revisions; one Campaign Spec section does **not** equal one state, and the historical
-state-per-artifact layout must not force the Campaign Spec back into disconnected files. The 17
-internal workflow states are retained for the initial implementation; a later dedicated state-model
-review may prune obsolete states and is not combined with the front-half restructuring.
+state-per-artifact layout must not force the Campaign Spec back into disconnected files. The internal
+workflow states are retained as lifecycle markers (no second state machine); a later dedicated
+state-model review may prune obsolete states and is not combined with the front-half restructuring.
+`INTERVIEW_COMPLETE`, `BRIEF_DRAFT` and `ROUTES_READY` are compatibility/pass-through lifecycle states
+on a fresh vNext run (no distinct authority object). `ACTIVATION_READY` and `SEAM6_READY` ADD the
+structured section/approval gates on top of — never in place of — their existing substantive Seam-6
+execution-preparation predicates (activation scheduling / feeds; rails/entities/collections;
+`seam6_execution_status`); those back-half gates are unchanged.
 
 ---
 
@@ -873,22 +888,32 @@ Subordinate to the normative PRD. Implementation order:
 2. Fix the existing post-validation state-coherence defect (invariant §16.5): current-state coherence
    keyed to the workflow state, not a downgradable status field; migrate/reopen semantics made
    coherent with it; adversarial tests inverted/added.
-3. Add fresh-run / vNext schema support for run mode (§4), the structured front-half objects (§6),
-   typed/hash-bound approvals (§9), and declared section dependencies (§8).
-4. Add sanctioned authoring/validation commands for those objects.
-5. Wire deterministic Wizard→Engine curation-request generation from the approved Campaign Spec (§10).
-6. Implement Engine Curation Receipts + `fulfillment_exception`s and Wizard ingestion +
+3. **(COMPLETED)** Fresh-run / vNext schema support for run mode (§4), the structured front-half
+   objects (§6), typed/hash-bound approvals (§9), and declared section dependencies (§8) — workflow
+   schema `1.8.0` (`structured_objects`, `dependency_graph`, new predicates, version gate) +
+   `schemas/{campaign_spec,front_half_objects}.schema.yaml`.
+4. **(COMPLETED)** Sanctioned authoring/validation commands for those objects — `run.py
+   register-object` / `select-direction` / `approve-object` over `scripts/front_half.py` (build +
+   canonical/section/composite hashing; write-once immutable revisions; deterministic dependency
+   invalidation).
+5. **(COMPLETED)** Deterministic Wizard→Engine curation-request generation from the approved Campaign
+   Spec (§10) — `generate_curation_request.py --from-spec`; `spec_ref` binds the exact spec
+   id/revision/composite hash; refused unless a current non-stale `campaign_spec_approved` exists;
+   Request v2 semantics unchanged.
+6. **(COMPLETED)** Engine Curation Receipts + `fulfillment_exception`s and Wizard ingestion +
    `material_exception` generation (§12, §13).
-7. Remove the old normal production foundation bypass and enforce `foundation_001` (§7).
-8. Implement owner checkpoint-card generation from the structured objects (§15).
-9. Add upstream / adversarial / cross-repo tests, charter↔implementation consistency tests, and an
-   engine truth-export **producer** test (kickoff cannot invent owner constraints; evidence requires
-   provenance; a direction cannot advance without required rationale; owner feedback creates a
-   revision, not an overwrite; vertical strategy covers the six surfaces independently; architecture
-   refers to real taxonomy IDs; spec approval binds to an exact revision/hash; an upstream-section
-   change invalidates only declared dependents; requests are generated only from an approved spec; no
-   product facts leak into requests; receipt-vs-recomputation mismatch fails hard).
-10. Run a fresh Almost Fall `/new-campaign` regression from zero.
+7. **(OPEN)** Remove the old normal production foundation bypass and enforce `foundation_001` (§7).
+8. **(PARTIAL)** Owner checkpoint experience from the structured objects (§15) — the five hash-bound
+   checkpoints exist and gate the states; polished checkpoint-**card** rendering is a presentation
+   layer that may still be added.
+9. **(COMPLETED)** Upstream / adversarial / cross-repo tests, charter↔implementation consistency, and
+   the engine truth-export **producer** contract (evidence requires provenance; a direction binds an
+   exact id/hash; owner feedback creates a revision, not an overwrite; unequal/zero-collection
+   verticals valid; architecture refers to real taxonomy IDs; spec approval binds an exact
+   revision/hash; an upstream-section change invalidates only declared dependents; requests are
+   generated only from an approved spec; no product facts leak into requests; receipt-vs-recomputation
+   mismatch fails hard). Current suite: 335 assertions green across 13 files (66 new front-half).
+10. **(OPEN — the acceptance run)** Run a fresh Almost Fall `/new-campaign` regression from zero.
 
 **Acceptance criterion.** Repair of the historical Almost Fall run is NOT the acceptance criterion.
 

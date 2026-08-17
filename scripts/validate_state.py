@@ -790,6 +790,251 @@ class Validator:
     # by no prerequisite. Reopen supersession is enforced concretely in check_reopen against the
     # transition's supersedes_artifacts list, not via this predicate.
 
+    # ======================================================================
+    # STRUCTURED FRONT-HALF predicates (spec 1.8.0). Every one is VERSION-GATED: on a run pinned
+    # below vnext_structured_front_half_min it returns True immediately, so a historical run is
+    # judged only by the legacy prose prerequisites and is never forced to carry the structured
+    # objects. Canonical hashing here MUST match run.py register-object byte-for-byte (the same
+    # json.dumps(sort_keys, compact, ensure_ascii=False) + sha256 recipe used across the repo).
+    # ======================================================================
+    def _vnext_structured(self):
+        """True iff the loaded canon AND the run's pinned spec are both at/above the structured
+        front-half floor (default 1.8.0). Mirrors the run_mode >= 1.7.0 gate exactly."""
+        floor = ((self.schema.get("schema") or {}).get("vnext_structured_front_half_min")
+                 or "1.8.0")
+        canon = (self.schema.get("schema") or {}).get("version") or "0.0.0"
+        pinned = (self.state.get("run") or {}).get("spec_version") or "0.0.0"
+
+        def _t(s):
+            return [int(x) for x in str(s).split(".")]
+
+        return _t(canon) >= _t(floor) and _t(pinned) >= _t(floor)
+
+    @staticmethod
+    def _canonical_hash(obj):
+        """Canonical (semantic-normalized) sha256 of a structured object/section. Sorted keys +
+        compact separators means key order and whitespace never change the hash; only semantic
+        content does. Identical recipe in run.py and execution_package.py."""
+        return hashlib.sha256(
+            json.dumps(obj, sort_keys=True, separators=(",", ":"),
+                       ensure_ascii=False).encode("utf-8")).hexdigest()
+
+    def _structured_spine(self, kind):
+        return ((self.state.get("structured_objects") or {}).get(kind)) or {}
+
+    def _object_doc(self, kind):
+        """Load the structured object's bytes from its registered artifact (json or yaml)."""
+        rec = self.artifact_record(kind)
+        if not rec or rec.get("status", "current") != "current":
+            return MISSING
+        p = self._artifact_path(rec.get("path", ""))
+        if not os.path.exists(p):
+            return MISSING
+        try:
+            if p.endswith(".json"):
+                return json.load(open(p, encoding="utf-8"))
+            return yaml.safe_load(open(p, encoding="utf-8"))
+        except Exception:
+            return MISSING
+
+    def p_structured_object_present(self, a, ctx):
+        kind = a[0]
+        if not self._vnext_structured():
+            return True
+        spine = self._structured_spine(kind)
+        if not spine:
+            self.fail("structured_object_missing",
+                      "%s: structured object %r is not registered (vNext run requires it)"
+                      % (ctx, kind), "structured_objects.%s" % kind, "<registered>", MISSING)
+            return False
+        # the underlying artifact must exist + be current (artifact_exists handles supersession).
+        if not self.p_artifact_exists([kind], ctx):
+            return False
+        doc = self._object_doc(kind)
+        if doc is MISSING:
+            self.fail("structured_object_missing",
+                      "%s: structured object %r bytes are unreadable/superseded" % (ctx, kind),
+                      "artifacts.%s" % kind, "<current on disk>", MISSING)
+            return False
+        # the spine hash must equal the recomputed canonical hash of the object bytes (minus any
+        # embedded canonical_hash field, which is stamped, not part of the semantic content).
+        semantic = {k: v for k, v in doc.items() if k != "canonical_hash"} if isinstance(doc, dict) else doc
+        recomputed = self._canonical_hash(semantic)
+        if spine.get("canonical_hash") != recomputed:
+            self.fail("structured_object_hash_mismatch",
+                      "%s: %s spine hash %r != recomputed %r (spine hash is never hand-authored)"
+                      % (ctx, kind, spine.get("canonical_hash"), recomputed),
+                      "structured_objects.%s.canonical_hash" % kind, recomputed,
+                      spine.get("canonical_hash"))
+            return False
+        return True
+
+    def p_campaign_spec_sections_present(self, a, ctx):
+        sections = a[0]
+        if not self._vnext_structured():
+            return True
+        spine = self._structured_spine("campaign_spec")
+        sh = spine.get("section_hashes") or {}
+        ok = True
+        for sec in sections:
+            if not sh.get(sec):
+                self.fail("campaign_spec_section_missing",
+                          "%s: campaign_spec section %r has no section_hash" % (ctx, sec),
+                          "structured_objects.campaign_spec.section_hashes.%s" % sec,
+                          "<non-empty>", sh.get(sec, MISSING))
+                ok = False
+        return ok
+
+    def p_campaign_spec_revision_immutable(self, a, ctx):
+        if not self._vnext_structured():
+            return True
+        # A revision is write-once: across the recorded revision history no two entries may share an
+        # id+revision with a different canonical_hash. The state carries the current spine; the
+        # history (if present) lives under structured_objects.campaign_spec.revisions.
+        spine = self._structured_spine("campaign_spec")
+        revs = spine.get("revisions") or []
+        seen = {}
+        for r in revs:
+            key = (r.get("campaign_spec_id"), r.get("revision"))
+            h = r.get("canonical_hash") or r.get("composite_hash")
+            if key in seen and seen[key] != h:
+                self.fail("campaign_spec_revision_mutated",
+                          "%s: campaign_spec %s/%s has two differing hashes — a revision is "
+                          "write-once" % (ctx, key[0], key[1]),
+                          "structured_objects.campaign_spec.revisions", "write-once", key)
+                return False
+            seen[key] = h
+        return True
+
+    def p_approval_binds_object_hash(self, a, ctx):
+        did, kind = a[0], a[1]
+        if not self._vnext_structured():
+            return True
+        d = (self.state.get("owner_decisions") or {}).get(did) or {}
+        if not self._owner_confirmed(d, did, ctx):
+            return False
+        val = d.get("value") or {}
+        spine = self._structured_spine(kind)
+        want = {"object_id": spine.get("object_id"), "revision": spine.get("revision"),
+                "canonical_hash": spine.get("canonical_hash")}
+        got = {"object_id": val.get("object_id"), "revision": val.get("revision"),
+               "canonical_hash": val.get("canonical_hash")}
+        if any(got[k] is None for k in got) or got != want:
+            self.fail("approval_not_bound_to_object",
+                      "%s: approval %r binds %r but the CURRENT %s is %r — a stale/mismatched "
+                      "approval cannot gate" % (ctx, did, got, kind, want),
+                      "owner_decisions.%s.value" % did, want, got)
+            return False
+        return True
+
+    def p_approval_binds_spec_section(self, a, ctx):
+        did, section = a[0], a[1]
+        if not self._vnext_structured():
+            return True
+        d = (self.state.get("owner_decisions") or {}).get(did) or {}
+        if not self._owner_confirmed(d, did, ctx):
+            return False
+        val = d.get("value") or {}
+        spine = self._structured_spine("campaign_spec")
+        sh = (spine.get("section_hashes") or {}).get(section)
+        want = {"object_id": spine.get("object_id"), "revision": spine.get("revision"),
+                "section": section, "section_hash": sh}
+        got = {"object_id": val.get("object_id"), "revision": val.get("revision"),
+               "section": val.get("section"), "section_hash": val.get("section_hash")}
+        if sh is None or any(got[k] is None for k in got) or got != want:
+            self.fail("approval_not_bound_to_object",
+                      "%s: section approval %r binds %r but the CURRENT campaign_spec section is "
+                      "%r — a materially changed section re-hashes and the stale approval no "
+                      "longer gates" % (ctx, did, got, want),
+                      "owner_decisions.%s.value" % did, want, got)
+            return False
+        return True
+
+    def p_approval_binds_spec_composite(self, a, ctx):
+        did, sections = a[0], a[1]
+        if not self._vnext_structured():
+            return True
+        d = (self.state.get("owner_decisions") or {}).get(did) or {}
+        if not self._owner_confirmed(d, did, ctx):
+            return False
+        val = d.get("value") or {}
+        spine = self._structured_spine("campaign_spec")
+        sh = spine.get("section_hashes") or {}
+        # composite over the named sections in the given (schema-declared) order — the same recipe
+        # register-object uses when it stamps a composite_hash.
+        missing = [s for s in sections if not sh.get(s)]
+        if missing:
+            self.fail("campaign_spec_section_missing",
+                      "%s: composite approval %r needs section hashes for %s" % (ctx, did, missing),
+                      "structured_objects.campaign_spec.section_hashes", "<all present>", missing)
+            return False
+        composite = self._canonical_hash([[s, sh[s]] for s in sections])
+        want = {"object_id": spine.get("object_id"), "revision": spine.get("revision"),
+                "composite_hash": composite}
+        got = {"object_id": val.get("object_id"), "revision": val.get("revision"),
+               "composite_hash": val.get("composite_hash")}
+        if any(got[k] is None for k in got) or got != want:
+            self.fail("approval_not_bound_to_object",
+                      "%s: composite approval %r binds %r but the CURRENT campaign_spec composite "
+                      "over %s is %r — a stale composite approval cannot gate"
+                      % (ctx, did, got, sections, want),
+                      "owner_decisions.%s.value" % did, want, got)
+            return False
+        return True
+
+    def p_direction_selection_binds_direction(self, a, ctx):
+        did = a[0]
+        if not self._vnext_structured():
+            return True
+        d = (self.state.get("owner_decisions") or {}).get(did) or {}
+        if not self._owner_confirmed(d, did, ctx):
+            return False
+        val = d.get("value") or {}
+        doc = self._object_doc("campaign_directions")
+        dirs = (doc.get("directions") if isinstance(doc, dict) else None) or []
+        sel_id, sel_hash = val.get("direction_id"), val.get("direction_hash")
+        match = next((x for x in dirs if x.get("direction_id") == sel_id), None)
+        if not sel_id or not sel_hash or match is None or match.get("direction_hash") != sel_hash:
+            self.fail("direction_selection_not_bound",
+                      "%s: selection %r binds direction %r/%r but no current direction matches "
+                      "(a changed direction set makes a prior selection stale)"
+                      % (ctx, did, sel_id, sel_hash),
+                      "owner_decisions.%s.value" % did,
+                      "{direction_id, direction_hash} present in current campaign_directions",
+                      {"direction_id": sel_id, "direction_hash": sel_hash})
+            return False
+        return True
+
+    def p_front_half_approval_not_stale(self, a, ctx):
+        did = a[0]
+        if not self._vnext_structured():
+            return True
+        if did in (self.state.get("invalidated") or []):
+            self.fail("front_half_approval_stale",
+                      "%s: front-half approval %r was invalidated by a dependency change or reopen "
+                      "and cannot gate until re-recorded on the current object" % (ctx, did),
+                      "invalidated", "does not include %r" % did, did)
+            return False
+        return True
+
+    def _owner_confirmed(self, d, did, ctx):
+        """Shared owner-confirmation check for the front-half typed approvals: exactly the
+        governance_003 semantics of owner_decision_recorded, without re-listing it as a prereq."""
+        if not d or d.get("decided") is not True or not d.get("decided_by") or not d.get("decided_at"):
+            self.fail("closing_sentence_is_not_proof",
+                      "%s: owner decision %r is not recorded" % (ctx, did),
+                      "owner_decisions.%s" % did,
+                      "{status: owner_confirmed, decided: true, decided_by, decided_at}",
+                      d if d else MISSING)
+            return False
+        if d.get("status") != "owner_confirmed":
+            self.fail("closing_sentence_is_not_proof",
+                      "%s: owner decision %r has status %r, not owner_confirmed"
+                      % (ctx, did, d.get("status")),
+                      "owner_decisions.%s.status" % did, "owner_confirmed", d.get("status"))
+            return False
+        return True
+
     # ---------- sibling runs ----------
     def _sibling_states(self):
         out = []
@@ -1055,12 +1300,76 @@ class Validator:
             seen.add(sid)
 
     # ---------- state / transition ----------
+    # Legacy prose path roots + owner-decision ids the STRUCTURED objects supersede on a vNext run
+    # (owner ruling 2026-08-12: structured is authority, prose is a derived/historical rendering).
+    # On a vNext run whose state declares a structured_object that is present + valid, a prerequisite
+    # that only touches these legacy prose artifacts is NOT enforced — the structured gate governs.
+    # ONLY the genuine prose FRONT HALF is superseded by the structured objects. The execution-prep
+    # gates of ACTIVATION_READY (activations/delivery/explore_feeds/scheduling) and SEAM6_READY
+    # (rails/entities/collections/seam6 status/capabilities) are the UNCHANGED back-of-front-half
+    # Seam-6 architecture — they are real substantive gates, never "prose to skip" (task §30 scope).
+    _LEGACY_PROSE_ROOTS = {"frame", "stage1", "signals", "stage1_signals", "stage1_landscape",
+                           "stage2_opportunities", "stage2_comparison", "opportunities",
+                           "interview", "stage3_interview", "brief", "stage4_brief",
+                           "routes", "stage5_routes"}
+    _LEGACY_DECISIONS = {"frame_accepted", "opportunity_selected", "brief_approved", "route_selected"}
+
+    def _is_legacy_prose_prereq(self, pr):
+        """True iff this prerequisite only concerns the legacy prose front half (a prose artifact,
+        a prose field path, or a legacy owner-decision id the structured approvals replace)."""
+        p, args = pr.get("p"), pr.get("args") or []
+        if p in ("structured_object_present", "campaign_spec_sections_present",
+                 "campaign_spec_revision_immutable", "approval_binds_object_hash",
+                 "approval_binds_spec_section", "approval_binds_spec_composite",
+                 "direction_selection_binds_direction", "front_half_approval_not_stale"):
+            return False   # structured gates are always enforced on a vNext run
+        if p in ("artifact_exists", "artifact_current") and args and args[0] in self._LEGACY_PROSE_ROOTS:
+            return True
+        if p == "owner_decision_recorded" and args and args[0] in self._LEGACY_DECISIONS:
+            return True
+        # field/each/count predicates whose FIRST arg's path root is a legacy prose root.
+        if args and isinstance(args[0], str):
+            root = args[0].split(".")[0]
+            if root in self._LEGACY_PROSE_ROOTS:
+                return True
+        return False
+
+    def _vnext_structured_state(self, st):
+        """True iff the PROSE prereqs of this state should be superseded on THIS run. That holds when
+        the run is vNext AND either (a) the state is an explicit vnext_prose_passthrough
+        (INTERVIEW_COMPLETE / BRIEF_DRAFT / ROUTES_READY — internal/compat transitions whose material
+        the structured objects carry), or (b) it declares a structured_object AND is a PURE front-half
+        state (not one that also owns real execution-prep gates) whose object is present + valid.
+
+        ACTIVATION_READY / SEAM6_READY declare a structured_object too, but they ALSO own real Seam-6
+        execution-prep gates; they set vnext_additive_only so their structured section checks are ADDED
+        without skipping any of their substantive gates (task §30 scope: the execution half is
+        unchanged). Their only remaining 'prose' roots were removed from _LEGACY_PROSE_ROOTS anyway."""
+        if not self._vnext_structured():
+            return False
+        if st.get("vnext_prose_passthrough"):
+            return True
+        if st.get("vnext_additive_only"):
+            return False   # add structured gates, but never skip this state's real prereqs
+        kind = st.get("structured_object")
+        if not kind:
+            return False
+        # reuse the structured presence check WITHOUT recording its failures (probe only).
+        saved = self.failures
+        self.failures = []
+        present = self.p_structured_object_present([kind], "probe")
+        self.failures = saved
+        return present
+
     def check_state_prereqs(self, name):
         st = self.states.get(name)
         if not st:
             self.fail("illegal_transition", "unknown state %r" % name)
             return
+        supersede_prose = self._vnext_structured_state(st)
         for pr in st.get("entry_prerequisites") or []:
+            if supersede_prose and self._is_legacy_prose_prereq(pr):
+                continue   # structured object is authority; the derived prose rendering is optional
             self.check(pr["p"], pr.get("args") or [], "%s.entry" % name)
 
     def find_transition(self, frm, to):
