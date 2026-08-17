@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Campaigns · Shopya Campaign Console{% endblock %}
+{% block body %}
+<div class="row" style="justify-content: space-between; align-items: center;">
+  <h2 style="margin:0;">Campaigns</h2>
+  <form method="post" action="/ui/runs/new" class="inline">
+    <button type="submit">+ New campaign</button>
+  </form>
+</div>
+<p class="muted small">Each campaign runs through five guided owner checkpoints, then fulfillment,
+execution and live. Cards flagged <span class="badge action">action required</span> are waiting on you.</p>
+
+{% if not runs %}
+  <div class="panel muted">No campaigns yet. Start one with <b>+ New campaign</b>.</div>
+{% else %}
+<div class="cards">
+  {% for r in runs %}
+  <div class="card">
+    <h3><a href="/ui/runs/{{ r.run_id }}">{{ r.display_name or r.campaign_id or "Untitled campaign" }}</a></h3>
+    <div class="cid">{{ r.run_id }}</div>
+    <div style="margin:8px 0;">
+      {% if r.run_mode %}<span class="badge mode">{{ r.run_mode }}</span>{% endif %}
+      {% if r.owner_action_required %}<span class="badge action">action required</span>{% endif %}
+      {% if r.material_exceptions_open %}<span class="badge action">{{ r.material_exceptions_open|length }} material exception(s)</span>{% endif %}
+    </div>
+    <div class="small muted">
+      {% if r.current_ordinal %}Checkpoint {{ r.current_ordinal }}/5 — {{ r.current_checkpoint }}{% else %}front half complete{% endif %}
+    </div>
+    <details class="tech">
+      <summary>Technical</summary>
+      <div class="hash">internal state: {{ r.internal_state }}</div>
+    </details>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+{% set h = view.header %}
+{% set cp = view.checkpoint %}
+{% block title %}{{ h.display_name or run_id }} · Campaign Console{% endblock %}
+{% block body %}
+
+<div class="row" style="justify-content:space-between;align-items:baseline;">
+  <h2 style="margin:0;">{{ h.display_name or h.campaign_id or "Untitled campaign" }}</h2>
+  <a href="/" class="small">← all campaigns</a>
+</div>
+<div class="cid small muted">{{ run_id }} {% if h.run_mode %}· <span class="badge mode">{{ h.run_mode }}</span>{% endif %}</div>
+
+{# ─── TIMELINE (task §21) — product-facing lifecycle, internal state hidden under Technical ─── #}
+<ul class="timeline">
+  {% for t in h.timeline %}
+  <li class="{{ t.status }}">{{ t.label }}</li>
+  {% endfor %}
+</ul>
+
+{% if view.front_half_complete %}
+  <div class="panel"><b>Front half complete.</b> {{ view.message }}</div>
+{% elif cp %}
+{# ═══ CURRENT CHECKPOINT (task §22) ═══ #}
+<div class="panel">
+  <div class="cp-head">
+    <div><span class="muted small">Checkpoint {{ cp.ordinal }}/5</span> &nbsp;
+      <b style="font-size:15px;">{{ cp.title }}</b></div>
+    <div class="status">{{ cp.status }}</div>
+  </div>
+  <div class="prompt">{{ cp.prompt }}</div>
+
+  {# ── WORKER STATUS banner (owner-flow closeout) ── #}
+  {% if cp.worker_status and cp.worker_status.status in ("failed", "unavailable") %}
+  <div class="obj" style="border-left:4px solid var(--block);background:#fef2f2;">
+    <b>{{ 'Worker unavailable' if cp.worker_status.status == 'unavailable' else 'Work failed' }}</b>
+    — {{ cp.worker_status.phase or cp.worker_status.work_type }}:
+    {{ cp.worker_status.detail or cp.worker_status.error }}.
+    <div class="small muted">The campaign state is unchanged and safe to retry
+      {% if cp.worker_status.status == 'unavailable' %}once a worker is configured{% endif %}.</div>
+    {% if cp.run_next_available %}
+    <form method="post" action="/ui/runs/{{ run_id }}/run-next" class="inline">
+      <div class="actions"><button type="submit">Retry {{ cp.worker_status.phase or cp.pending_work_type }}</button></div>
+    </form>
+    {% endif %}
+  </div>
+  {% elif cp.worker_status and cp.worker_status.status == "working" %}
+  <div class="obj" style="border-left:4px solid var(--accent);background:var(--accent-soft);">
+    <b>Working…</b> {{ cp.worker_status.phase or cp.worker_status.work_type }}
+    <div class="small muted">Started {{ cp.worker_status.at }}. Refresh to update.
+      Raw worker logs are under Technical details.</div>
+  </div>
+  {% endif %}
+
+  {# ── RUN NEXT: the Wizard runs the worker behind the interface (owner never authors the object) ── #}
+  {% if cp.run_next_available %}
+  <div class="obj" style="border-left:4px solid var(--accent);">
+    <b>{% if cp.pending_work_type == "research" %}Run research{% else %}Run next: {{ cp.pending_work_type }}{% endif %}</b>
+    <div class="small muted">The Wizard will run the {{ cp.pending_work_type }} worker behind the
+      scenes, validate the result, and register it — then advance to the next review.</div>
+    <form method="post" action="/ui/runs/{{ run_id }}/run-next" class="inline">
+      <div class="actions"><button type="submit">
+        {% if cp.pending_work_type == "research" %}Run research{% else %}Run next phase{% endif %}
+      </button></div>
+    </form>
+  </div>
+  {% endif %}
+
+  {# ── KICKOFF / PREMISE: intake questions with provenance classes ── #}
+  {% if cp.run_next_available %}{# object not yet produced — the worker will make it; no intake form #}
+  {% else %}
+  {% if cp.questions %}
+  <h2>Intake</h2>
+  <p class="small muted">
+    <span class="prov owner_supplied">owner</span> you supplied ·
+    <span class="prov inferred_confirm">inferred</span> Wizard inferred — confirm or edit ·
+    <span class="prov unresolved_input">unresolved</span> input needed ·
+    <span class="prov derived_info">derived</span> proposed
+  </p>
+  {% for q in cp.questions %}
+  <div class="field">
+    <div class="q">{{ q.prompt }}<span class="prov {{ q.provenance_class }}">{{ q.provenance_class.split('_')[0] }}</span></div>
+    {% if q.value is not none %}<div class="val">{{ q.value }}</div>{% endif %}
+    {% if q.help %}<div class="small muted">{{ q.help }}</div>{% endif %}
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {# ── DIRECTION: selection cards (task §7) ── #}
+  {% if cp.checkpoint_type == "direction" and cp.review %}
+  <h2>Directions</h2>
+  <form method="post" action="/ui/runs/{{ run_id }}/approve">
+  {% for d in cp.review.directions %}
+    <div class="obj">
+      <label>
+        <input type="radio" name="direction_id" value="{{ d.direction_id }}"
+          {% if d.direction_id == cp.review.recommended %}checked{% endif %}>
+        <b>{{ d.title }}</b>
+        {% if d.direction_id == cp.review.recommended %}<span class="tag">recommended</span>{% endif %}
+      </label>
+      <div class="small"><b>Tension:</b> {{ d.shopper_tension }}</div>
+      <div class="small"><b>Why now:</b> {{ d.why_now }}</div>
+      <div class="small"><b>Opportunity:</b> {{ d.campaign_opportunity }}</div>
+      <div class="small muted"><b>Counter-evidence:</b> {{ d.risks_counterevidence }} · confidence {{ d.confidence }}</div>
+      <div class="oid">{{ d.direction_id }}</div>
+    </div>
+  {% endfor %}
+    <div class="actions"><button type="submit">Select this direction</button></div>
+  </form>
+  {% endif %}
+
+  {# ── PREMISE + VERTICALS review (task §8) ── #}
+  {% if cp.checkpoint_type == "premise_verticals" and cp.review %}
+  <h2>Premise</h2>
+  {% set p = cp.review.premise or {} %}
+  <div class="obj">
+    <div><b>{{ p.campaign_name }}</b> — {{ p.dek }}</div>
+    <div class="small"><b>Central tension:</b> {{ p.central_tension }}</div>
+    <div class="small"><b>Why now:</b> {{ p.why_now }}</div>
+    <div class="small"><b>Shopya role:</b> {{ p.shopya_role }}</div>
+  </div>
+  <h2>Verticals <span class="small muted">(unequal conviction is valid — no forced symmetry)</span></h2>
+  {% for v in (cp.review.vertical_strategies or {}).get("verticals", []) %}
+  <div class="obj">
+    <div><b>{{ v.vertical_id }}</b> <span class="tag">{{ v.conviction_role }}</span></div>
+    <div class="small">{{ v.interpretation }}</div>
+    <div class="small muted">collection role: {{ v.collection_role }} · content role: {{ v.content_role }}</div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {# ── ARCHITECTURE grouped review (task §9) — NO product rows ── #}
+  {% if cp.checkpoint_type == "architecture" and cp.review %}
+  <h2>Architecture <span class="small muted">grouped by vertical · no product rows</span></h2>
+  {% for vertical, group in cp.review.verticals.items() %}
+  <details class="vtab" open>
+    <summary>{{ vertical|upper }}</summary>
+    {% for c in group.collections %}
+    <div class="obj">
+      <div><b>{{ c.display_name }}</b> <span class="oid">{{ c.category_id }}</span> — {{ c.campaign_role }}</div>
+      <div class="small"><b>Why it earns selection:</b> {{ c.why_it_earns }}</div>
+      <div class="small muted"><b>Distinct job:</b> {{ c.distinct_job }}</div>
+    </div>
+    {% endfor %}
+    {% for r in group.rails %}
+    <div class="obj">
+      <div><b>Rail:</b> {{ r.title }} <span class="tag">{{ r.rail_type }}</span></div>
+      <div class="small muted">sources: {{ r.source_collection_ids|join(", ") }}
+        {% if r.renderer_capability %}· renderer: {{ r.renderer_capability }}{% endif %}</div>
+    </div>
+    {% endfor %}
+    {% for c in group.content %}
+    <div class="obj">
+      <div><b>Content:</b> {{ c.card_headline }}</div>
+      <div class="small muted">SEO: {{ c.seo_title }} · query: {{ c.target_query }}</div>
+    </div>
+    {% endfor %}
+  </details>
+  {% endfor %}
+  {% endif %}
+
+  {# ── BUILD THIS final review (task §10) ── #}
+  {% if cp.checkpoint_type == "build_this" and cp.review %}
+  <h2>Final Campaign Spec</h2>
+  {% set p = cp.review.premise or {} %}
+  <div class="obj"><b>{{ p.campaign_name }}</b> — {{ p.dek }}
+    <div class="small">{{ p.central_tension }}</div></div>
+  <div class="small muted">
+    {{ (cp.review.collection_selections or {}).get("selections", [])|length }} collections ·
+    {{ (cp.review.rails or {}).get("rails", [])|length }} rails ·
+    {{ (cp.review.content_program or {}).get("content", [])|length }} content pieces
+  </div>
+  <p class="small muted"><b>Build this</b> binds the exact spec revision/hash and triggers Request v2.</p>
+  {% endif %}
+  {% endif %}{# end: object-present renderers (else of run_next_available) #}
+
+  {# ── SEMANTIC DIFF (task §15) ── #}
+  {% if cp.current_diff and cp.current_diff.has_changes %}
+  <details class="vtab" open>
+    <summary>What changed: {{ cp.current_diff.from_revision }} → {{ cp.current_diff.to_revision }}</summary>
+    <div class="obj diff">
+      {% for c in cp.current_diff.changed %}
+        <div class="line changed"><span class="path">{{ c.path }}</span> {{ c.old|string|truncate(60) }} → {{ c.new|string|truncate(60) }}</div>
+      {% endfor %}
+      {% for x in cp.current_diff.added %}
+        <div class="line added">+ <span class="path">{{ x.path }}</span> {{ x.new|string|truncate(60) }}</div>
+      {% endfor %}
+      {% for x in cp.current_diff.removed %}
+        <div class="line removed">− <span class="path">{{ x.path }}</span> {{ x.old|string|truncate(60) }}</div>
+      {% endfor %}
+      {% for x in cp.current_diff.reordered %}
+        <div class="line reordered">↔ <span class="path">{{ x.path }}</span> reordered</div>
+      {% endfor %}
+    </div>
+  </details>
+  {% endif %}
+
+  {# ── ACTIONS: single approve + targeted revision (tasks §14/§16) ── #}
+  {% if "approve" in cp.allowed_actions and cp.checkpoint_type != "direction" %}
+  <div class="actions">
+    <form method="post" action="/ui/runs/{{ run_id }}/approve" class="inline">
+      <button type="submit">Approve {{ cp.title }}</button>
+    </form>
+  </div>
+  <p class="small muted">One click = one owner action. This records the whole decision set for this checkpoint.</p>
+  {% endif %}
+
+  {% if "request_revision" in cp.allowed_actions %}
+  <details class="vtab">
+    <summary>Request a targeted revision</summary>
+    <div class="obj">
+      <form method="post" action="/ui/runs/{{ run_id }}/revision">
+        <p class="small muted">Patch ops (JSON): a list of <code>{op, path, value}</code>. Untouched
+          fields are preserved; a new immutable revision is minted and the diff shown.</p>
+        <textarea name="ops_json" rows="4" placeholder='[{"op":"set","path":"campaign_window.value","value":"..."}]'></textarea>
+        <input type="text" name="note" placeholder="what you asked to change (optional)">
+        <div class="actions"><button type="submit" class="secondary">Apply revision</button></div>
+      </form>
+    </div>
+  </details>
+  {% endif %}
+
+  {# ── REVISION HISTORY (task §23) ── #}
+  {% if cp.revision_history %}
+  <details class="tech">
+    <summary>Revision history ({{ cp.revision_history|length }})</summary>
+    <table>
+      <tr><th>revision</th><th>hash</th></tr>
+      {% for r in cp.revision_history %}
+      <tr><td>{{ r.revision }}{% if r.revision == cp.current_revision %} (current){% endif %}</td>
+          <td class="hash">{{ r.canonical_hash[:20] }}…</td></tr>
+      {% endfor %}
+    </table>
+  </details>
+  {% endif %}
+
+  {# ── TECHNICAL (task §24) — secondary ── #}
+  <details class="tech">
+    <summary>Technical details</summary>
+    <div class="hash">object: {{ cp.object_id }} / {{ cp.current_revision }}</div>
+    <div class="hash">current hash: {{ cp.current_hash }}</div>
+    {% for b in cp.approval_binding %}
+    <div class="hash">binds {{ b.decision_id }} → {{ b.would_bind or "(pending)" }}</div>
+    {% endfor %}
+    <div class="hash">internal state: {{ h.internal_state }}</div>
+  </details>
+</div>
+{% endif %}
+
+{% if err %}
+<div class="panel" style="border-left:4px solid var(--block);background:#fef2f2;">
+  <b>Action failed:</b> {{ err }}
+</div>
+{% endif %}
+
+{# ══════════ BACK HALF — the owner flow continues in the browser after BUILD THIS ══════════ #}
+{% if back.front_done %}
+
+{# ─── 1. GENERATE REQUESTS (task §1) ─── #}
+<div class="panel">
+  <h2>Fulfillment</h2>
+  {% if not back.requests_generated %}
+  <p class="small muted">The campaign is approved. Generate the Curation Request set from the exact
+    approved Campaign Spec, then hand off to the CollectionCuration engine.</p>
+  <form method="post" action="/ui/runs/{{ run_id }}/generate-requests" class="inline">
+    <div class="actions"><button type="submit">Generate Requests</button></div>
+  </form>
+  {% else %}
+  <p class="small muted">Requests generated from the approved Campaign Spec. Engine remains the
+    authority for product truth and fulfillment; the Console shows ingested receipt status.</p>
+  <table>
+    <tr><th>collection</th><th>depth (achieved / required)</th><th>status</th></tr>
+    {% for r in fulfillment.requests %}
+    <tr>
+      <td>{{ r.category_id }}</td>
+      <td>{{ r.achieved_depth if r.achieved_depth is not none else "—" }} / {{ r.required_depth }}</td>
+      <td class="status-{{ r.terminal_status }}">{{ r.terminal_status or "sourcing" }}</td>
+    </tr>
+    {% endfor %}
+    {% if not fulfillment.requests %}
+    <tr><td colspan="3" class="muted">Requests generated; awaiting Engine fulfillment + receipt ingestion.</td></tr>
+    {% endif %}
+  </table>
+  <details class="tech">
+    <summary>Request set + receipt ingestion (technical)</summary>
+    {% for r in back.requests %}
+    <div class="hash">{{ r.category_id }} · {{ r.request_id }} · depth≥{{ r.required_depth }} · hash {{ (r.request_hash or "")[:16] }}</div>
+    {% endfor %}
+    <p class="small muted">{{ back.ingestions }} receipt(s) ingested. Receipt ingestion is mechanical
+      (independent verify + exact request/truth-export binding + eligible-set recompute); the sanctioned
+      path also runs from the CLI (<code>run.py ingest-receipt</code>) and API for operator handoffs.</p>
+  </details>
+  {% endif %}
+</div>
+
+{# ─── 2. MATERIAL EXCEPTIONS (task §4) — shown on shortfall; never waives fulfillment ─── #}
+{% if material_exceptions.material_exceptions %}
+<div class="panel" style="border-left:4px solid var(--block);">
+  <h2>Material exceptions</h2>
+  {% for m in material_exceptions.material_exceptions %}
+  <div class="obj">
+    <div><b>{{ m.category_id }}</b> — required {{ m.required_depth }}, achieved {{ m.achieved_depth }},
+      gap {{ m.gap }} <span class="tag">{{ m.status }}</span></div>
+    <div class="small muted">sourcing policy: {{ m.sourcing_policy }}
+      {% if m.attempted %}· {{ m.attempted }}{% endif %}</div>
+    {% if m.status == "open" %}
+    <div class="small">This shortfall <b>blocks</b> package assembly. Resolving it is a campaign
+      judgment record only — it does NOT waive the material requirement or unblock assembly. If the
+      campaign should change, request a revision back through the Campaign Spec checkpoints.</div>
+    <form method="post" action="/ui/runs/{{ run_id }}/material-exceptions/{{ m.material_exception_id }}/resolve">
+      <input type="text" name="note" placeholder="owner judgment note">
+      <div class="actions"><button type="submit" class="secondary">Record resolution (does not unblock)</button></div>
+    </form>
+    {% endif %}
+  </div>
+  {% endfor %}
+  <p class="small muted">{{ material_exceptions.note }}</p>
+</div>
+{% endif %}
+
+{# ─── 3. EXECUTION PACKAGE (tasks §5/§6) — build → validate → F manifest → review → approve ─── #}
+{% if back.requests_generated %}
+<div class="panel">
+  <h2>Execution package</h2>
+  {% if back.blocked %}
+  <p class="small" style="color:var(--block);"><b>Blocked</b> by an open material exception — the
+    package cannot be assembled until every expected Request has a satisfied Receipt.</p>
+  {% elif not package.validated %}
+  <p class="small muted">The Wizard will merchandise the fulfilled eligible products into the
+    campaign's rails/collections (selecting, ordering and pinning from each request's verified
+    eligible set), then build the complete A–G package, validate it, and emit the immutable F
+    Execution Manifest. You supply nothing — product truth comes from the receipt-bound Truth Export
+    automatically, and the merchandising judgment is generated behind the Wizard.</p>
+  <form method="post" action="/ui/runs/{{ run_id }}/generate-execution-package" class="inline">
+    <div class="actions"><button type="submit">Generate Execution Package</button></div>
+  </form>
+  {% if back.blocked %}{% endif %}
+  {% else %}
+  {# validated: owner-friendly review + approve #}
+  <div class="small" style="color:var(--ok);">Validated · manifest bound{% if package.approved %} · approved for implementation{% endif %}</div>
+  {% if package.summary %}
+  <div class="row" style="gap:24px;margin-top:8px;">
+    <div><b>Collections</b>
+      {% for c in package.summary.collections %}<div class="small">{{ c.display_name }}
+        <span class="oid">{{ c.category_id }}</span> — {{ c.selected }} selected</div>{% endfor %}</div>
+    <div><b>Rails</b>
+      {% for r in package.summary.rails %}<div class="small">{{ r.title }} <span class="tag">{{ r.kind }}</span>
+        — {{ r.pinned }} pinned</div>{% endfor %}</div>
+    <div><b>Content</b>
+      {% for c in package.summary.content %}<div class="small">{{ c.headline }}</div>{% endfor %}</div>
+  </div>
+  <div class="small muted" style="margin-top:6px;">Products were merchandised from the fulfilled
+    eligible sets by the Wizard (selection · order · pins). Master CSV / product summary, Default
+    composition, seam handoffs and the human checklist are in the manifest; raw A–G files are secondary
+    downloads.</div>
+  {% endif %}
+  {% if not package.approved %}
+  <form method="post" action="/ui/runs/{{ run_id }}/approve-package" class="inline">
+    <div class="actions"><button type="submit">Approve for implementation</button></div>
+  </form>
+  <p class="small muted">Approval binds the exact manifest id/hash. A stale/superseded manifest
+    invalidates the approval.</p>
+  {% else %}
+  <p class="small ok">Approved for implementation. Next: human execution → sanctioned live verification → LIVE.</p>
+  {% endif %}
+  {% endif %}
+  <details class="tech"><summary>Manifest / validation (technical)</summary>
+    <div class="hash">manifest: {{ package.manifest_id or "(not emitted)" }}</div>
+    <div class="hash">sha256: {{ package.manifest_sha256 }}</div>
+    <div class="hash">validation: {{ package.validation_result }}</div>
+    {% if package.products_csv %}<div class="hash">products_csv: {{ package.products_csv }}</div>{% endif %}
+  </details>
+  <p class="small muted">{{ package.note }}</p>
+</div>
+{% endif %}
+
+{% endif %}{# back.front_done #}
+
+{% endblock %}

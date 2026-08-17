@@ -227,6 +227,22 @@ def cmd_status(a):
     va = s.get("validation_attempts") or []
     if va:
         print("validation   %d attempt(s), last=%s" % (len(va), va[-1].get("result")))
+    # AF-004: surface the checkpoint ladder position + the exact decision/hash that is next.
+    try:
+        import checkpoint_core as cc
+        cp = cc.current_checkpoint(s)
+        if cp is not None:
+            spine = (s.get("structured_objects") or {}).get(cp["object_kind"]) or {}
+            binds = cc._binding_for(cp, spine)
+            print("checkpoint   %d/5 %s  (%s)" % (
+                cp["ordinal"], cp["title"], cc._session_status(s, run_dir, a.run, cp)))
+            for b in binds:
+                print("   next decision %-22s binds %s" % (
+                    b["decision_id"], (b.get("would_bind") or "-")[:16]))
+        else:
+            print("checkpoint   all 5 front-half checkpoints approved")
+    except Exception as e:      # never let the enrichment break plain status
+        print("checkpoint   (unavailable: %s)" % e)
     nxt = sorted({t["to"] for t in schema["transitions"]
                   if t.get("from") == cur
                   or (t.get("from") == "ANY_PRE_LIVE" and cur in (t.get("expands_to") or []))})
@@ -316,14 +332,12 @@ def _dependency_graph():
 def cmd_register_object(a):
     """Author + register a structured front-half object revision (task §3/§5/§7/§18).
 
-    Reads a JSON/YAML payload, BUILDS the canonical object (validating structure + charter rules and
-    stamping section/composite/per-item hashes), writes it as an IMMUTABLE revision file
-    <kind>.r<NNN>.yaml under the run, registers it as the artifact <kind>, and updates the
-    structured_objects spine. A revision is write-once: registering a materially different object
-    under the same id mints a NEW revision and (per dependency_graph) invalidates the downstream
-    front-half approvals so a stale approval can never gate a changed object (task §19)."""
-    import front_half as fh
-    s = require_run(a.run)
+    THIN ADAPTER over checkpoint_core.build_object + register_object — the single home for object
+    building, immutable revision writing, spine stamping and deterministic dependency invalidation.
+    Reads a JSON/YAML payload; the core BUILDS the canonical object (validating structure + charter
+    rules, stamping section/composite/per-item hashes), writes an IMMUTABLE <kind>.r<NNN>.yaml,
+    registers the artifact, updates the spine, and invalidates stale downstream approvals."""
+    import checkpoint_core as cc
     kind = a.kind
     if kind not in FRONT_HALF_KINDS:
         sys.exit("FATAL: --kind must be one of %s" % (FRONT_HALF_KINDS,))
@@ -332,72 +346,24 @@ def cmd_register_object(a):
         sys.exit("FATAL: payload not found: %s" % raw)
     with open(raw, encoding="utf-8") as f:
         payload = json.load(f) if raw.endswith(".json") else yaml.safe_load(f)
-
-    # optional cross-object binding material (ledger for direction evidence-ref resolution).
     try:
-        if kind == "research_brief":
-            obj = fh.build_research_brief(payload)
-        elif kind == "research_ledger":
-            obj = fh.build_research_ledger(payload)
-        elif kind == "campaign_directions":
-            ledger = _load_current_object(s, a.run, "research_ledger")
-            obj = fh.build_campaign_directions(payload, ledger=ledger)
-        else:
-            obj = fh.build_campaign_spec_revision(payload)
-    except fh.FrontHalfError as e:
-        sys.exit("REFUSED — %s is not a valid %s: %s" % (raw, kind, e))
-
-    spine_prev = (s.get("structured_objects") or {}).get(kind) or {}
-    prev_hash = spine_prev.get("canonical_hash")
-    prev_section_hashes = spine_prev.get("section_hashes") or {}
-
-    # write the IMMUTABLE revision file (never overwrite an existing revision of the same id).
-    rev = obj["revision"]
-    rd = run_dir(a.run)
-    os.makedirs(rd, exist_ok=True)
-    rev_path = os.path.join(rd, "%s.%s.yaml" % (kind, rev))
-    if os.path.exists(rev_path):
-        existing = yaml.safe_load(open(rev_path, encoding="utf-8")) or {}
-        if existing.get("canonical_hash") != obj["canonical_hash"]:
-            sys.exit("REFUSED (campaign_spec_revision_mutated): %s already exists with a different "
-                     "hash — a revision is write-once; mint a NEW revision label instead" % rev_path)
-    with open(rev_path, "w", encoding="utf-8") as f:
-        yaml.safe_dump(obj, f, sort_keys=False, default_flow_style=False, allow_unicode=True)
-
-    # register the artifact (points at the current revision file) with sha over the bytes.
-    rel = _artifact_rel(a.run, rev_path)
-    sha = hashlib.sha256(open(rev_path, "rb").read()).hexdigest()
-    s.setdefault("artifacts", {})[kind] = {
-        "path": rel, "written_at": now(), "sha256": sha, "status": "current",
-        "superseded_by": None, "superseded_at": None, "supersession_reason": None}
-
-    # stamp the spine + keep a write-once revision ledger (for campaign_spec_revision_immutable).
-    spine = fh.spine_for_object(obj, kind)
-    revisions = list(spine_prev.get("revisions") or [])
-    rec = {"campaign_spec_id" if kind == "campaign_spec" else "object_id": spine["object_id"],
-           "revision": rev, "canonical_hash": obj["canonical_hash"]}
+        obj = cc.build_object(a.run, kind, payload)
+        result = cc.register_object(a.run, kind, obj)
+    except cc.CheckpointError as e:
+        sys.exit("REFUSED (%s) — %s" % (e.code, e.message))
+    print("registered %s %s/%s" % (kind, result["object_id"], result["revision"]))
+    print("  canonical_hash %s" % result["canonical_hash"])
     if kind == "campaign_spec":
-        rec["composite_hash"] = obj["composite_hash"]
-    if not any(r.get("revision") == rev and r.get("canonical_hash") == obj["canonical_hash"]
-               for r in revisions):
-        revisions.append(rec)
-    spine["revisions"] = revisions
-    s.setdefault("structured_objects", {})[kind] = spine
+        print("  composite_hash %s" % result["composite_hash"])
+        for sec in fh_import().CS_SECTIONS:
+            print("    %-22s %s" % (sec, result["section_hashes"][sec][:16]))
+    if result.get("invalidated"):
+        print("  invalidated stale downstream approvals: %s" % sorted(result["invalidated"]))
 
-    # DETERMINISTIC dependency invalidation (task §19). Compute which sections/objects materially
-    # changed and invalidate the downstream front-half approvals via the schema dependency_graph.
-    changed_nodes = _changed_nodes(kind, prev_hash, obj, prev_section_hashes)
-    invalidated = _invalidate_downstream(s, changed_nodes)
 
-    atomic_write(state_path(a.run), s)
-    print("registered %s %s/%s" % (kind, spine["object_id"], rev))
-    print("  canonical_hash %s" % obj["canonical_hash"])
-    if kind == "campaign_spec":
-        print("  composite_hash %s" % obj["composite_hash"])
-        for sec in fh.CS_SECTIONS:
-            print("    %-22s %s" % (sec, obj["section_hashes"][sec][:16]))
-    if invalidated:
-        print("  invalidated stale downstream approvals: %s" % sorted(invalidated))
+def fh_import():
+    import front_half as fh
+    return fh
 
 
 def _load_current_object(s, run_id, kind):
@@ -450,33 +416,15 @@ def _invalidate_downstream(s, changed_nodes):
 
 def cmd_select_direction(a):
     """Record the owner's EXACT direction selection (task §8) — a typed decision binding the chosen
-    direction_id + its per-direction hash from the current campaign_directions. This is the vNext
-    form of opportunity_selected; the validator refuses a selection that names no current direction."""
-    import front_half as fh  # noqa: F401 (parity; hash already on the object)
-    s = require_run(a.run)
-    dirs_obj = _load_current_object(s, a.run, "campaign_directions")
-    if not dirs_obj:
-        sys.exit("FATAL: no current campaign_directions registered — register-object it first")
-    match = next((d for d in (dirs_obj.get("directions") or [])
-                  if d.get("direction_id") == a.direction_id), None)
-    if match is None:
-        sys.exit("FATAL: direction %r is not in the current campaign_directions" % a.direction_id)
-    if a.by == "product_owner" and a.status != "owner_confirmed":
-        sys.exit("REFUSED (decision_status_misstamped): product_owner requires --status owner_confirmed")
-    value = {"directions_id": dirs_obj.get("directions_id"),
-             "revision": dirs_obj.get("revision"),
-             "direction_id": a.direction_id,
-             "direction_hash": match.get("direction_hash")}
-    rec = {"status": a.status, "decided": a.status == "owner_confirmed", "decided_by": a.by,
-           "decided_at": now(), "value": value}
-    if a.note:
-        rec["note"] = a.note
-    s.setdefault("owner_decisions", {})["direction_selected_v2"] = rec
-    if a.status == "owner_confirmed" and "direction_selected_v2" in (s.get("invalidated") or []):
-        s["invalidated"].remove("direction_selected_v2")
-    atomic_write(state_path(a.run), s)
+    direction_id + its per-direction hash. THIN ADAPTER over checkpoint_core.record_direction_selection."""
+    import checkpoint_core as cc
+    try:
+        value = cc.record_direction_selection(a.run, a.direction_id, by=a.by, status=a.status,
+                                              note=a.note)
+    except cc.CheckpointError as e:
+        sys.exit("REFUSED (%s) — %s" % (e.code, e.message))
     print("recorded direction_selected_v2 -> %s (hash %s) by %s"
-          % (a.direction_id, (match.get("direction_hash") or "")[:16], a.by))
+          % (a.direction_id, (value.get("direction_hash") or "")[:16], a.by))
 
 
 def cmd_approve_object(a):
@@ -488,45 +436,191 @@ def cmd_approve_object(a):
       --binding section    : binds {object_id, revision, section, section_hash}   (premise/verticals)
       --binding composite  : binds {object_id, revision, composite_hash} over --sections
                              (architecture_approved: 3 sections; campaign_spec_approved: all 8)
+
+    THIN ADAPTER over checkpoint_core.record_object_approval (single home for the binding logic).
     """
-    import front_half as fh
-    s = require_run(a.run)
-    if a.by == "product_owner" and a.status != "owner_confirmed":
-        sys.exit("REFUSED (decision_status_misstamped): product_owner requires --status owner_confirmed")
-    obj = _load_current_object(s, a.run, a.kind)
-    spine = (s.get("structured_objects") or {}).get(a.kind) or {}
-    if not obj or not spine:
-        sys.exit("FATAL: no current %s registered — register-object it first" % a.kind)
-    if a.binding == "object":
-        value = {"object_id": spine["object_id"], "revision": spine["revision"],
-                 "canonical_hash": spine["canonical_hash"]}
-    elif a.binding == "section":
-        sh = (spine.get("section_hashes") or {}).get(a.section)
-        if not sh:
-            sys.exit("FATAL: campaign_spec has no section_hash for %r" % a.section)
-        value = {"object_id": spine["object_id"], "revision": spine["revision"],
-                 "section": a.section, "section_hash": sh}
-    else:  # composite
-        sections = [x.strip() for x in (a.sections or "").split(",") if x.strip()]
-        if not sections:
-            sys.exit("FATAL: --sections is required for a composite binding")
-        sh = spine.get("section_hashes") or {}
-        missing = [x for x in sections if not sh.get(x)]
-        if missing:
-            sys.exit("FATAL: missing section hashes for %s" % missing)
-        value = {"object_id": spine["object_id"], "revision": spine["revision"],
-                 "composite_hash": fh.composite_hash(sh, sections)}
-    rec = {"status": a.status, "decided": a.status == "owner_confirmed", "decided_by": a.by,
-           "decided_at": now(), "value": value}
-    if a.note:
-        rec["note"] = a.note
-    s.setdefault("owner_decisions", {})[a.id] = rec
-    if a.status == "owner_confirmed" and a.id in (s.get("invalidated") or []):
-        s["invalidated"].remove(a.id)
-        print("  cleared invalidation of %r (re-recorded by owner on the current object)" % a.id)
-    atomic_write(state_path(a.run), s)
+    import checkpoint_core as cc
+    sections = [x.strip() for x in (a.sections or "").split(",") if x.strip()] or None
+    try:
+        value = cc.record_object_approval(a.run, a.id, a.kind, a.binding, section=a.section,
+                                          sections=sections, by=a.by, status=a.status, note=a.note)
+    except cc.CheckpointError as e:
+        sys.exit("REFUSED (%s) — %s" % (e.code, e.message))
     print("recorded %s %r by %s (binds %s)" % (a.status, a.id, a.by, a.binding))
     print("  value: %s" % json.dumps(value))
+
+
+# ═══════════════════════════════════════════════════════════════════
+# CHECKPOINT SESSION verbs (task §17/§18) — the iterative guided-session interface. Each is a THIN
+# ADAPTER over checkpoint_core; the SAME functions back the FastAPI console. No business logic here.
+# ═══════════════════════════════════════════════════════════════════
+def cmd_current_checkpoint(a):
+    """Show the current owner checkpoint as the Wizard renders it (closes AF-003/AF-004): the
+    intake questions / review model, revision history, current diff, allowed actions and the exact
+    hash a decision would bind. --json emits the raw structured view (the API/GUI shape)."""
+    import checkpoint_core as cc
+    view = cc.describe_checkpoint(a.run)
+    if getattr(a, "json", False):
+        print(json.dumps(view, indent=2, default=str)); return
+    h = view["header"]
+    print("run          %s   [%s]" % (a.run, h.get("run_mode")))
+    print("timeline     " + " · ".join("%s(%s)" % (t["label"], t["status"]) for t in h["timeline"]))
+    print("internal     %s   (technical)" % h.get("internal_state"))
+    if view.get("front_half_complete"):
+        print("\n%s" % view.get("message")); return
+    cp = view["checkpoint"]
+    print("\nCHECKPOINT %d/5 — %s   [%s]" % (cp["ordinal"], cp["title"], cp["status"]))
+    print("  %s" % cp["prompt"])
+    print("  object     %s / %s" % (cp["object_id"], cp["current_revision"]))
+    print("  binds      %s" % ", ".join("%s→%s" % (b["decision_id"], (b.get("would_bind") or "")[:12])
+                                        for b in cp["approval_binding"]))
+    if cp["questions"]:
+        print("  intake (%d):" % len(cp["questions"]))
+        for q in cp["questions"]:
+            print("    [%-16s] %-22s %s" % (q["provenance_class"], q["id"], q["type"]))
+    if cp["current_diff"] and cp["current_diff"].get("has_changes"):
+        d = cp["current_diff"]
+        print("  diff %s→%s: %d changed, %d added, %d removed" % (
+            d["from_revision"], d["to_revision"], len(d["changed"]), len(d["added"]),
+            len(d["removed"])))
+    print("  actions    %s" % ", ".join(cp["allowed_actions"]))
+
+
+def cmd_answer_checkpoint(a):
+    """Submit an intake payload (the owner's answers assembled into the checkpoint's object). THIN
+    ADAPTER over checkpoint_core.submit_intake. --payload is a JSON/YAML object payload."""
+    import checkpoint_core as cc
+    raw = a.payload if os.path.isabs(a.payload) else os.path.join(ROOT, a.payload)
+    with open(raw, encoding="utf-8") as f:
+        payload = json.load(f) if raw.endswith(".json") else yaml.safe_load(f)
+    try:
+        result = cc.submit_intake(a.run, payload)
+    except cc.CheckpointError as e:
+        sys.exit("REFUSED (%s) — %s" % (e.code, e.message))
+    print("intake accepted → %s/%s (%s)" % (result["object_id"], result["revision"],
+                                            result["canonical_hash"][:16]))
+
+
+def cmd_request_revision(a):
+    """Owner-scoped targeted revision (task §14). Either --payload (whole revised object) or
+    --ops-json (a list of patch ops applied to the current object, preserving untouched fields).
+    Mints a NEW immutable revision + shows the exact semantic diff. Adapter over
+    checkpoint_core.request_revision."""
+    import checkpoint_core as cc
+    payload = ops = None
+    if getattr(a, "payload", None):
+        raw = a.payload if os.path.isabs(a.payload) else os.path.join(ROOT, a.payload)
+        with open(raw, encoding="utf-8") as f:
+            payload = json.load(f) if raw.endswith(".json") else yaml.safe_load(f)
+    if getattr(a, "ops_json", None):
+        ops = json.loads(a.ops_json)
+    try:
+        result = cc.request_revision(a.run, revised_payload=payload, ops=ops, note=a.note)
+    except cc.CheckpointError as e:
+        sys.exit("REFUSED (%s) — %s" % (e.code, e.message))
+    print("revised → %s/%s (%s)" % (result["object_id"], result["revision"],
+                                    result["canonical_hash"][:16]))
+    d = result.get("diff") or {}
+    if d.get("has_changes"):
+        print("  diff %s→%s: %d changed, %d added, %d removed, %d reordered" % (
+            d["from_revision"], d["to_revision"], len(d["changed"]), len(d["added"]),
+            len(d["removed"]), len(d["reordered"])))
+    if result.get("invalidated"):
+        print("  invalidated stale downstream approvals: %s" % sorted(result["invalidated"]))
+
+
+def cmd_approve_checkpoint(a):
+    """SINGLE owner action for the current checkpoint (task §16, closes AF-002). Emits the whole
+    decision set (typed hash-bound approval(s) + legacy compatibility id) atomically. For the
+    direction checkpoint pass --direction-id. Adapter over checkpoint_core.approve_checkpoint."""
+    import checkpoint_core as cc
+    if a.by == "product_owner":
+        pass  # core enforces owner_confirmed semantics
+    try:
+        result = cc.approve_checkpoint(a.run, by=a.by, note=a.note,
+                                       direction_id=getattr(a, "direction_id", None))
+    except cc.CheckpointError as e:
+        sys.exit("REFUSED (%s) — %s" % (e.code, e.message))
+    print("approved checkpoint %s by %s" % (result["checkpoint_type"], a.by))
+    print("  recorded decisions (one owner action): %s" % ", ".join(result["approved"]))
+
+
+def cmd_run_next(a):
+    """RUN NEXT — the Wizard executes the research/synthesis worker BEHIND the interface for the
+    current checkpoint's pending work, validates the returned artifact, and registers it. Adapter
+    over checkpoint_core.run_checkpoint_work. The worker is the configured WorkerAdapter
+    (SHOPYA_WIZARD_WORKER_CMD; else the deterministic fake). --fake forces the fake worker."""
+    import checkpoint_core as cc
+    import worker as wk
+    worker = wk.FakeWorker() if getattr(a, "fake", False) else None
+    try:
+        result = cc.run_checkpoint_work(a.run, worker=worker)
+    except cc.CheckpointError as e:
+        sys.exit("WORK FAILED (%s) — %s" % (e.code, e.message))
+    print("worker %s complete — registered: %s" % (
+        result["work_type"],
+        ", ".join("%s/%s" % (r["kind"], r["revision"]) for r in result["registered"])))
+    print("  next checkpoint: %s" % result.get("next_checkpoint"))
+
+
+def cmd_diff_object(a):
+    """Show the semantic diff between two immutable revisions of a structured object (default:
+    previous vs current). Adapter over checkpoint_core.object_diff (task §15)."""
+    import checkpoint_core as cc
+    try:
+        d = cc.object_diff(a.run, a.kind, from_rev=a.from_rev, to_rev=a.to_rev)
+    except cc.CheckpointError as e:
+        sys.exit("REFUSED (%s) — %s" % (e.code, e.message))
+    if not d:
+        print("no prior revision to diff for %s" % a.kind); return
+    if getattr(a, "json", False):
+        print(json.dumps(d, indent=2, default=str)); return
+    print("diff %s: %s → %s   has_changes=%s" % (a.kind, d["from_revision"], d["to_revision"],
+                                                 d["has_changes"]))
+    for c in d["changed"]:
+        print("  ~ %-40s %r → %r" % (c["path"], str(c["old"])[:30], str(c["new"])[:30]))
+    for x in d["added"]:
+        print("  + %-40s %r" % (x["path"], str(x["new"])[:30]))
+    for x in d["removed"]:
+        print("  - %-40s %r" % (x["path"], str(x["old"])[:30]))
+    for x in d["reordered"]:
+        print("  ↔ %s reordered" % x["path"])
+
+
+def cmd_serve(a):
+    """Launch the thin local Campaign Console (task §19). Runs the FastAPI app on 127.0.0.1 (single
+    owner, no auth, no deploy). Prefers the repo .venv (where fastapi/uvicorn are installed) so the
+    launch is one command regardless of the caller's interpreter."""
+    import subprocess
+    venv_py = os.path.join(ROOT, ".venv", "bin", "python")
+    interp = venv_py if os.path.exists(venv_py) else sys.executable
+    # re-exec the console launcher under the interpreter that has fastapi/uvicorn
+    launcher = os.path.join(HERE, "..", "console", "serve.py")
+    launcher = os.path.abspath(launcher)
+    if not os.path.exists(launcher):
+        sys.exit("FATAL: console launcher missing: %s" % launcher)
+    try:
+        import fastapi  # noqa: F401  (are we already in a capable interpreter?)
+        capable = True
+    except Exception:
+        capable = interp != sys.executable
+    if not capable:
+        sys.exit("FATAL: fastapi/uvicorn not available. Create the venv:\n"
+                 "  python3 -m venv .venv && .venv/bin/pip install fastapi 'uvicorn[standard]' jinja2\n"
+                 "then re-run: python3 scripts/run.py serve")
+    env = dict(os.environ)
+    env["SHOPYA_CAMPAIGN_ROOT"] = ROOT
+    # report the agent-worker readiness at launch (task §7/§12) so the owner sees it before opening
+    # the browser (Console header also shows it live).
+    try:
+        import worker as wk
+        r = wk.worker_readiness()
+        print("Agent worker: %s — %s" % ("Ready" if r["ready"] else "Unavailable", r["label"]))
+    except Exception:
+        pass
+    cmd = [interp, launcher, "--host", a.host, "--port", str(a.port)]
+    print("launching Campaign Console at http://%s:%d  (Ctrl-C to stop)" % (a.host, a.port))
+    os.execve(interp, cmd, env)
 
 
 def cmd_reopen(a):
@@ -1455,6 +1549,57 @@ def main():
     p.add_argument("--run", required=True); p.add_argument("--by", required=True)
     p.add_argument("--note")
     p.set_defaults(f=cmd_approve_package)
+
+    # ── CHECKPOINT SESSION verbs (task §17/§18) — same core as the FastAPI console ──
+    p = sub.add_parser("current-checkpoint",
+                       help="show the current owner checkpoint the Wizard's way (intake/review, "
+                            "diff, actions, exact binding hash) — closes AF-003/AF-004")
+    p.add_argument("--run", required=True); p.add_argument("--json", action="store_true")
+    p.set_defaults(f=cmd_current_checkpoint)
+
+    p = sub.add_parser("answer-checkpoint",
+                       help="submit an intake payload for the current checkpoint's object")
+    p.add_argument("--run", required=True); p.add_argument("--payload", required=True)
+    p.set_defaults(f=cmd_answer_checkpoint)
+
+    p = sub.add_parser("request-revision",
+                       help="owner-scoped targeted revision: --payload (whole) or --ops-json "
+                            "(patch ops); mints a NEW immutable revision + shows the diff (task §14)")
+    p.add_argument("--run", required=True)
+    p.add_argument("--payload"); p.add_argument("--ops-json", dest="ops_json")
+    p.add_argument("--note")
+    p.set_defaults(f=cmd_request_revision)
+
+    p = sub.add_parser("approve-checkpoint",
+                       help="SINGLE owner action → the whole decision set for the current "
+                            "checkpoint (closes AF-002)")
+    p.add_argument("--run", required=True); p.add_argument("--by", required=True)
+    p.add_argument("--direction-id", dest="direction_id",
+                   help="required when approving the RESEARCH + DIRECTION checkpoint")
+    p.add_argument("--note")
+    p.set_defaults(f=cmd_approve_checkpoint)
+
+    p = sub.add_parser("run-next",
+                       help="run the research/synthesis worker BEHIND the Wizard for the current "
+                            "checkpoint's pending work; validate + register the result")
+    p.add_argument("--run", required=True)
+    p.add_argument("--fake", action="store_true", help="force the deterministic fake worker")
+    p.set_defaults(f=cmd_run_next)
+
+    p = sub.add_parser("diff-object",
+                       help="semantic diff between two immutable revisions of a structured object "
+                            "(default previous→current) (task §15)")
+    p.add_argument("--run", required=True)
+    p.add_argument("--kind", required=True, choices=list(FRONT_HALF_KINDS))
+    p.add_argument("--from-rev", dest="from_rev"); p.add_argument("--to-rev", dest="to_rev")
+    p.add_argument("--json", action="store_true")
+    p.set_defaults(f=cmd_diff_object)
+
+    p = sub.add_parser("serve",
+                       help="launch the thin local Campaign Console (FastAPI, 127.0.0.1, no auth)")
+    p.add_argument("--host", default="127.0.0.1")
+    p.add_argument("--port", type=int, default=8765)
+    p.set_defaults(f=cmd_serve)
 
     p = sub.add_parser("verify-live",
                        help="record the computed live-verification the LIVE gate consumes "

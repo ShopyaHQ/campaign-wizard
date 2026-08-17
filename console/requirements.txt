@@ -1,0 +1,8 @@
+# Thin Campaign Console dependencies (task §19/§36). Installed into the repo-local .venv ONLY;
+# the Wizard Core (scripts/) + CLI + core tests run under system Python with zero of these.
+# No React / Node / DB / Redis / queue / auth / containers — a single-owner local admin tool.
+fastapi
+uvicorn[standard]
+jinja2
+python-multipart
+httpx        # test client (GUI/API HTTP tests)

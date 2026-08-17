@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Shopya Campaign Console{% endblock %}</title>
+  <link rel="stylesheet" href="/static/console.css">
+</head>
+<body>
+  <header class="top">
+    <h1><a href="/">Shopya Campaign Wizard</a></h1>
+    <span class="sub">internal campaign console · local · single owner</span>
+    {% if worker is defined and worker %}
+    <span class="worker-chip {{ 'ready' if worker.ready else 'down' }}" style="margin-left:auto;">
+      Agent worker: {{ 'Ready' if worker.ready else 'Unavailable' }}
+      <span class="small muted">({{ worker.label }})</span>
+    </span>
+    {% endif %}
+  </header>
+  <main>
+    {% block body %}{% endblock %}
+  </main>
+</body>
+</html>

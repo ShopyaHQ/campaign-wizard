@@ -2,3 +2,5 @@ __pycache__/
 *.pyc
 .DS_Store
 *.probe.json
+# Campaign Console runtime venv (build artifact; recreate from console/requirements.txt)
+.venv/
