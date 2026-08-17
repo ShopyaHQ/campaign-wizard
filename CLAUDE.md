@@ -134,6 +134,18 @@ python3 scripts/run.py new                    # begin a run (run_mode: productio
 python3 scripts/run.py new --diagnostic       # a sanctioned diagnostic run
 python3 scripts/run.py status                 # current state and its legal transitions
 
+# iterative owner checkpoint session (prd.md §15.1) — the owner-facing interface. CLI verbs and the
+# thin local Campaign Console (run.py serve) are two adapters over scripts/checkpoint_core.py:
+python3 scripts/run.py serve                        # launch the local Campaign Console (127.0.0.1:8765)
+python3 scripts/run.py current-checkpoint --run <cmp_…>   # the current checkpoint the Wizard's way
+python3 scripts/run.py answer-checkpoint  --run <cmp_…> --payload <p>   # submit intake
+python3 scripts/run.py request-revision   --run <cmp_…> --ops-json '[…]'  # targeted revision + diff
+python3 scripts/run.py run-next           --run <cmp_…>   # run the worker BEHIND the Wizard (research/spec)
+python3 scripts/run.py approve-checkpoint --run <cmp_…> --by product_owner  # ONE owner action
+python3 scripts/run.py diff-object        --run <cmp_…> --kind campaign_spec  # semantic diff
+# the worker is configurable: export SHOPYA_WIZARD_WORKER_CMD='<cmd reading JSON stdin, writing JSON stdout>'
+# (unset → a deterministic built-in worker; see console/workers/example_worker.py for the contract)
+
 # structured vNext front half (fresh runs, schema >= 1.8.0) — see "Now implemented" below:
 python3 scripts/run.py register-object  --run <cmp_…> --kind research_brief|research_ledger|campaign_directions|campaign_spec --payload <p>
 python3 scripts/run.py select-direction --run <cmp_…> --direction-id <id> --by product_owner
@@ -222,3 +234,88 @@ python3 scripts/generate_curation_request.py --run <cmp_…> --category-id <id> 
   the normal vNext path. Request v2 semantics (contract 2.0.0, canonical hashing) are UNCHANGED — the
   proven back half (fulfillment → receipt → A–G package → manifest → approval → CAMPAIGN_APPROVED) is
   untouched.
+- **Iterative owner checkpoint session + thin Campaign Console** — IMPLEMENTED (prd.md §15.1). A
+  checkpoint is an iterative guided session (`OPEN → INTAKE → DRAFT_READY → OWNER_REVIEW →
+  REVISION_REQUESTED → … → APPROVED`), not "generate → approve". `scripts/checkpoint_core.py` is the
+  SINGLE business-logic home: it derives the current checkpoint from state+schema, builds the
+  Wizard-defined intake question framework (classifying each field owner_supplied / inferred_confirm /
+  unresolved_input / derived_info), applies TARGETED revisions (field/section patch ops preserving
+  every untouched field, minting a new immutable revision + deterministic dependency invalidation),
+  computes the exact SEMANTIC DIFF, and records a SINGLE owner action per checkpoint (one Approve emits
+  the whole decision set incl. the legacy compatibility id — closes AF-002). It is a presentation/
+  control layer over the existing structured authority — NOT a second SSOT and NOT a second state
+  machine. Two adapters call it: the CLI verbs (`current-checkpoint`/`answer-checkpoint`/
+  `request-revision`/`approve-checkpoint`/`diff-object`, plus enriched `status`) and the thin local
+  Campaign Console (`console/`, FastAPI + Jinja2, `run.py serve` on 127.0.0.1 — single owner, no auth/
+  DB/deploy; deps isolated to the repo `.venv`, so Core + CLI + most tests still run under system
+  Python). The Console renders the campaign list, the product-facing timeline, all five checkpoint
+  views (intake/directions/premise+verticals/architecture/build-this), revision history + diff, and the
+  fulfillment / material-exception / execution-package read views (Engine remains authority; the GUI
+  never computes fulfillment). The agent works BEHIND the Wizard — the owner interacts with the Wizard,
+  which orchestrates workers. Machine authority is unchanged: the five hash-bound approvals +
+  `dependency_graph` + `validate_state.py`.
+- **Worker orchestration behind the Wizard** — IMPLEMENTED (prd.md §15.1). `scripts/worker.py` is the
+  Wizard-owned worker BOUNDARY: a `WorkerAdapter` interface with a configurable `SubprocessWorker`
+  (`SHOPYA_WIZARD_WORKER_CMD` — a local command reading a JSON work request on stdin, writing a JSON
+  structured result on stdout) and a deterministic `FakeWorker` (tests / explicit diagnostic ONLY —
+  never a silent production fallback). `checkpoint_core.run_checkpoint_work` determines the work due
+  at the current checkpoint (research → ledger+directions; the spec work → the whole campaign_spec),
+  supplies the approved upstream context + output contract, invokes the worker, VALIDATES the returned
+  artifact through the front-half builders (a structurally-malformed payload is a clean refusal, never
+  a crash), and REGISTERS it as the next immutable revision. A worker failure records a WORK FAILED
+  status, registers NO partial artifact, and leaves the run coherent + retryable. `run-next` (API +
+  CLI `run.py run-next` + the Console "Run research / Run next" button with a Working/Failed banner)
+  executes it. The owner drives the whole front half from the Console — new campaign · intake ·
+  approve · select · run-next — and NEVER authors a generated object or converses with Claude.
+- **Real Claude worker (production)** — IMPLEMENTED. `console/workers/claude_worker.py` is the real
+  cognitive worker: it reads the Wizard work-request on stdin, builds a bounded neutral prompt per
+  work type, invokes the local `claude` CLI non-interactively
+  (`-p --output-format stream-json --verbose --permission-mode bypassPermissions`, in a throwaway
+  temp cwd with `--add-dir` only that neutral dir — so the repo CLAUDE.md / golden benchmark /
+  historical Almost Fall material is NEVER in scope), captures `tool_use` events to CONFIRM real web
+  research actually ran (research with no `WebSearch`/`WebFetch` tool_use is refused — no faked
+  research; the `usage` counters are unreliable, so detection is via stream-json events), extracts the
+  single strict JSON envelope (prose around it tolerated; malformed/wrong-shape/wrong-kind refused),
+  and emits ONLY the WorkerAdapter envelope on stdout (diagnostics to stderr). **Production fails
+  CLOSED:** a production run with no real worker raises `worker_unavailable` — the fake is never
+  silently selected. The Claude CLI is auto-detected on PATH (`SHOPYA_WIZARD_WORKER_CMD` overrides).
+  The Console shows an "Agent worker: Ready / Unavailable" indicator. Proven end-to-end by
+  `tests/smoke_real_claude_worker.py` (live: real current sources with today's `captured_at`, real
+  distinct directions, real synthesis → Premise + Vertical Review). `console/workers/example_worker.py`
+  is a deterministic reference worker for tests.
+- **Full back-half owner flow in the Console** — IMPLEMENTED (prd.md §15.2). The browser owner-flow no
+  longer ends at Build This — the Wizard→Engine handoff is driven from the Console, as THIN wrappers in
+  `checkpoint_core` over the EXISTING proven back-half ops (NO Engine change, NO duplicated Engine
+  logic, NO product truth authored in the GUI). After the approved Campaign Spec: `generate_requests`
+  (Request v2 SET from the exact approved spec via `generate_curation_request`), `ingest_receipt`
+  (mechanical Curation Receipt v1 ingestion via `receipt_ingest` — independent verify + exact request/
+  truth-export binding + eligible-set recompute; a shortfall opens a Material Exception that BLOCKS
+  assembly and whose owner resolution never waives render_003), `generate_execution_package` (the
+  MECHANICAL production path — see the merchandising bullet), and `approve_package` (manifest-bound
+  owner approval; a stale/superseded manifest invalidates it). The Console renders Generate Requests ·
+  fulfillment status · Material Exception (with a resolution that does not unblock) · Generate
+  Execution Package · execution-package review · APPROVE FOR IMPLEMENTATION, and the timeline now
+  PROGRESSES through Fulfillment → Execution → Approved for Implementation → Live → Review instead of
+  showing them perpetually "waiting". API endpoints + CLI verbs are adapters over the same core. The
+  owner needs no CLI/Claude Code after `run.py serve`.
+- **Post-fulfillment merchandising automation** — IMPLEMENTED (prd.md §15.2 step 5). After fulfillment,
+  the owner clicks ONE button ("Generate Execution Package") and supplies NOTHING — no truth export,
+  no product IDs, no curated rows, no Master CSV. The receipt-bound Truth Export snapshot is persisted
+  automatically at ingestion (`_persist_bound_snapshot`); `generate_execution_package` loads it, runs
+  the `post_fulfillment_merchandising` worker over each request's INDEPENDENTLY-VERIFIED eligible
+  sellable set, and the worker performs merchandising JUDGMENT only — selecting/ordering/pinning actual
+  fulfilled products into the spec's rails/collections. `build_execution_selection` is the
+  SELECTION-AUTHORITY gate: a pick must be in the eligible set AND vouched by the bound snapshot; it
+  refuses arbitrary/wrong-category/absent/duplicate UIDs and any product-fact mutation (price/
+  availability/name/taxonomy stay the Engine's, referenced by UID). The validated immutable
+  `execution_selection` materializes into the launch judgment that hydrates the Master CSV read-only
+  from the bound Truth Export; A–G → validate → F in the frozen order. The worker (fake for tests; real
+  `claude_worker.py post_fulfillment_merchandising` — bounded input, no web research) never authors
+  product truth. Production fails closed; a `build-package` explicit-input path stays diagnostic/test/
+  operator-only. Proven by `tests/test_merchandising_flow.py` + live `tests/smoke_real_merchandising.py`.
+- **Campaign-neutral taxonomy input** — IMPLEMENTED (prd.md §25, closes AF-008). `scripts/taxonomy.py`
+  yields the fresh-generation registry with the historical Almost Fall `SEL`/`avail` selection markers
+  STRIPPED (canonical ids + durable metadata preserved); the historical selection is available only
+  through `historical_selection()` for audit, never in the generation input. `assert_neutral` is the
+  enforced guard; a regression suite proves fresh generation cannot read the historical selection
+  markers.

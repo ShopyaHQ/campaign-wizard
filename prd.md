@@ -384,11 +384,15 @@ real need emerges.
 
 # 8. Revision semantics and declared dependencies
 
-Owner/LLM back-and-forth is normal and part of the product. Each new revision (of the
-`research_brief`, `campaign_directions`, or `campaign_spec`) must identify: the previous revision; the
-owner feedback/input that caused it; the changed sections; the unchanged sections; the rationale; the
-evidence impact; and the downstream dependency impact. Owner-approved judgment is never silently
-overwritten.
+Owner/LLM back-and-forth is normal and part of the product — the iterative guided session of §15.1 is
+how it happens, and there is no arbitrary revision limit. Each new revision (of the `research_brief`,
+`campaign_directions`, or `campaign_spec`) must identify: the previous revision; the owner
+feedback/input that caused it; the changed sections; the unchanged sections; the rationale; the
+evidence impact; and the downstream dependency impact. A revision is produced by a **targeted** owner
+edit (a field, item, section, ordering, or scoped instruction) that preserves every untouched field;
+the owner never re-authors the whole object. Every revision carries an exact **semantic diff**
+(changed / added / removed / reordered) that the owner reviews before any approval. Owner-approved
+judgment is never silently overwritten.
 
 **Every structured Campaign Spec section declares its upstream dependencies. Revision invalidation is
 derived from the declared dependency graph, not improvised by the agent.** Changing a section
@@ -699,6 +703,121 @@ campaign-judgment approval.
 The owner never reviews the 50+ products per collection, and product-row approval is not a normal
 checkpoint.
 
+## 15.1 Every checkpoint is an iterative guided session (normative)
+
+A checkpoint is **not** "the agent generates an artifact → the owner approves." That framing lost the
+actual product. Each owner checkpoint is an **iterative guided session** with an explicit interaction
+lifecycle that sits *over* the authoritative structured object — it does **not** add a second campaign
+state machine:
+
+```
+OPEN → INTAKE → DRAFT_READY → OWNER_REVIEW → REVISION_REQUESTED → DRAFT_READY → … → APPROVED
+```
+
+1. **Structured intake.** The Wizard (not the agent) presents the question set for that stage. Known
+   information is prefilled; inferred information is visibly marked *inferred — confirm or edit*;
+   missing decisions are asked explicitly; derived/informational fields are labelled as such. Question
+   ids are stable. The four provenance classes surfaced to the owner are `owner_supplied`,
+   `inferred_confirm`, `unresolved_input`, `derived_info`.
+2. **Wizard proposal.** The Wizard/agent produces a proposed structured result and states what it
+   understood and proposes.
+3. **Owner review.** The owner sees the proposed artifact in a structured presentation — not raw
+   YAML, not a long agent memo — and may comment at the whole-artifact level or on specific
+   fields/items.
+4. **Targeted revision.** The owner may change only the affected pieces (a field, an item, a section,
+   an ordering, or a scoped free-text instruction). The Wizard preserves every untouched field and
+   mints a **new immutable revision** (§8). Whole-object re-authoring is never required of the owner.
+5. **Diff + confirmation.** The Wizard shows the exact semantic diff (changed / added / removed /
+   reordered) and its revised understanding. **The owner is never asked to approve a new hash without
+   being shown what changed.**
+6. **Repeat N times.** There is **no arbitrary revision limit**. Review → feedback → revision → review
+   may repeat as many times as needed; the checkpoint stays open.
+7. **Explicit approval.** Only when the owner chooses **Approve** does the Wizard bind the exact
+   current revision/hash and close the checkpoint (§9). Approval is never inferred from positive
+   conversation. Only then does the next phase run.
+
+**One owner action = one approval.** A single owner Approve emits the whole decision set for that
+checkpoint atomically (the typed hash-bound decision(s) and any legacy compatibility id); the owner
+and the interface never issue multiple approval commands for one checkpoint.
+
+**The agent works behind the Wizard.** The owner interacts with the Wizard; the Wizard orchestrates
+research/creative/revision workers and validates/registers what they return. The agent is not the
+owner-facing interface. This session pattern applies to every major stage — the five front-half
+checkpoints and, after them, the Material Exception, Fulfillment and Execution-package reviews.
+
+Concretely, a **Run Next** action executes the configured worker BEHIND the interface: the Wizard
+determines the exact work due at the current checkpoint (research → `research_ledger` +
+`campaign_directions`; the spec work → the complete `campaign_spec`), supplies the approved upstream
+context + the allowed output contract, invokes the worker (a `WorkerAdapter`), **validates** the
+returned structured artifact through the same front-half builders that gate any object (a
+structurally-malformed payload is a clean refusal, never a crash), and **registers** it as the next
+immutable revision. The owner-facing layer never receives responsibility for generating the object. A
+worker failure records a WORK FAILED status, registers **no** partial artifact, and leaves the run
+coherent and safely retryable.
+
+The production worker is the **real local Claude CLI**, auto-detected on PATH (overridable via
+`SHOPYA_WIZARD_WORKER_CMD`): it performs genuine current external research for the research phase
+(research that does not actually run web tools is refused — no faked research) and returns a strict
+JSON result. It runs in an isolated temp directory with no access to the repo, so historical Almost
+Fall material and the golden benchmark are never in the generation context (fresh-run isolation,
+§14/AF-008). **Production fails closed:** a production run with no real worker available refuses with
+`worker_unavailable`; the deterministic worker is for automated tests and explicit diagnostic runs
+only and is never a silent production fallback. The owner therefore never needs to leave the Console
+to advance the campaign — Claude runs as the backend worker, but the owner does not converse with it.
+
+**Interaction/control layer, not a second SSOT.** The session lifecycle, the intake question
+framework, targeted revision, the semantic diff and single-action approval are a
+presentation/control layer over the existing structured authority (the immutable revisions on disk +
+the state spine + the typed hash-bound approvals). It computes everything from that authority every
+time; it stores no independent campaign truth. The CLI and the GUI console are two adapters over the
+one Checkpoint Interaction API; neither re-implements the rules.
+
+## 15.2 The Console spans the full owner lifecycle (normative)
+
+The owner-facing Console is the interface for the WHOLE campaign lifecycle, not only the creative
+front half. After the final Campaign Spec is approved ("build this"), the Wizard→CollectionCuration
+handoff and the execution-package preparation are driven from the Console; the owner does not fall
+back to the CLI or to an agent to advance the campaign. Concretely, the browser owner-flow continues:
+
+1. **Request generation** — the exact approved Campaign Spec generates the Request v2 set (one per
+   durable collection selection), bound to the spec's id/revision/composite hash. No manual JSON.
+2. **Fulfillment** — the Engine fulfils (separate repo, authority for product truth); the Console
+   shows per-collection status (category · required · achieved · gap · satisfied/sourcing/shortfall).
+   Low-level source-task/discovery noise is secondary, not the default surface.
+3. **Receipt ingestion** — the sanctioned Wizard ingestion runs mechanically (independent verify +
+   exact Request/Truth-Export/eligible-set binding); no operator handoff is required from the browser.
+4. **Material exception** — a shortfall surfaces the Wizard Material Exception in the Console with the
+   legitimate owner-interaction surface. "Resolved" never waives the material requirement (render_003),
+   never makes a shortfall satisfy completeness, and never unblocks assembly; a needed campaign change
+   routes back through the proper Campaign Spec revision/checkpoint flow (no auto-widening, no
+   Engine-authored campaign recommendation).
+5. **Post-fulfillment merchandising + execution package** — one browser action ("Generate Execution
+   Package") is mechanical: the Wizard loads the approved spec + the satisfied receipts + the exact
+   **receipt-bound Truth Export snapshots (persisted automatically at ingestion — the owner never
+   re-supplies a truth-export path)**, independently verifies each request's eligible sellable set,
+   and invokes the **post-fulfillment merchandising worker**, which performs campaign JUDGMENT only:
+   it selects, orders and pins actual fulfilled products from the bounded eligible set into the
+   spec's rail/collection structure. The worker may select ONLY from the verified eligible set and
+   may author NO product fact (price/availability/name/taxonomy stay the Engine's, referenced by
+   UID); the Wizard validates the selection before registering the immutable `execution_selection`
+   artifact. That selection materializes into the Master-CSV launch judgment (hydrated read-only from
+   the bound Truth Export), and A–G stage → validate → emit F in the frozen order. **The owner never
+   authors product rows, pastes product IDs, selects a truth export, or fills the Master CSV.** A
+   low-level explicit-input path remains for diagnostic/test/operator use only, clearly marked.
+6. **Execution review + approval** — the Console renders an owner-friendly package review (collections,
+   Master-CSV/product summary, rails, content, Default, seam handoffs, human checklist, validation
+   status, manifest); raw A–G artifacts are secondary downloads. **Approve for implementation** binds
+   the exact manifest id/hash; a stale/superseded manifest invalidates the approval.
+7. **Timeline** — the product-facing lifecycle progresses through Kickoff → Research + Direction →
+   Premise + Verticals → Architecture → Build This → Fulfillment → Execution → Approved for
+   Implementation → Live → Review. Fulfillment/Execution are never left perpetually "waiting" merely
+   because their controls were CLI-only.
+
+This is worker/Engine-boundary-preserving: the cognitive worker stays Engine-free (judgment only), the
+Engine stays the product-truth authority behind its Request/Receipt/Truth contracts, and the Console
+FastAPI/Jinja handlers remain adapters over the SAME underlying Wizard functions the CLI uses — no
+business logic lives only in HTTP handlers, and the existing back half is reused, not duplicated.
+
 ---
 
 # 16. System invariants (normative)
@@ -732,6 +851,9 @@ implementation state.
     live gates (§4).
 13. Campaign Spec revision invalidation is derived from the declared dependency graph, not improvised
     (§8).
+14. Every owner checkpoint is an iterative guided session (§15.1); a single owner Approve is one
+    product-level action that emits the whole decision set for that checkpoint atomically, and the
+    owner is never asked to approve a revision/hash without being shown the exact semantic diff.
 
 ---
 
@@ -851,6 +973,7 @@ lifecycle markers with structured authority behind them.
 | Product phase | Structured object | Current workflow state(s) | Current implementation status | Enforcing mechanism |
 |---|---|---|---|---|
 | Kickoff / Frame | `research_brief` | FRAME_READY → RESEARCHING | **Implemented (fresh vNext ≥1.8.0)** — object built + hashed by `front_half.py` (`register-object`); per-field owner/inferred/derived provenance; `kickoff_approved` binds the exact brief id/revision/hash | `structured_object_present` + `approval_binds_object_hash(kickoff_approved)`; brief/object schema |
+| Iterative checkpoint session (all 5) | the structured objects above | (over the existing states) | **Implemented (§15.1)** — `checkpoint_core.py` derives the current checkpoint, intake question framework (owner/inferred/unresolved/derived), targeted revision preserving untouched fields, semantic diff, single-action approval; the CLI (`current-checkpoint`/`answer-checkpoint`/`request-revision`/`approve-checkpoint`/`diff-object`) and the thin Campaign Console (`console/`, `run.py serve`) are two adapters over it | interaction/control layer over the five hash-bound approvals + `dependency_graph`; no second SSOT |
 | Research | `research_ledger` | RESEARCHING → SIGNALS_READY | **Implemented (fresh vNext)** — structured per-signal evidence with stable ids + hashes and enforced evidence standards (no unsourced claims; benchmark may not supply market evidence) | `structured_object_present(research_ledger)`; object schema |
 | Campaign directions | `campaign_directions` | SIGNALS_READY → OPPORTUNITIES_READY → OPPORTUNITY_SELECTED | **Implemented (fresh vNext)** — 2–4 distinct directions derived from the ledger, each with a per-direction hash; `direction_selected_v2` binds `direction_id + direction_hash` | `structured_object_present` + `direction_selection_binds_direction`; object schema |
 | Premise | `campaign_spec.premise` | INTERVIEW_COMPLETE → BRIEF_DRAFT ⇄ BRIEF_APPROVED | **Implemented (fresh vNext)** — distinct `premise` section of the immutable Campaign Spec; `premise_approved` binds the exact section hash | `campaign_spec_sections_present` + `approval_binds_spec_section(premise)` |
@@ -858,8 +981,8 @@ lifecycle markers with structured authority behind them.
 | Architecture | collection_selections + rails + content_program | ROUTES_READY → ROUTE_SELECTED → ACTIVATION_READY | **Implemented (fresh vNext)** — three structured sections (CB-1 gates; base_1c/story_xc; SEO≠card); ONE `architecture_approved` binds the composite hash — no product-row approval | `campaign_spec_sections_present` + `approval_binds_spec_composite(architecture_approved)` |
 | Naming / final spec | `campaign_spec` naming_voice + default_composition + seam_intent | ACTIVATION_READY (sections) → SEAM6_READY (final) | **Implemented (fresh vNext)** — sections complete at ACTIVATION_READY; `campaign_spec_approved` ("build this") binds the composite over all eight sections at SEAM6_READY | `campaign_spec_revision_immutable` + `approval_binds_spec_composite(campaign_spec_approved)` |
 | Fulfillment | curation requests → receipts + fulfillment_exceptions + truth export | (engine; no wizard state) | **Enforced (engine + wizard loop wired)** — request gate, forbidden-facts, foundation gate; deterministic Request v2 generated from the approved Campaign Spec (`generate_curation_request.py --from-spec`, `spec_ref` = exact spec id/revision/composite hash); receipt ingestion + material exceptions; truth-export v2 consumer | deterministic request gen from approved spec + receipts + `foundation_001` gate + truth-export contract |
-| Assembly + validation | complete human execution package → validated, manifest-bound package | VALIDATED | **Partial** — judgment-purity, hydration, hash-bound production-only validation exist, but validation/manifest currently bind the products CSV, not the full package | `validate-execution` extended to assemble + validate + hash-bind the complete package (A–G) |
-| Execution approval | execution manifest | CAMPAIGN_APPROVED | **Enforced with the §16.5 coherence defect open** | `execution_package_approval` + coherence fix (dev step 2) |
+| Assembly + validation | complete human execution package → validated, manifest-bound package | VALIDATED | **Implemented (fresh vNext)** — `execution_package.py` stages the complete A–G package; `validate-package` validates A–G + deps + receipt-set completeness + coherence + renderer honesty and only then emits the immutable content-addressed F Execution Manifest; VALIDATED requires the manifest + `execution_package_validated` (a products-CSV-only pass cannot satisfy it) | staged A–G + `execution_manifest` + `execution_package_validated`; `verify_manifest` integrity-only |
+| Execution approval | execution manifest | CAMPAIGN_APPROVED | **Enforced** — `approve-package` binds the exact manifest id/sha; CAMPAIGN_APPROVED requires that manifest-bound approval; post-validation coherence keyed to the workflow state supersedes a stale package approval (the §16.5 coherence fix is in place) | `execution_package_approval_binds_manifest` + workflow-state coherence |
 | Go-live | verification record | LIVE | **Enforced (structural)** — bound to executed build | sanctioned verify-live path |
 | Review | measurement + review | REVIEWED | **Enforced** | schema |
 
@@ -903,19 +1026,64 @@ Subordinate to the normative PRD. Implementation order:
 6. **(COMPLETED)** Engine Curation Receipts + `fulfillment_exception`s and Wizard ingestion +
    `material_exception` generation (§12, §13).
 7. **(OPEN)** Remove the old normal production foundation bypass and enforce `foundation_001` (§7).
-8. **(PARTIAL)** Owner checkpoint experience from the structured objects (§15) — the five hash-bound
-   checkpoints exist and gate the states; polished checkpoint-**card** rendering is a presentation
-   layer that may still be added.
+8. **(COMPLETED)** Owner checkpoint experience from the structured objects (§15, §15.1) — the
+   iterative guided-session lifecycle (`OPEN → INTAKE → DRAFT_READY → OWNER_REVIEW →
+   REVISION_REQUESTED → … → APPROVED`), the Wizard-defined intake question framework with
+   owner/inferred/unresolved/derived classification, targeted (field/section) revision preserving
+   untouched fields, the semantic diff, and single-action approval. Implemented in
+   `scripts/checkpoint_core.py` (the single business-logic home the CLI and GUI both call), exposed
+   through the Checkpoint Interaction API + thin local Campaign Console
+   (`console/`, FastAPI + Jinja2, `run.py serve` on 127.0.0.1) and equivalent CLI verbs
+   (`current-checkpoint` / `answer-checkpoint` / `request-revision` / `approve-checkpoint` /
+   `diff-object` / `run-next`). The five hash-bound approvals and the state gates are unchanged — this
+   is a presentation/control layer over them, not a second SSOT.
+8a. **(COMPLETED)** Worker orchestration behind the Wizard (§15.1) — `scripts/worker.py` (the
+    `WorkerAdapter` boundary: `SubprocessWorker` via `SHOPYA_WIZARD_WORKER_CMD` or the auto-detected
+    Claude CLI; `FakeWorker` for tests/diagnostic only, fail-closed in production) +
+    `checkpoint_core.run_checkpoint_work` (determine work → build approved context → invoke →
+    validate via front-half builders → register the immutable revision(s); coherent, retryable
+    failure with no partial artifact). `run-next` (API + CLI) executes it.
+8b. **(COMPLETED)** Real Claude cognitive worker (§15.1) — `console/workers/claude_worker.py` invokes
+    the local `claude` CLI non-interactively, performs real current web research (refusing faked
+    research), enforces strict JSON output, and runs in an isolated temp cwd so historical/benchmark
+    material is never in the generation context. Production fails closed without a real worker; the
+    Console shows an Agent-worker readiness indicator. Proven live by `tests/smoke_real_claude_worker.py`.
+8c. **(COMPLETED)** Full back-half owner flow in the Console (§15.2) — `checkpoint_core.generate_requests`
+    / `ingest_receipt` / `resolve_material_exception` / `build_and_validate_package` / `approve_package`
+    are THIN wrappers over the existing `generate_curation_request` / `receipt_ingest` /
+    `execution_package` operations (no Engine change, no duplicated logic; the CLI and the API/Console
+    share them). API endpoints + Console UX + a timeline that progresses past Build This. Proven by
+    `tests/test_back_half_flow.py`.
+8d. **(COMPLETED)** Post-fulfillment merchandising automation (§15.2 step 5) — the receipt-bound Truth
+    Export snapshot is persisted at ingestion (`checkpoint_core._persist_bound_snapshot`) so package
+    build loads it automatically; `generate_execution_package` runs the `post_fulfillment_merchandising`
+    worker over the independently-verified eligible sellable sets, validates the selection authority
+    (only-eligible / right-category / floor-eligible / in-truth / no-duplicate / no-product-fact-
+    mutation), registers the immutable `execution_selection`, materializes the launch judgment, and
+    builds → validates → emits F — with NO owner-supplied truth export or product rows. Production
+    fails closed without a real worker; a diagnostic/test explicit-input `build-package` path remains.
+    Proven by `tests/test_merchandising_flow.py` + the live `tests/smoke_real_merchandising.py`.
 9. **(COMPLETED)** Upstream / adversarial / cross-repo tests, charter↔implementation consistency, and
    the engine truth-export **producer** contract (evidence requires provenance; a direction binds an
    exact id/hash; owner feedback creates a revision, not an overwrite; unequal/zero-collection
    verticals valid; architecture refers to real taxonomy IDs; spec approval binds an exact
    revision/hash; an upstream-section change invalidates only declared dependents; requests are
    generated only from an approved spec; no product facts leak into requests; receipt-vs-recomputation
-   mismatch fails hard). Current suite: 335 assertions green across 13 files (66 new front-half).
-10. **(OPEN — the acceptance run)** Run a fresh Almost Fall `/new-campaign` regression from zero.
+   mismatch fails hard). Current suite green across the Wizard suites (including the new checkpoint-
+   session core, taxonomy-neutral, and API/GUI/E2E suites).
+9a. **(COMPLETED)** Campaign-neutral taxonomy input (§25 / AF-008) — `scripts/taxonomy.py`
+    produces the fresh-generation registry with the historical Almost Fall `SEL`/`avail` selection
+    markers stripped (canonical ids + durable metadata preserved); the historical selection is
+    available separately for audit only; `assert_neutral` + a regression suite prove fresh generation
+    cannot read the campaign-specific historical selection markers.
+10. **(OPEN — the acceptance run)** Run a fresh Almost Fall `/new-campaign` regression from zero
+    **through the Campaign Console GUI** (`run.py serve`), not through the agent driving the CLI. The
+    guided interaction pattern is itself one of the things under test, so exercising it through the
+    owner-facing surface — not an agent interpreting Wizard files — is required. (The controlled
+    synthetic UI interaction of the interaction-layer build is a smoke test of the pattern, not this
+    acceptance run.)
 
 **Acceptance criterion.** Repair of the historical Almost Fall run is NOT the acceptance criterion.
 
-> A fresh Almost Fall run traverses the complete guided system without manual artifact
-> synchronization, hidden hand edits, approval ambiguity, or repeated corrective prompting.
+> A fresh Almost Fall run traverses the complete guided system **through the Console** without manual
+> artifact synchronization, hidden hand edits, approval ambiguity, or repeated corrective prompting.
