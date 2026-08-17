@@ -1,0 +1,122 @@
+# FRONT-HALF STRUCTURED OBJECT SCHEMAS (spec 1.8.0)
+# research_brief · research_ledger · campaign_directions
+#
+# These are the machine-checkable shapes of the three pre-spec front-half objects. run.py
+# register-object validates an object against the matching shape here, canonically normalizes it,
+# computes its canonical_hash (and per-item hashes where relevant), and registers it as an
+# artifact + a structured_objects spine entry. The campaign_spec (the fourth object) has its own
+# schema: schemas/campaign_spec.schema.yaml.
+#
+# PROVENANCE IS FIRST-CLASS (task §3): every material field distinguishes owner_supplied vs
+# system_inferred vs derived. Inference is never hidden.
+
+schema:
+  name: front_half_objects
+  version: 1.0.0
+  for_spec_version: ">=1.8.0"
+
+# ─────────────────────────────────────────────────────────────────
+# provenance vocabulary — used across all three objects
+# ─────────────────────────────────────────────────────────────────
+provenance_source:
+  type: enum
+  values: [owner_supplied, system_inferred, derived]
+  desc: >
+    owner_supplied  — stated by the owner at kickoff / in a checkpoint.
+    system_inferred — the Wizard inferred it (must be visible at KICKOFF REVIEW, task §3).
+    derived         — computed from other structured fields (e.g. a direction derived from the ledger).
+
+# ─────────────────────────────────────────────────────────────────
+# research_brief (task §3) — normalizes kickoff into the exact research problem.
+# ─────────────────────────────────────────────────────────────────
+research_brief:
+  object_kind: research_brief
+  id_prefix: rb_
+  required_fields:
+    - brief_id
+    - revision
+    - campaign_id            # nullable pre-naming
+    - run_id
+    - objective              # {value, provenance}
+    - desired_behavior       # {value, provenance}
+    - market                 # {value, provenance}
+    - audience_context       # {value, provenance}
+    - campaign_window        # {value, provenance}
+    - territory              # {value, provenance}
+    - exclusions             # list
+    - owner_inputs           # list  (verbatim owner statements)
+    - inferred_inputs        # list  (each an inference the Wizard made — surfaced, never hidden)
+    - assumptions            # list
+    - unresolved_questions   # list  (what remains uncertain — shown at KICKOFF REVIEW)
+    - provenance             # object: field -> provenance_source for every material field
+    - canonical_hash         # stamped by register-object
+  material_fields:           # each must carry an explicit provenance_source entry
+    [objective, desired_behavior, market, audience_context, campaign_window, territory]
+  rules:
+    - "Every material field is {value, provenance}; provenance ∈ provenance_source."
+    - "inferred_inputs is where system inference is made VISIBLE (task §3). It is never empty by
+       fiat — if the Wizard inferred nothing, it is [] honestly."
+    - "The KICKOFF REVIEW checkpoint shows understood / inferred / uncertain; the owner may approve
+       or revise specific fields. A material revision mints a new brief revision + hash."
+
+# ─────────────────────────────────────────────────────────────────
+# research_ledger (task §5/§6) — STRUCTURED evidence, not prose notes. Each record stable-id'd.
+# ─────────────────────────────────────────────────────────────────
+research_ledger:
+  object_kind: research_ledger
+  id_prefix: rl_
+  required_fields: [ledger_id, revision, brief_ref, signals, canonical_hash]
+  signal_required_fields:
+    - signal_id
+    - family                 # research family (see families)
+    - claim                  # the observation / claim
+    - source                 # reference / url / citation
+    - source_type            # e.g. autocomplete, marketplace_listing, editorial, retailer_page, trend_tool
+    - captured_at
+    - market_time_relevance  # is this current + in-market?
+    - confidence             # low | medium | high
+    - evidence_strength      # weak | moderate | strong
+    - supports               # list of claim ids it supports
+    - contradicts            # list of claim ids it contradicts
+    - limitations            # list
+    - provenance
+  families:
+    # research families used for evidence coverage. A signal names exactly one family.
+    [cultural, behavioral, commercial, competitive, seasonal_temporal, platform_surface]
+  rules:
+    - "Each signal carries a STABLE signal_id and a per-signal canonical hash (register-object)."
+    - "Evidence standards are preserved (task §6): a single autocomplete result is not a campaign;
+       a weak source may not be stamped strong; unsourced trend claims are refused; historical
+       Almost Fall benchmark artifacts NEVER supply current market evidence (source_type may not be
+       'golden_benchmark')."
+    - "The ledger supports the chain evidence → tension → why-now → shopya-role → desired-behavior →
+       opportunity; those are distinct fields downstream, never collapsed into one paragraph."
+
+# ─────────────────────────────────────────────────────────────────
+# campaign_directions (task §7) — 2–4 genuinely distinct directions derived from the ledger.
+# ─────────────────────────────────────────────────────────────────
+campaign_directions:
+  object_kind: campaign_directions
+  id_prefix: cd_
+  required_fields: [directions_id, revision, ledger_ref, directions, recommended_direction_id, canonical_hash]
+  count_between: [2, 4]
+  direction_required_fields:
+    - direction_id
+    - title
+    - evidence_refs          # signal_ids from the ledger — must resolve
+    - shopper_tension
+    - why_now
+    - shopya_role
+    - desired_behavior
+    - campaign_opportunity
+    - vertical_implications_summary
+    - risks_counterevidence
+    - confidence
+    - direction_hash         # per-direction canonical hash (register-object) — the selection binds this
+  rules:
+    - "Each direction has a STABLE direction_id and a per-direction canonical hash; the owner's
+       selection binds {direction_id, direction_hash} (task §8)."
+    - "Directions must be GENUINELY different where evidence supports them — not slogan variants of
+       one idea (task §7). Each evidence_ref must resolve to a signal in the referenced ledger."
+    - "recommended_direction_id names the Wizard's recommendation (with its why + risks) for the
+       RESEARCH + DIRECTION REVIEW checkpoint."

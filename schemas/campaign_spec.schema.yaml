@@ -1,0 +1,201 @@
+# CAMPAIGN SPEC SCHEMA (spec 1.8.0) — ONE logical object, IMMUTABLE revisions (task §18).
+#
+# The campaign_spec is the front-half architecture AUTHORITY. It is authored as immutable
+# revisions (cs_…/r001, r002, …); run.py register-object never edits a revision in place — a
+# material change mints a NEW revision with a new parent_revision link and new hashes.
+#
+# EIGHT sections (task §9–§17). Each section gets its own canonical (semantic-normalized) hash so a
+# section approval binds EXACTLY one section, and a composite hash over an ordered subset binds a
+# composed review (architecture) or the whole spec (final "build this"):
+#
+#   premise · vertical_strategies · collection_selections · rails · content_program ·
+#   naming_voice · default_composition · seam_intent
+#
+# The approved campaign_spec is the ONLY authority that may generate a production Request v2 (spec_ref
+# binds its exact id/revision/composite_hash — task §22/§23). The campaign_spec adapter also emits the
+# current-adapter architecture object the proven A–G producers consume (collections/rails/content/
+# default_composition/renderer_capabilities) — JUDGMENT ONLY, never product truth.
+
+schema:
+  name: campaign_spec
+  version: 1.0.0
+  for_spec_version: ">=1.8.0"
+  id_prefix: cs_
+
+revision:
+  required_fields:
+    - campaign_spec_id
+    - revision              # r001, r002, …  (immutable label)
+    - created_at
+    - parent_revision       # nullable for r001
+    - selected_direction_ref  # {directions_id, revision, direction_id, direction_hash} it builds on
+    - sections              # the eight sections below
+    - section_hashes        # section -> canonical hash (register-object)
+    - composite_hash        # canonical hash over all eight sections in canonical order
+    - provenance
+  section_order: [premise, vertical_strategies, collection_selections, rails, content_program,
+                  naming_voice, default_composition, seam_intent]
+
+# ─────────────────────────────────────────────────────────────────
+# 1 · premise (task §9)
+# ─────────────────────────────────────────────────────────────────
+premise:
+  required_fields:
+    - campaign_name         # may be provisional; final naming can arrive later (task §9)
+    - dek
+    - central_tension
+    - point_of_view
+    - why_now
+    - shopya_role
+    - desired_behavior
+    - exclusions
+    - voice_summary
+    - evidence_refs         # signal_ids / direction_id it rests on
+  note: "Final naming need not precede sound premise logic; but the approved premise section carries
+         a stable semantic hash (task §9)."
+
+# ─────────────────────────────────────────────────────────────────
+# 2 · vertical_strategies (task §10) — unequal conviction is VALID; NO per-vertical quota/symmetry.
+# ─────────────────────────────────────────────────────────────────
+vertical_strategies:
+  verticals_closed_set: [fashion, home_interior, tech, beauty, travel, wellness_health]  # charter surface_006
+  per_vertical_fields:
+    - vertical_id
+    - conviction_role       # e.g. lead | supporting | peripheral | absent  (UNEQUAL is fine)
+    - interpretation
+    - shopper_job
+    - why_it_belongs
+    - distinct_mechanism
+    - evidence_refs
+    - risks_limits
+    - content_role
+    - collection_role       # may be "none" — a ZERO-collection vertical is valid (task §10)
+    - default_role
+  rules:
+    - "Verticals may carry UNEQUAL conviction. A vertical may hold ZERO durable collections and
+       still be valid. There is NO per-vertical collection quota and NO symmetry requirement
+       (Content Charter CB-1..CB-5; task §10). Do not force all six to equal weight."
+    - "Not all six verticals need appear; conviction_role 'absent' or omission are both honest."
+
+# ─────────────────────────────────────────────────────────────────
+# 3 · collection_selections (task §12) — CB-1..CB-5 three-gate earning test; selection ≠ fulfillment.
+# ─────────────────────────────────────────────────────────────────
+collection_selections:
+  per_selection_fields:
+    - category_id                    # canonical requestable taxonomy category (CB-1 gate 1)
+    - display_name
+    - vertical
+    - campaign_role
+    - campaign_fit_rationale         # CB-1 gate 2: genuine premise/vertical fit
+    - distinct_shopper_product_job   # CB-1 gate 3: distinct job vs other selections
+    - durable_infrastructure_consideration  # CB-3: POSITIVE consideration, NOT a 4th gate
+    - evidence_refs
+    - requested_depth                # >= render_003 floor (charter render_003 = 50)
+    - charter_rule_ref               # "render_003"
+    - fulfillment_state              # "not_yet_requested" at front-half stage
+  rules:
+    - "CB-1 is exactly THREE hard gates (canonical requestable category; genuine campaign/vertical
+       fit; distinct shopper/product job). All three hold or it is not selected."
+    - "CB-3: durable reusable catalog/site value STRENGTHENS an otherwise-qualifying selection but is
+       NOT a mandatory fourth gate and never rescues an off-premise / redundant / quota-driven one."
+    - "NO target/max collection count; NO symmetry. Breadth is emergent (task §12)."
+    - "Selection ≠ fulfillment: fulfillment_state is not_yet_requested here. Engine depth is NEVER
+       inspected to decide whether a collection creatively belongs (task §12)."
+
+# ─────────────────────────────────────────────────────────────────
+# 4 · rails (task §13) — base_1c (exactly one source) · story_xc (multiple sources + a real story).
+# ─────────────────────────────────────────────────────────────────
+rails:
+  per_rail_fields:
+    - rail_id
+    - rail_type                # base_1c | story_xc
+    - title
+    - hook_dek
+    - source_collection_ids    # base_1c: exactly one selected collection; story_xc: multiple
+    - vertical_surface
+    - editorial_job
+    - placement_role
+    - renderer_capability      # intended-vs-executable, recorded honestly (task §13/§15)
+    - fallback_ref             # nullable — explicit fallback only, never invented
+    - status
+  rules:
+    - "base_1c references EXACTLY ONE selected canonical collection."
+    - "story_xc references MULTIPLE selected canonical collections AND must have a genuine
+       shopper/editorial story — not mere composition mechanics."
+    - "No ORPHAN rails: every source_collection_id must be a selected collection_selections
+       category (task §13)."
+    - "Do not downgrade creative intent because the renderer lacks XC support — store intended
+       creative, technical capability, and any explicit fallback separately (task §13/§15)."
+
+# ─────────────────────────────────────────────────────────────────
+# 5 · content_program (task §14) — SEO title ≠ card headline; evidence-earned; no forced coverage.
+# ─────────────────────────────────────────────────────────────────
+content_program:
+  per_content_fields:
+    - content_id
+    - target_query
+    - evidence_refs
+    - search_intent
+    - seo_title              # SEO title — DISTINCT from card_headline
+    - card_headline          # card headline — DISTINCT from seo_title
+    - premise
+    - outline_brief
+    - linked_collection_ids
+    - linked_rail_ids
+    - placement
+    - priority
+    - status
+  rules:
+    - "seo_title and card_headline are DISTINCT fields (task §14)."
+    - "Reject content created only to satisfy vertical/collection coverage (task §14)."
+    - "This is the production brief; article generation itself is NOT implemented here."
+
+# ─────────────────────────────────────────────────────────────────
+# 6 · naming_voice (task §15) — Almost Fall exemplar is calibration, NOT a template.
+# ─────────────────────────────────────────────────────────────────
+naming_voice:
+  required_fields:
+    - campaign_name
+    - dek
+    - voice_principles
+    - positive_examples
+    - negative_patterns
+    - collection_naming_constraints
+    - rail_voice_constraints
+    - content_voice_constraints
+  rules:
+    - "The CLOSED Almost Fall benchmark calibrates voice (concrete, situational, restrained, lightly
+       opinionated, no generic marketing abstraction) but MUST NOT force exact wording (task §15/§27)."
+
+# ─────────────────────────────────────────────────────────────────
+# 7 · default_composition (task §16) — a composed argument, not six vertical feeds concatenated.
+# ─────────────────────────────────────────────────────────────────
+default_composition:
+  required_fields: [ordered_slots]
+  per_slot_fields:
+    - slot_id
+    - object_type            # base_rail | story_rail | content
+    - object_id              # must reference an existing rail_id / content_id
+    - rationale
+    - fallback_ref           # nullable — valid where supplied
+  rules:
+    - "Every object_id must reference an existing object (rail_id or content_id) in this spec."
+    - "No duplicate/invalid refs; fallbacks valid where supplied; diagnostic/blocked objects do not
+       leak into Default (task §16)."
+    - "Default is a composed campaign ARGUMENT, not six vertical feeds concatenated. Creative quality
+       is NEVER enforced by a fake numeric score (task §16)."
+
+# ─────────────────────────────────────────────────────────────────
+# 8 · seam_intent (task §17) — intended handoff behavior for the proven A–G package. Intent, not proof.
+# ─────────────────────────────────────────────────────────────────
+seam_intent:
+  required_fields:
+    - collection_rail_relationships   # collection -> rail bindings
+    - rail_content_relationships      # rail -> content bindings
+    - default_bindings
+    - renderer_capability_notes
+    - fallback_intent
+    - production_human_notes
+  rules:
+    - "Captures intended handoff behavior needed later by the A–G package (task §17). It is CREATIVE/
+       ARCHITECTURE INTENT, not implementation proof, and does not duplicate the execution package."
